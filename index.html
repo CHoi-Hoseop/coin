@@ -43,6 +43,12 @@
   .wbtn.sel { background: #222; color: #fff; border-color: #222; }
   textarea, .field { font-size: 16px; padding: 8px; width: 80px; text-align: center; }
   #testLog { text-align: left; white-space: pre-wrap; font-size: 15px; background: #fff; padding: 10px; border-radius: 8px; max-width: 480px; margin: 10px auto; }
+  /* 결과 전체화면 알림: 누가 처리됐는지 멀리서도 보이게 */
+  #banner { position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; color: #fff; text-align: center; }
+  #banner.ok { background: #2e7d32; } #banner.warn { background: #ef6c00; } #banner.err { background: #c62828; }
+  #banner .b1 { font-size: 72px; font-weight: bold; line-height: 1.25; word-break: keep-all; }
+  #banner .b2 { font-size: 40px; margin-top: 14px; line-height: 1.35; word-break: keep-all; }
+  #banner .bsub { position: absolute; bottom: 18px; font-size: 18px; opacity: .8; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -114,6 +120,8 @@
   <button class="big c-test" style="background:#c62828;font-size:18px" onclick="runTest()">테스트 시작</button>
   <div id="testLog"></div>
 </section>
+
+<div id="banner" hidden onclick="hideBanner()"><div id="bannerMsg"></div><div class="bsub">화면을 누르면 닫힙니다</div></div>
 
 <script>
 /* ===== 서버 연결 설정 =====
@@ -305,7 +313,7 @@ function onScan(text) {
   if (text === lastText && now - lastAt < 2500) return;
   lastText = text; lastAt = now;
   text = String(text).trim().toUpperCase();
-  if (!/^[A-Z0-9]{6,12}$/.test(text)) { feedback(false); setResult('err', '학생 QR이 아닙니다.'); return; }
+  if (!/^[A-Z0-9]{6,12}$/.test(text)) { feedback(false); setResult('err', '학생 QR이 아닙니다.'); showBanner('err', '학생 QR이 아닙니다.'); return; }
 
   if (mode === 'booth' && !target.program) { feedback(false); setResult('warn', '먼저 위에서\n프로그램을 선택하세요.'); return; }
   if (mode === 'wage' && !target.task) { feedback(false); setResult('warn', '먼저 위에서\n업무를 선택하세요.'); return; }
@@ -322,7 +330,7 @@ function submit(id) {
   var timer = setTimeout(function () { if (!done) { done = true; busy = false; feedback(false); setResult('warn', '응답이 늦습니다.\n결제가 되었는지 [거래내역]을 확인하고\n필요하면 다시 스캔하세요.'); } }, 25000);
   google.script.run
     .withSuccessHandler(function (r) { if (done || my !== seq) return; done = true; clearTimeout(timer); onResult(r); })
-    .withFailureHandler(function (e) { if (done || my !== seq) return; done = true; clearTimeout(timer); busy = false; feedback(false); setResult('err', '통신 오류\n결제가 되었는지 확인 후\n다시 스캔하세요.'); })
+    .withFailureHandler(function (e) { if (done || my !== seq) return; done = true; clearTimeout(timer); busy = false; feedback(false); setResult('err', '통신 오류\n결제가 되었는지 확인 후\n다시 스캔하세요.'); showBanner('err', '통신 오류\n처리가 되었는지 확인 후\n다시 스캔하세요.'); })
     .processScan({ pin: pin, mode: mode, studentId: id, target: payload(), device: label });
 }
 function payload() {
@@ -335,6 +343,7 @@ function payload() {
 function onResult(r) {
   feedback(r.level === 'ok');
   setResult(r.level, r.msg);
+  showBanner(r.level, r.msg);
   if (r.level === 'ok' && r.undo && r.txId) { undoTx = r.txId; $('btnUndo').hidden = false; clearTimeout(undoTimer); undoTimer = setTimeout(hideUndo, 20000); }
   setTimeout(function () { busy = false; lastText = ''; }, 1800);
 }
@@ -342,7 +351,7 @@ function hideUndo() { $('btnUndo').hidden = true; undoTx = ''; clearTimeout(undo
 function undo() {
   if (!undoTx) return;
   var tx = undoTx; hideUndo(); busy = true; setResult('wait', '취소 처리 중...');
-  google.script.run.withSuccessHandler(function (r) { feedback(r.level === 'ok'); setResult(r.level, r.msg); setTimeout(function () { busy = false; lastText = ''; }, 1800); })
+  google.script.run.withSuccessHandler(function (r) { feedback(r.level === 'ok'); setResult(r.level, r.msg); showBanner(r.level, r.msg); setTimeout(function () { busy = false; lastText = ''; }, 1800); })
     .withFailureHandler(function () { busy = false; setResult('err', '통신 오류. 다시 시도하세요.'); })
     .cancelTx({ pin: pin, txId: tx });
 }
@@ -389,6 +398,18 @@ function kpSend() {
 }
 
 /* ---------- 화면/소리 ---------- */
+var bannerTimer = null;
+function showBanner(level, msg) {
+  var b = $('banner'), box = $('bannerMsg'); box.innerHTML = '';
+  String(msg).split('\n').forEach(function (line, i) {
+    if (!line) return;
+    var d = document.createElement('div'); d.className = i === 0 ? 'b1' : 'b2'; d.textContent = line; box.appendChild(d);
+  });
+  b.className = level === 'ok' ? 'ok' : (level === 'warn' ? 'warn' : 'err');
+  b.hidden = false;
+  clearTimeout(bannerTimer); bannerTimer = setTimeout(hideBanner, level === 'ok' ? 2200 : 3200);
+}
+function hideBanner() { $('banner').hidden = true; clearTimeout(bannerTimer); }
 function setResult(cls, msg) { var r = $('result'); r.className = cls || ''; r.innerText = msg; }
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 function feedback(ok) {
