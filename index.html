@@ -4,7 +4,7 @@
 <base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="html5-qrcode.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; margin: 0; background: #f4f4f9; text-align: center; -webkit-user-select: none; user-select: none; }
@@ -53,7 +53,7 @@
 </style>
 </head>
 <body>
-<header><button id="btnHome" hidden onclick="goHome()">◀ 처음</button>🪙 문화코인 <span id="modeLabel"></span></header>
+<header><button id="btnHome" hidden onclick="goHome()">◀ 처음</button>🪙 문화코인 <span id="modeLabel"></span><div id="net" style="font-size:13px;font-weight:normal;margin-top:2px"></div></header>
 
 <!-- 1. PIN -->
 <section id="vPin">
@@ -139,10 +139,12 @@ if (typeof google === 'undefined' || !google.script || !google.script.run) {
         return function () {
           var args = Array.prototype.slice.call(arguments);
           if (!API_URL) { if (fail) fail(new Error('API_URL이 비어 있습니다. Index 파일 위쪽에 웹 앱 주소를 넣으세요.')); return; }
-          fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }) })
-            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+          var tm = setTimeout(function () { if (ctl) ctl.abort(); }, fn === 'syncBatch' ? 60000 : 10000);
+          fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }), signal: ctl ? ctl.signal : undefined })
+            .then(function (r) { clearTimeout(tm); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
             .then(function (j) { if (j && j.error) throw new Error(j.error); if (ok) ok(j.result); })
-            .catch(function (e) { if (fail) fail(e); });
+            .catch(function (e) { clearTimeout(tm); if (fail) fail(e); });
         };
       } });
     }
@@ -156,17 +158,76 @@ var busy = false, lastText = '', lastAt = 0, pendingId = '', kpNo = '', kpTimer 
 function $(id) { return document.getElementById(id); }
 function show(id) { ['vPin','vMenu','vSetup','vRun','vTest'].forEach(function (v) { $(v).hidden = (v !== id); }); $('btnHome').hidden = (id === 'vPin' || id === 'vMenu'); }
 function fmt(n) { return String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+/* ---------- 오프라인 대기열 ---------- */
+// 오프라인에서도 접수할 기능 (true/false로 바꾸세요). 근로 지급은 잔액이 늘어나는 기능이라 기본 꺼둠
+var OFFLINE_MODES = { enter: true, exit: true, work: true, booth: true, super: true, wage: false };
+var QKEY = 'cc_queue', BKEY = 'cc_boot', PKEY = 'cc_pin', syncing = false, seen = {};
 
+function lsGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function newQid() { var c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = ''; for (var i = 0; i < 12; i++) s += c.charAt(Math.floor(Math.random() * c.length)); return s; }
+function queue() { return lsGet(QKEY, []); }
+function enqueue(req) { var q = queue(); q.push(req); lsSet(QKEY, q); updateNet(); }
+
+function updateNet() {
+  var n = queue().length;
+  $('net').innerText = (navigator.onLine === false ? '🟠 오프라인' : '🟢 온라인') + (n ? ' · 전송 대기 ' + n + '건' : '');
+}
+
+// 대기열을 서버로 보냄 (10건씩, 성공하면 자동으로 다음 묶음)
+function syncQueue() {
+  if (syncing || !pin || navigator.onLine === false) return;
+  var q = queue(); if (!q.length) { updateNet(); return; }
+  syncing = true;
+  var now = Date.now(), sent = {};
+  var chunk = q.slice(0, 10).map(function (it) { it.final = (now - it.ts > 6 * 3600 * 1000); sent[it.qid] = 1; return it; });
+  google.script.run.withSuccessHandler(function (r) {
+    syncing = false;
+    if (!r || !r.ok) { updateNet(); return; }
+    var finished = {};
+    r.results.forEach(function (x) { if (!x.retry) finished[x.qid] = 1; });
+    var retried = chunk.filter(function (it) { return !finished[it.qid]; });   // 입장 기록 대기 등: 뒤로 보내 다시 시도
+    var others = queue().filter(function (it) { return !sent[it.qid]; });
+    lsSet(QKEY, others.concat(retried)); updateNet();
+    if (others.length) setTimeout(syncQueue, 500);
+  }).withFailureHandler(function () { syncing = false; updateNet(); }).syncBatch(pin, chunk);
+}
+setInterval(syncQueue, 15000);
+window.addEventListener('online', function () { updateNet(); syncQueue(); });
+window.addEventListener('offline', updateNet);
+setTimeout(updateNet, 300);
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+
+function localDone(level, msg) {
+  feedback(level === 'ok'); setResult(level, msg); showBanner(level, msg);
+  setTimeout(function () { busy = false; lastText = ''; }, 1800);
+}
+function offlineText(req) {
+  if (mode === 'exit') return '퇴장 기록됨 · 코인은 연결 후 지급';
+  if (mode === 'work') return req.target.no + '번 작품 응원';
+  if (mode === 'booth') return req.target.program;
+  if (mode === 'super') return '슈퍼챗 ' + fmt(req.target.amount) + 'C';
+  return '';
+}
 /* ---------- PIN ---------- */
 function unlock() {
   try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
   pin = $('pin').value.trim();
   if (!pin) return;
   $('pinMsg').innerText = '확인 중...';
+  var typed = pin;
   google.script.run.withSuccessHandler(function (r) {
-    if (!r.ok) { $('pinMsg').innerText = r.msg; return; }
-    boot = r; $('pinMsg').innerText = ''; $('pin').value = ''; showMenu();
-  }).withFailureHandler(function (e) { $('pinMsg').innerText = '서버 연결 실패: ' + e.message; }).bootstrap(pin);
+    if (!r.ok) { $('pinMsg').innerText = r.msg; pin = ''; return; }
+    boot = r; lsSet(BKEY, r); lsSet(PKEY, typed);
+    $('pinMsg').innerText = ''; $('pin').value = ''; showMenu(); syncQueue();
+  }).withFailureHandler(function (e) {
+    var cb = lsGet(BKEY, null);
+    if (cb && lsGet(PKEY, '') === typed) {
+      boot = cb; $('pinMsg').innerText = ''; $('pin').value = ''; showMenu();   // 오프라인: 저장해 둔 정보로 시작
+    } else {
+      $('pinMsg').innerText = '서버 연결 실패: ' + e.message + (cb ? '\n(PIN이 이전에 입력한 것과 다릅니다)' : '\n(이 태블릿은 아직 온라인 로그인을 한 적이 없습니다)');
+    }
+  }).bootstrap(pin);
 }
 
 function showMenu() {
@@ -324,14 +385,38 @@ function onScan(text) {
 }
 
 function submit(id) {
-  busy = true; hideUndo(); setResult('wait', '처리 중... ⏳');
-  var my = ++seq, done = false;
+  busy = true; hideUndo();
   var label = mode + (target.booth ? ':' + target.booth : '') + (target.session ? ':' + target.session : '') + (target.task ? ':' + target.task : '') + (target.zone ? ':' + target.zone : '');
-  var timer = setTimeout(function () { if (!done) { done = true; busy = false; feedback(false); setResult('warn', '응답이 늦습니다.\n결제가 되었는지 [거래내역]을 확인하고\n필요하면 다시 스캔하세요.'); } }, 25000);
+  var req = { pin: pin, mode: mode, studentId: id, target: payload(), device: label, qid: newQid(), ts: Date.now() };
+
+  // ① 입장: 접수 먼저, 서버 전송은 뒤에서 → 팝업이 바로 뜸
+  if (mode === 'enter' && OFFLINE_MODES.enter && boot.students) {
+    var nm = boot.students[id];
+    if (!nm) { localDone('err', '등록되지 않은 QR입니다.'); return; }
+    var sk = 'enter|' + target.session + '|' + id;
+    if (seen[sk]) { localDone('warn', nm + '님은 이미 입장 처리되었습니다.'); return; }
+    seen[sk] = 1;
+    enqueue(req); syncQueue();
+    localDone('ok', nm + '님 입장 완료\n끝까지 듣고 나갈 때 꼭 퇴장 스캔!');
+    return;
+  }
+
+  // ② 그 밖: 온라인이면 서버 응답을 기다리고(8초), 안 되면 대기열로
+  function toQueue() {
+    var nm2 = boot.students && boot.students[id];
+    if (!OFFLINE_MODES[mode] || !boot.students) { localDone('err', '통신 오류\n결제가 되었는지 확인 후\n다시 스캔하세요.'); return; }
+    if (!nm2) { localDone('err', '등록되지 않은 QR입니다.'); return; }
+    enqueue(req);
+    localDone('warn', nm2 + '님 오프라인 접수\n' + offlineText(req) + '\n(연결되면 자동 처리됩니다)');
+  }
+  setResult('wait', '처리 중... ⏳');
+  if (navigator.onLine === false) { toQueue(); return; }
+  var my = ++seq, finished = false;
+  var timer = setTimeout(function () { if (finished || my !== seq) return; finished = true; toQueue(); }, 8000);
   google.script.run
-    .withSuccessHandler(function (r) { if (done || my !== seq) return; done = true; clearTimeout(timer); onResult(r); })
-    .withFailureHandler(function (e) { if (done || my !== seq) return; done = true; clearTimeout(timer); busy = false; feedback(false); setResult('err', '통신 오류\n결제가 되었는지 확인 후\n다시 스캔하세요.'); showBanner('err', '통신 오류\n처리가 되었는지 확인 후\n다시 스캔하세요.'); })
-    .processScan({ pin: pin, mode: mode, studentId: id, target: payload(), device: label });
+    .withSuccessHandler(function (r) { if (finished || my !== seq) return; finished = true; clearTimeout(timer); onResult(r); })
+    .withFailureHandler(function () { if (finished || my !== seq) return; finished = true; clearTimeout(timer); toQueue(); })
+    .processScan(req);
 }
 function payload() {
   if (mode === 'work') return { no: kpNo, zone: target.zone || '' };
