@@ -63,7 +63,7 @@
   <div id="msg"></div>
 </div>
 <div id="app">
-  <div id="top"><div id="title">SUPER CHAT</div><div id="grand"><small>TOTAL</small><span id="grandNum">0<i>C</i></span></div></div>
+  <div id="top"><div id="title">SUPER CHAT</div><div id="grand"><small id="grandLabel">TOTAL</small><span id="grandNum">0<i>C</i></span></div></div>
   <div id="main">
     <div id="rank"></div>
     <div id="feedBox"><h3>LIVE</h3><div id="feed"></div></div>
@@ -80,6 +80,8 @@
 /* 서버 주소 (index.html 의 API_URL 과 같은 주소) */
 var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
 var POLL_MS = 2500;
+var VIEW = /[?&]view=work/.test(location.search) ? 'work' : 'super';   // board.html?view=work → 작품 응원 순위
+var FN = VIEW === 'work' ? 'workBoard' : 'board';
 
 var pin = '', teams = {}, order = [], seen = {}, firstLoad = true, queue = [], showing = false, sound = false, actx = null, rows = {}, shown = {}, grandShown = 0, failN = 0;
 function $(id) { return document.getElementById(id); }
@@ -95,7 +97,7 @@ function start() {
   pin = $('pin').value.trim(); if (!pin) return;
   try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
   $('msg').innerText = '확인 중...';
-  api('board', [pin]).then(function (r) {
+  api(FN, [pin]).then(function (r) {
     if (!r.ok) { $('msg').innerText = r.msg; return; }
     try { sessionStorage.setItem('boardPin', pin); } catch (e) {}
     $('login').hidden = true; apply(r); setInterval(poll, POLL_MS);
@@ -103,7 +105,7 @@ function start() {
   }).catch(function (e) { $('msg').innerText = '서버 연결 실패: ' + e.message; });
 }
 function poll() {
-  api('board', [pin]).then(function (r) { failN = 0; $('conn').innerText = ''; if (r.ok) apply(r); })
+  api(FN, [pin]).then(function (r) { failN = 0; $('conn').innerText = ''; if (r.ok) apply(r); })
     .catch(function () { if (++failN >= 2) $('conn').innerText = '⚠ 연결 끊김 — 다시 연결 중...'; });
 }
 
@@ -113,6 +115,7 @@ function apply(r) {
   var list = r.teams.slice().sort(function (a, b) { return b.total - a.total || Number(a.no) - Number(b.no); });
   layout(list);
   tween($('grandNum'), grandShown, r.grand, function (v) { return fmt(v) + '<i>C</i>'; }); grandShown = r.grand;
+  $('grandLabel').innerText = VIEW === 'work' ? 'TOTAL 응원' : 'TOTAL';
   // 새 후원 → 알림 대기열
   r.recent.forEach(function (d) {
     if (seen[d.id]) return; seen[d.id] = 1;
@@ -126,6 +129,8 @@ function layout(list) {
   var box = $('rank'), n = Math.max(list.length, 1), h = box.clientHeight, rh = Math.min(h / n, h / 4);
   var fs = Math.max(14, Math.min(rh * 0.5, 64));
   box.style.setProperty('--fs', fs + 'px');
+  var keep = {}; list.forEach(function (t) { keep[t.no] = 1; });
+  Object.keys(rows).forEach(function (k) { if (!keep[k]) { box.removeChild(rows[k]); delete rows[k]; delete shown[k]; } });
   var max = Math.max.apply(null, list.map(function (t) { return t.total; }).concat([1]));
   list.forEach(function (t, i) {
     var row = rows[t.no];
@@ -160,7 +165,7 @@ function tween(el, from, to, f) {
 function addFeed(d, quiet) {
   var el = document.createElement('div'); el.className = 'fi';
   el.innerHTML = '<b></b>님이 <span></span>에 <em></em>';
-  el.querySelector('b').innerText = d.who; el.querySelector('span').innerText = tnOf(d.team) || (d.team + '번');
+  el.querySelector('b').innerText = d.who; el.querySelector('span').innerText = d.tname || tnOf(d.team) || (d.team + '번');
   el.querySelector('em').innerText = fmt(d.amt) + 'C';
   if (quiet) el.style.animation = 'none';
   var f = $('feed'); f.insertBefore(el, f.firstChild);
@@ -172,11 +177,11 @@ function tnOf(no) { var r = rows[no]; return r ? r.querySelector('.name span').i
 function runQueue() {
   if (showing || !queue.length) return;
   showing = true;
-  var d = queue.shift(), fast = queue.length >= 3, big = d.amt >= 500;
+  var d = queue.shift(), fast = queue.length >= 3, big = d.amt >= (VIEW === 'work' ? 300 : 500);
   var p = document.createElement('div'); p.className = 'pop' + (big ? ' big' : '');
   p.innerHTML = '<div class="p1"></div><div class="p2"></div>';
-  p.querySelector('.p1').innerText = '💸 ' + fmt(d.amt) + 'C 후원!';
-  p.querySelector('.p2').innerText = d.who + '님 → ' + (tnOf(d.team) || (d.team + '번'));
+  p.querySelector('.p1').innerText = (VIEW === 'work' ? '👏 ' : '💸 ') + fmt(d.amt) + (VIEW === 'work' ? 'C 응원!' : 'C 후원!');
+  p.querySelector('.p2').innerText = d.who + '님 → ' + (d.tname || tnOf(d.team) || (d.team + '번'));
   if (fast) p.style.animationDuration = '1s';
   $('pop').innerHTML = ''; $('pop').appendChild(p);
   addFeed(d); beep(d.amt);
