@@ -407,7 +407,7 @@ function showBanner(level, msg) {
   });
   b.className = level === 'ok' ? 'ok' : (level === 'warn' ? 'warn' : 'err');
   b.hidden = false;
-  clearTimeout(bannerTimer); bannerTimer = setTimeout(hideBanner, level === 'ok' ? 2200 : 3200);
+  clearTimeout(bannerTimer); bannerTimer = setTimeout(hideBanner, level === 'ok' ? 500 : 500);
 }
 function hideBanner() { $('banner').hidden = true; clearTimeout(bannerTimer); }
 function setResult(cls, msg) { var r = $('result'); r.className = cls || ''; r.innerText = msg; }
