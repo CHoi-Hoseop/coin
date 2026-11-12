@@ -23,6 +23,7 @@
   .chip small { display: block; font-size: 14px; opacity: .85; }
   #reader { width: 100%; max-width: 960px; margin: 6px auto; border-radius: 14px; overflow: hidden; border: 3px solid #333; background: #000; min-height: 55vh; }
   #reader video { width: 100% !important; height: auto !important; }
+  #reader.mirror video { transform: scaleX(-1); }
   #cfg { font-size: 15px; color: #333; margin-bottom: 4px; }
   #vRun { padding: 8px; }
   #result { font-size: 28px; font-weight: bold; margin: 10px auto; padding: 18px; background: #fff; border-radius: 12px; max-width: 480px; white-space: pre-line; box-shadow: 0 2px 5px rgba(0,0,0,.1); color: #333; }
@@ -94,6 +95,7 @@
   <div id="reader"></div>
   <div style="margin:4px">
     <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="flipCam()">📷 카메라 전환</button>
+    <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="toggleMirror()">↔ 좌우반전</button>
     <button id="btnPhoto" class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="$('camFile').click()">📸 사진 찍어서 스캔</button>
     <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="scanBeep()">🔊 소리 테스트</button>
     <input id="camFile" type="file" accept="image/*" capture="environment" hidden onchange="photoScan(this)">
@@ -288,7 +290,7 @@ function startCam() {
   try {
     qr = new Html5Qrcode('reader');
     qr.start({ facingMode: facing }, { fps: 10, aspectRatio: 1.333, qrbox: function (w, h) { var m = Math.min(w, h), q = Math.floor(m * 0.72); return { width: q, height: q }; } }, onScan, function () {})
-      .then(function () { setResult('', '학생 QR을 카메라에 보여주세요.'); })
+      .then(function () { applyMirror(); setResult('', '학생 QR을 카메라에 보여주세요.'); })
       .catch(function (e) { qr = null; camFail(e); });
   } catch (e) { qr = null; camFail(e); }
 }
@@ -313,7 +315,14 @@ function photoScan(inp) {
     .catch(function () { feedback(false); setResult('err', 'QR을 읽지 못했습니다.\nQR을 화면에 크게 담아 다시 찍어주세요.'); });
 }
 function stopCam() { if (qr) { var q = qr; qr = null; q.stop().then(function () { q.clear(); }).catch(function () {}); } }
-function flipCam() { facing = (facing === 'environment') ? 'user' : 'environment'; stopCam(); setTimeout(startCam, 400); }
+// 좌우반전(거울모드): 화면 표시만 뒤집습니다. QR 인식에는 영향 없음. 전면 카메라는 기본 반전, 선택은 기기에 저장됩니다.
+function mirrorOn() {
+  var v = null; try { v = localStorage.getItem('mirror'); } catch (e) {}
+  return v === null ? facing === 'user' : v === '1';
+}
+function applyMirror() { var r = document.getElementById('reader'); if (r) r.classList.toggle('mirror', mirrorOn()); }
+function toggleMirror() { try { localStorage.setItem('mirror', mirrorOn() ? '0' : '1'); } catch (e) {} applyMirror(); }
+function flipCam() { facing = (facing === 'environment') ? 'user' : 'environment'; try { localStorage.removeItem('mirror'); } catch (e) {} applyMirror(); stopCam(); setTimeout(startCam, 400); }
 
 /* ---------- 스캔 ---------- */
 function onScan(text) {
