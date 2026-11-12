@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>슈퍼챗 전광판</title>
+<style>
+  :root { --gold: #ffd54a; --hot: #ff2d6f; --bg: #07060d; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: radial-gradient(1200px 700px at 50% -10%, #2a0f3f 0%, var(--bg) 60%); color: #fff; font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; overflow: hidden; -webkit-user-select: none; user-select: none; }
+  #app { display: grid; grid-template-rows: auto 1fr; height: 100vh; padding: 2.2vh 3vw 2vh; gap: 1.6vh; }
+  #top { display: flex; align-items: flex-end; justify-content: space-between; gap: 2vw; }
+  #title { font-size: clamp(22px, 4.2vh, 56px); font-weight: 900; letter-spacing: .04em; background: linear-gradient(90deg, #fff, var(--gold) 60%, var(--hot)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #grand { text-align: right; line-height: 1; }
+  #grand small { display: block; font-size: clamp(12px, 2vh, 22px); color: #b9aedb; letter-spacing: .3em; margin-bottom: .4vh; }
+  #grandNum { font-size: clamp(34px, 8vh, 110px); font-weight: 900; color: var(--gold); text-shadow: 0 0 24px rgba(255,213,74,.55); font-variant-numeric: tabular-nums; }
+  #grandNum i { font-style: normal; font-size: .45em; margin-left: .2em; color: #fff; }
+  #main { display: grid; grid-template-columns: 1fr 26vw; gap: 2vw; min-height: 0; }
+  #rank { position: relative; min-height: 0; }
+  .row { position: absolute; left: 0; right: 0; display: flex; align-items: center; gap: 1.2vw; transition: top .8s cubic-bezier(.2,.8,.2,1); }
+  .pos { width: 2.2em; text-align: center; font-weight: 900; font-size: var(--fs); color: #8a7fb0; }
+  .row.r1 .pos { color: var(--gold); text-shadow: 0 0 18px rgba(255,213,74,.8); }
+  .row.r2 .pos { color: #e0e6f2; } .row.r3 .pos { color: #e0a470; }
+  .barwrap { flex: 1; position: relative; height: 78%; background: rgba(255,255,255,.06); border-radius: 999px; overflow: hidden; }
+  .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 999px; background: linear-gradient(90deg, #6a1bff, var(--hot) 70%, #ff9a3c); transition: width .9s cubic-bezier(.2,.8,.2,1); box-shadow: 0 0 22px rgba(255,45,111,.55); }
+  .row.r1 .bar { background: linear-gradient(90deg, #ff9a3c, var(--gold)); box-shadow: 0 0 30px rgba(255,213,74,.7); }
+  .name { position: absolute; left: 1.4vw; top: 0; bottom: 0; display: flex; align-items: center; font-size: calc(var(--fs) * .78); font-weight: 800; text-shadow: 0 2px 6px rgba(0,0,0,.6); white-space: nowrap; overflow: hidden; max-width: 70%; }
+  .name b { color: var(--gold); margin-right: .5em; font-weight: 900; }
+  .val { width: 7.2em; text-align: right; font-size: var(--fs); font-weight: 900; font-variant-numeric: tabular-nums; }
+  .val i { font-style: normal; font-size: .55em; color: #b9aedb; margin-left: .15em; }
+  .row.bump .val { animation: bump .5s; }
+  @keyframes bump { 30% { transform: scale(1.18); color: var(--gold); } }
+  #feedBox { display: flex; flex-direction: column; min-height: 0; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 2vh; padding: 1.4vh 1vw; }
+  #feedBox h3 { margin: 0 0 1vh; font-size: clamp(14px, 2.2vh, 26px); color: #b9aedb; letter-spacing: .25em; }
+  #feed { flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 1vh; }
+  .fi { padding: 1.1vh 1vw; border-radius: 1.4vh; background: rgba(255,255,255,.08); font-size: clamp(14px, 2.5vh, 30px); animation: slide .5s; line-height: 1.25; }
+  .fi b { color: var(--gold); } .fi em { font-style: normal; color: var(--hot); font-weight: 900; }
+  @keyframes slide { from { transform: translateX(40px); opacity: 0; } }
+  #pop { position: fixed; left: 0; right: 0; top: 30%; z-index: 20; display: flex; justify-content: center; pointer-events: none; }
+  .pop { padding: 2vh 4vw; border-radius: 4vh; background: linear-gradient(90deg, #6a1bff, var(--hot)); box-shadow: 0 0 80px rgba(255,45,111,.8); text-align: center; animation: pop 2.4s forwards; }
+  .pop .p1 { font-size: clamp(26px, 8vh, 110px); font-weight: 900; line-height: 1.1; }
+  .pop .p2 { font-size: clamp(16px, 3.6vh, 48px); margin-top: .6vh; opacity: .95; }
+  .pop.big { background: linear-gradient(90deg, #ff9a3c, var(--gold)); color: #2b1300; box-shadow: 0 0 120px rgba(255,213,74,.9); }
+  @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 12% { transform: scale(1.12); opacity: 1; } 22% { transform: scale(1); } 85% { opacity: 1; } 100% { transform: scale(1.04); opacity: 0; } }
+  #login { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+  #login input { font-size: 30px; padding: 12px 18px; width: 280px; text-align: center; border-radius: 12px; border: 2px solid #6a1bff; background: #14102a; color: #fff; letter-spacing: 6px; }
+  #login button, #tools button { font-size: 20px; padding: 12px 28px; border: 0; border-radius: 12px; background: linear-gradient(90deg, #6a1bff, var(--hot)); color: #fff; font-weight: 800; }
+  #login[hidden] { display: none; }
+  #msg { color: #ff8aa8; min-height: 1.4em; }
+  #tools { position: fixed; right: 10px; bottom: 8px; z-index: 30; display: flex; gap: 8px; opacity: 0; transition: opacity .3s; }
+  #tools:hover, body.showtools #tools { opacity: 1; }
+  #tools button { font-size: 14px; padding: 8px 14px; background: #2a2450; }
+  #conn { position: fixed; left: 10px; bottom: 8px; z-index: 30; font-size: 14px; color: #ff8aa8; }
+</style>
+</head>
+<body>
+<div id="login">
+  <div style="font-size:34px;font-weight:900;color:var(--gold)">🎤 슈퍼챗 전광판</div>
+  <div style="color:#b9aedb">운영 PIN을 입력하세요</div>
+  <input id="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')start()">
+  <button onclick="start()">시작</button>
+  <div id="msg"></div>
+</div>
+<div id="app">
+  <div id="top"><div id="title">SUPER CHAT</div><div id="grand"><small>TOTAL</small><span id="grandNum">0<i>C</i></span></div></div>
+  <div id="main">
+    <div id="rank"></div>
+    <div id="feedBox"><h3>LIVE</h3><div id="feed"></div></div>
+  </div>
+</div>
+<div id="pop"></div>
+<div id="conn"></div>
+<div id="tools">
+  <button onclick="toggleSound()" id="btnSnd">🔇 효과음 켜기</button>
+  <button onclick="toggleFull()">⛶ 전체화면</button>
+</div>
+
+<script>
+/* 서버 주소 (index.html 의 API_URL 과 같은 주소) */
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
+var POLL_MS = 2500;
+
+var pin = '', teams = {}, order = [], seen = {}, firstLoad = true, queue = [], showing = false, sound = false, actx = null, rows = {}, shown = {}, grandShown = 0, failN = 0;
+function $(id) { return document.getElementById(id); }
+function fmt(n) { return String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+function api(fn, args) {
+  return fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }) })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (j) { if (j && j.error) throw new Error(j.error); return j.result; });
+}
+
+function start() {
+  pin = $('pin').value.trim(); if (!pin) return;
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  $('msg').innerText = '확인 중...';
+  api('board', [pin]).then(function (r) {
+    if (!r.ok) { $('msg').innerText = r.msg; return; }
+    try { sessionStorage.setItem('boardPin', pin); } catch (e) {}
+    $('login').hidden = true; apply(r); setInterval(poll, POLL_MS);
+    document.body.classList.add('showtools'); setTimeout(function () { document.body.classList.remove('showtools'); }, 5000);
+  }).catch(function (e) { $('msg').innerText = '서버 연결 실패: ' + e.message; });
+}
+function poll() {
+  api('board', [pin]).then(function (r) { failN = 0; $('conn').innerText = ''; if (r.ok) apply(r); })
+    .catch(function () { if (++failN >= 2) $('conn').innerText = '⚠ 연결 끊김 — 다시 연결 중...'; });
+}
+
+function apply(r) {
+  $('title').innerText = r.title || '슈퍼챗';
+  // 순위 계산
+  var list = r.teams.slice().sort(function (a, b) { return b.total - a.total || Number(a.no) - Number(b.no); });
+  layout(list);
+  tween($('grandNum'), grandShown, r.grand, function (v) { return fmt(v) + '<i>C</i>'; }); grandShown = r.grand;
+  // 새 후원 → 알림 대기열
+  r.recent.forEach(function (d) {
+    if (seen[d.id]) return; seen[d.id] = 1;
+    if (!firstLoad) queue.push(d);
+  });
+  if (firstLoad) { r.recent.slice(-8).forEach(function (d) { addFeed(d, true); }); firstLoad = false; }
+  runQueue();
+}
+
+function layout(list) {
+  var box = $('rank'), n = Math.max(list.length, 1), h = box.clientHeight, rh = Math.min(h / n, h / 4);
+  var fs = Math.max(14, Math.min(rh * 0.5, 64));
+  box.style.setProperty('--fs', fs + 'px');
+  var max = Math.max.apply(null, list.map(function (t) { return t.total; }).concat([1]));
+  list.forEach(function (t, i) {
+    var row = rows[t.no];
+    if (!row) {
+      row = rows[t.no] = document.createElement('div'); row.className = 'row';
+      row.innerHTML = '<div class="pos"></div><div class="barwrap"><div class="bar"></div><div class="name"><span></span></div></div><div class="val">0<i>C</i></div>';
+      box.appendChild(row); shown[t.no] = 0;
+    }
+    row.style.height = rh + 'px'; row.style.top = (i * rh) + 'px';
+    row.className = 'row' + (i < 3 ? ' r' + (i + 1) : '');
+    row.querySelector('.pos').innerText = i + 1;
+    row.querySelector('.name span').innerText = t.name;
+    row.querySelector('.bar').style.width = (t.total > 0 ? Math.max(4, t.total / max * 100) : 0) + '%';
+    var val = row.querySelector('.val');
+    if (shown[t.no] !== t.total) {
+      if (shown[t.no] < t.total) { row.classList.add('bump'); setTimeout(function () { row.classList.remove('bump'); }, 600); }
+      tween(val, shown[t.no], t.total, function (v) { return fmt(v) + '<i>C</i>'; }); shown[t.no] = t.total;
+    }
+  });
+}
+
+function tween(el, from, to, f) {
+  var t0 = performance.now(), dur = 900;
+  if (el._raf) cancelAnimationFrame(el._raf);
+  (function step(t) {
+    var k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.innerHTML = f(from + (to - from) * e);
+    if (k < 1) el._raf = requestAnimationFrame(step);
+  })(t0);
+}
+
+function addFeed(d, quiet) {
+  var el = document.createElement('div'); el.className = 'fi';
+  el.innerHTML = '<b></b>님이 <span></span>에 <em></em>';
+  el.querySelector('b').innerText = d.who; el.querySelector('span').innerText = tnOf(d.team) || (d.team + '번');
+  el.querySelector('em').innerText = fmt(d.amt) + 'C';
+  if (quiet) el.style.animation = 'none';
+  var f = $('feed'); f.insertBefore(el, f.firstChild);
+  while (f.children.length > 9) f.removeChild(f.lastChild);
+}
+function tnOf(no) { var r = rows[no]; return r ? r.querySelector('.name span').innerText : ''; }
+
+// 후원 팝업: 밀리면 빠르게 넘김
+function runQueue() {
+  if (showing || !queue.length) return;
+  showing = true;
+  var d = queue.shift(), fast = queue.length >= 3, big = d.amt >= 500;
+  var p = document.createElement('div'); p.className = 'pop' + (big ? ' big' : '');
+  p.innerHTML = '<div class="p1"></div><div class="p2"></div>';
+  p.querySelector('.p1').innerText = '💸 ' + fmt(d.amt) + 'C 후원!';
+  p.querySelector('.p2').innerText = d.who + '님 → ' + (tnOf(d.team) || (d.team + '번'));
+  if (fast) p.style.animationDuration = '1s';
+  $('pop').innerHTML = ''; $('pop').appendChild(p);
+  addFeed(d); beep(d.amt);
+  setTimeout(function () { showing = false; runQueue(); }, fast ? 1000 : (big ? 2600 : 2000));
+}
+
+function beep(amt) {
+  if (!sound || !actx) return;
+  var big = amt >= 500, t = actx.currentTime, notes = big ? [784, 988, 1175, 1568] : [988, 1319];
+  notes.forEach(function (f, i) {
+    var o = actx.createOscillator(), g = actx.createGain(); o.type = 'triangle'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t + i * .09); g.gain.exponentialRampToValueAtTime(0.35, t + i * .09 + .02); g.gain.exponentialRampToValueAtTime(0.0001, t + i * .09 + .25);
+    o.connect(g); g.connect(actx.destination); o.start(t + i * .09); o.stop(t + i * .09 + .3);
+  });
+}
+function toggleSound() {
+  sound = !sound; $('btnSnd').innerText = sound ? '🔊 효과음 끄기' : '🔇 효과음 켜기';
+  if (sound && actx) { if (actx.state === 'suspended') actx.resume(); beep(500); }
+}
+function toggleFull() {
+  var d = document, e = d.documentElement;
+  if (!d.fullscreenElement) (e.requestFullscreen || e.webkitRequestFullscreen || function () {}).call(e); else (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+}
+document.addEventListener('keydown', function (e) { if (e.key === 'f' || e.key === 'F') toggleFull(); if (e.key === 's' || e.key === 'S') toggleSound(); });
+window.addEventListener('resize', function () { if (order) poll(); });
+try { var sp = sessionStorage.getItem('boardPin'); if (sp) { $('pin').value = sp; setTimeout(start, 50); } } catch (e) {}
+</script>
+</body>
+</html>
