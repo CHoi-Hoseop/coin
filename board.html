@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>슈퍼챗 전광판</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root { --gold: #ffd54a; --hot: #ff2d6f; --bg: #07060d; --vio: #6a1bff; }
   * { box-sizing: border-box; }
@@ -99,6 +100,20 @@
   #wRest { font-size: clamp(16px, 3.2vh, 44px); color: #cfc6ee; margin-top: 2vh; }
   #hint { position: fixed; left: 0; right: 0; bottom: 2.4vh; text-align: center; z-index: 22; font-size: clamp(14px, 2.4vh, 28px); color: #b9aedb; animation: blink 1.6s infinite; display: none; }
 
+  /* ----- 후원 접속 QR ----- */
+  #qrMini { position: fixed; left: 2vw; bottom: 3vh; z-index: 12; display: none; align-items: center; gap: 1vw; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 2vh; padding: 1vh 1.2vw 1vh 1vh; }
+  body[data-mode=stage] #qrMini.has { display: flex; }
+  #qrMini .qb, #qrBig .qb { background: #fff; padding: 1vh; border-radius: 1.4vh; line-height: 0; } #qrMini .qb img { width: 17vh; height: 17vh; } #qrBig .qb img { width: 46vh; height: 46vh; }
+  .qb canvas { display: none !important; } .qb img { display: block; }
+  #qrMini .qt { font-size: clamp(14px, 2.6vh, 32px); font-weight: 800; line-height: 1.3; } #qrMini .qt small { display: block; color: #b9aedb; font-weight: 600; font-size: .7em; }
+  #qrBig { position: fixed; inset: 0; z-index: 19; background: radial-gradient(circle at 50% 40%, rgba(106,27,255,.5), rgba(7,6,13,.97) 70%); display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2vh; }
+  #qrBig.on { display: flex; animation: fin .35s; } @keyframes fin { from { opacity: 0; } }
+  #qrBig .t1 { font-size: clamp(22px, 6vh, 80px); font-weight: 900; color: var(--gold); text-shadow: 0 0 30px rgba(255,213,74,.5); }
+  #qrBig .t2 { font-size: clamp(16px, 3.6vh, 44px); color: #e8e0ff; } #qrBig .t3 { font-size: clamp(14px, 2.6vh, 32px); color: #b9aedb; }
+  #openPill { display: none; margin-left: 1.2vw; padding: .5vh 1.2vw; border-radius: 99px; font-size: clamp(12px, 2.2vh, 26px); font-weight: 800; vertical-align: middle; -webkit-text-fill-color: initial; }
+  #openPill.on { background: #123d2a; color: #6dffb0; } #openPill.off { background: #3d1220; color: #ff8aa8; }
+  body[data-mode=stage] #openPill, body[data-mode=all] #openPill { display: inline-block; }
+
   /* ----- 로그인 / 조작판 ----- */
   #login { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
   #login[hidden], [hidden] { display: none !important; }
@@ -125,7 +140,7 @@
 </div>
 
 <div id="app">
-  <div id="top"><div id="title">SUPER CHAT</div><div id="grand"><small id="grandLabel">TOTAL</small><span id="grandNum">0<i>C</i></span></div></div>
+  <div id="top"><div><span id="title">SUPER CHAT</span><span id="openPill" class="off">후원 확인 중</span></div><div id="grand"><small id="grandLabel">TOTAL</small><span id="grandNum">0<i>C</i></span></div></div>
   <div id="main">
     <div id="rank"></div>
     <div id="stageV">
@@ -139,6 +154,8 @@
   </div>
 </div>
 
+<div id="qrMini"><div class="qb" id="qrMiniBox"></div><div class="qt">📱 폰으로 후원하기<small>QR을 찍고 내 학생 카드 등록</small></div></div>
+<div id="qrBig" onclick="hideQr()"><div class="t1">📱 슈퍼챗 후원 참여</div><div class="qb" id="qrBigBox"></div><div class="t2" id="qrTeam"></div><div class="t3">휴대폰 카메라로 QR을 찍고 → 내 학생 QR 카드를 등록하면 바로 후원할 수 있어요</div></div>
 <div id="cd"><div id="cdLabel">슈퍼챗 마감까지</div><div id="cdNum">10</div><div id="cdSub"></div></div>
 <div id="win"><div id="wSmall"></div><div id="wCrown">👑</div><div id="wMain"></div><div id="wTotal"></div><div id="wRest"></div></div>
 <div id="hint"></div>
@@ -154,10 +171,11 @@
     <div class="r"><button onclick="stepTeam(-1)">◀</button><select id="teamSel" onchange="pickTeam(this.value)"></select><button onclick="stepTeam(1)">▶</button></div>
     <div class="r"><select id="cdSec" style="flex:0 0 auto"><option>5</option><option selected>10</option><option>15</option><option>20</option></select><span style="color:#cfc6ee">초</span><button class="go" onclick="startCountdown()">⏱ 마감 카운트다운</button></div>
     <div class="r"><label><input type="checkbox" id="autoClose" checked> 0초가 되면 슈퍼챗 자동 마감</label></div>
-    <div class="r"><button onclick="toTally()">🏁 결과 집계</button><button onclick="toWinner()">🏆 우승 공개</button><button onclick="reopen()">🔓 슈퍼챗 다시 열기</button></div>
+    <div class="r"><button onclick="toTally()">🏁 결과 집계</button><button onclick="toWinner()">🏆 우승 공개</button><button onclick="reopen()">🔓 후원 열기</button><button onclick="closeSuper()">🔒 후원 닫기</button></div>
+    <div class="r"><button onclick="showQr(0)">📱 후원 QR 크게 (Q)</button><button onclick="newKey()">🔑 QR 재발급</button></div>
   </div>
   <div class="r"><button id="btnSnd" onclick="toggleSound()">🔊 효과음 끄기</button><button onclick="toggleFull()">⛶ 전체화면</button><button onclick="testFx()">✨ 팝업 시험</button></div>
-  <div class="k" id="ctlKeys">단축키 · ←/→ 팀 바꾸기 · 1 팀 집중 · 2 전체 순위 · <b>스페이스 = 다음 단계</b>(카운트다운 → 결과 집계 → 우승 공개) · Esc 처음으로 · S 소리 · F 전체화면</div>
+  <div class="k" id="ctlKeys">단축키 · ←/→ 팀 바꾸기 · Q 후원 QR · 1 팀 집중 · 2 전체 순위 · <b>스페이스 = 다음 단계</b>(카운트다운 → 결과 집계 → 우승 공개) · Esc 처음으로 · S 소리 · F 전체화면</div>
 </div>
 
 <script>
@@ -166,8 +184,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiR
 var POLL_MS = 2500;
 var VIEW = /[?&]view=work/.test(location.search) ? 'work' : 'super';   // board.html?view=work → 작품 응원 순위
 var FN = VIEW === 'work' ? 'workBoard' : 'board';
-var TIER2 = 300, TIER3 = 500, TIER4 = 1000;    // 팝업 단계 기준 금액 (작품 보기는 아래에서 낮춤)
-if (VIEW === 'work') { TIER2 = 200; TIER3 = 300; TIER4 = 500; }
+var TIERS = VIEW === 'work' ? [100, 200, 300, 500] : [100, 300, 500, 1000];   // 팝업 4단계 기준 금액 (슈퍼챗은 설정 시트 '슈퍼챗연출기준'에서 받아옴)
 
 var pin = '', data = null, mode = (VIEW === 'work' ? 'all' : 'stage'), stageNo = null;
 var seen = {}, firstLoad = true, queue = [], showing = false, sound = true, actx = null, rows = {}, shown = {};
@@ -196,6 +213,7 @@ function start() {
     $('login').hidden = true;
     if (VIEW === 'work') $('ctlSuper').hidden = true, $('ctlKeys').hidden = true;
     apply(r); pollT = setInterval(poll, POLL_MS); showCtl(7000);
+    if (VIEW !== 'work') initJoin();
   }).catch(function (e) { $('msg').innerText = '서버 연결 실패: ' + e.message; });
 }
 function poll() {
@@ -210,6 +228,8 @@ function teamOf(no) { for (var i = 0; i < data.teams.length; i++) if (data.teams
 function apply(r) {
   data = r;
   $('title').innerText = r.title || '슈퍼챗';
+  if (r.tiers && r.tiers.length === 4) TIERS = r.tiers;
+  if (VIEW !== 'work') { var op = $('openPill'); op.className = r.superOpen ? 'on' : 'off'; op.innerText = r.superOpen ? '● 후원 열림' : '후원 닫힘'; }
   fillTeamSel();
   // 새 후원 → 알림 대기열 (지금 화면에 해당하는 것만 팝업)
   r.recent.forEach(function (d) {
@@ -217,7 +237,7 @@ function apply(r) {
     if (firstLoad) return;
     if (mode === 'all' || (mode === 'stage' && d.team === stageNo)) queue.push(d);
   });
-  if (firstLoad) { firstLoad = false; if (stageNo === null) stageNo = defaultTeam(); }
+  if (firstLoad) { firstLoad = false; if (stageNo === null) { stageNo = (VIEW !== 'work' && r.stage) ? String(r.stage) : defaultTeam(); if (VIEW !== 'work' && !r.stage && stageNo) setStageSrv(stageNo); } }
   render();
   runQueue();
 }
@@ -334,6 +354,7 @@ function pickTeam(no) {
   $('feed').innerHTML = ''; feedQuiet = true; seenSyncAll();
   if (mode !== 'stage') setMode('stage'); else render();
   fanfareMini();
+  if (VIEW !== 'work') { setStageSrv(stageNo); showQr(12); }
 }
 function stepTeam(d) {
   var l = teamsByNo(); if (!l.length) return;
@@ -341,10 +362,37 @@ function stepTeam(d) {
   i = (i + d + l.length) % l.length; $('teamSel').value = l[i].no; pickTeam(l[i].no);
 }
 
+/* ================= 폰 후원 QR / 현재 공연 팀 ================= */
+var joinUrl = '', joinKey = '', qrTimer = null;
+function initJoin() {
+  api('superInfo', [pin]).then(function (r) {
+    if (!r || !r.ok) { toast((r && r.msg) || '후원 접속키를 가져오지 못했어요'); return; }
+    buildQr(r.key); showQr(0);      // 공연 시작 전: 큰 QR을 먼저 보여줌 (아무 곳이나 누르면 닫힘)
+  }).catch(function () { toast('⚠ 후원 접속키를 가져오지 못했어요 (Code.gs 새 버전 배포 확인)'); });
+}
+function buildQr(key) {
+  joinKey = key; joinUrl = new URL('super.html', location.href).href.split('?')[0] + '?k=' + key;
+  ['qrMiniBox', 'qrBigBox'].forEach(function (id) {
+    var el = $(id); el.innerHTML = '';
+    try { new QRCode(el, { text: joinUrl, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M }); } catch (e) { el.style.cssText = 'font-size:14px;color:#000;max-width:40vh;word-break:break-all;line-height:1.3'; el.innerText = joinUrl; }
+  });
+  $('qrMini').classList.add('has');
+}
+function showQr(sec) {
+  if (!joinUrl) return;
+  var t = data && teamOf(stageNo); $('qrTeam').innerText = t ? ('지금 · 다음 공연  ' + t.name) : '';
+  $('qrBig').classList.add('on'); clearTimeout(qrTimer);
+  if (sec) qrTimer = setTimeout(hideQr, sec * 1000);
+}
+function hideQr() { $('qrBig').classList.remove('on'); clearTimeout(qrTimer); }
+function setStageSrv(no) { api('superStage', [pin, no]).then(function (r) { if (r && r.ok) toast('공연 팀: ' + r.stage.name + ' (폰 후원이 이 팀으로 연결됩니다)'); else toast((r && r.msg) || '팀 설정 실패'); }).catch(function () { toast('⚠ 공연 팀을 서버에 저장하지 못했어요'); }); }
+function closeSuper() { api('superToggle', [pin, false]).then(function (r) { toast(r && r.ok ? '후원을 닫았습니다' : ((r && r.msg) || '실패')); poll(); }).catch(function () { toast('연결 실패'); }); }
+function newKey() { if (!confirm('QR을 새로 만들면 지금까지 찍은 폰은 다시 QR을 찍어야 합니다. 계속할까요?')) return; api('superNewKey', [pin]).then(function (r) { if (r && r.ok) { buildQr(r.key); showQr(0); toast('새 QR을 만들었습니다'); } }); }
+
 /* ================= 마감 카운트다운 → 결과 집계 → 우승 공개 ================= */
 function startCountdown() {
   if (VIEW === 'work' || !data) return;
-  clearTimers(); mode = 'count'; finale = 1; document.body.dataset.mode = 'count'; queue = []; showing = false; $('pop').innerHTML = '';
+  hideQr(); clearTimers(); mode = 'count'; finale = 1; document.body.dataset.mode = 'count'; queue = []; showing = false; $('pop').innerHTML = '';
   var sec = parseInt($('cdSec').value, 10) || 10, cd = $('cd'), num = $('cdNum');
   $('cdLabel').innerText = '슈퍼챗 마감까지'; $('cdSub').innerText = '마지막 후원 기회!'; num.className = ''; cd.classList.add('on');
   (function step(n) {
@@ -362,7 +410,7 @@ function closeNow() {
   later(function () { $('cdSub').innerText = '최종 집계 중...'; }, 1800);
   later(function () { poll().then(function () { later(toTally, 400); }); }, 3200);
 }
-function reopen() { api('superToggle', [pin, true]).then(function (r) { toast(r && r.ok ? '슈퍼챗을 다시 열었습니다' : ((r && r.msg) || '실패')); }).catch(function () { toast('연결 실패'); }); }
+function reopen() { api('superToggle', [pin, true]).then(function (r) { toast(r && r.ok ? '후원을 열었습니다' : ((r && r.msg) || '실패')); poll(); }).catch(function () { toast('연결 실패'); }); }
 
 function toTally() {
   if (VIEW === 'work' || !data) return;
@@ -399,7 +447,7 @@ function toWinner() {
 function hint(t) { var h = $('hint'); h.innerText = t; h.style.display = t ? 'block' : 'none'; }
 
 /* ================= 후원 팝업 (금액 단계별 연출) ================= */
-function tierOf(a) { return a >= TIER4 ? 4 : a >= TIER3 ? 3 : a >= TIER2 ? 2 : 1; }
+function tierOf(a) { return a >= TIERS[3] ? 4 : a >= TIERS[2] ? 3 : a >= TIERS[1] ? 2 : 1; }
 function runQueue() {
   if (showing || !queue.length) return;
   var d = queue.shift(), tr = tierOf(d.amt), fast = queue.length >= 3, dur = ({ 1: 1.9, 2: 2.5, 3: 3.2, 4: 4.2 })[tr] * (fast ? .5 : 1);
@@ -426,7 +474,7 @@ function runQueue() {
 }
 function testFx() { // 조작판의 '팝업 시험': 금액별 연출을 차례로 보여줌 (실제 기록에는 남지 않음)
   var tn = data && data.teams.length ? (stageNo || data.teams[0].no) : '1', nm = data ? nameOf(tn) : '시험 팀';
-  [100, TIER2, TIER3, TIER4].forEach(function (a, i) { queue.push({ id: 'test' + Date.now() + i, team: tn, tname: nm, amt: a, who: '김○수' }); });
+  TIERS.forEach(function (a, i) { queue.push({ id: 'test' + Date.now() + i, team: tn, tname: nm, amt: a, who: '김○수' }); });
   if (mode === 'stage') { var t = teamOf(tn); if (t) stageShown = Math.max(0, t.total); }
   runQueue();
 }
@@ -506,9 +554,10 @@ addEventListener('keydown', function (e) {
   if (k === 'f' || k === 'F') toggleFull();
   else if (k === 's' || k === 'S') toggleSound();
   else if (VIEW === 'work') return;
+  else if (k === 'q' || k === 'Q') { if ($('qrBig').classList.contains('on')) hideQr(); else showQr(0); }
   else if (k === 'ArrowRight') stepTeam(1); else if (k === 'ArrowLeft') stepTeam(-1);
   else if (k === '1') setMode('stage'); else if (k === '2') setMode('all');
-  else if (k === 'Escape') setMode('stage');
+  else if (k === 'Escape') { hideQr(); setMode('stage'); }
   else if (k === ' ' || k === 'Enter') { e.preventDefault(); next(); }
   else return;
   showCtl(3000);
