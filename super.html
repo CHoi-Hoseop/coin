@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>슈퍼챗 후원</title>
+<script src="./html5-qrcode.min.js"></script>
+<script>if (typeof Html5Qrcode === 'undefined') { document.write('<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script>'); }</script>
+<style>
+  :root { --gold: #ffd54a; --hot: #ff2d6f; --vio: #6a1bff; --bg: #0c0919; --card: #1a1533; --mut: #a79ccf; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: radial-gradient(900px 500px at 50% -10%, #34125a 0%, var(--bg) 62%) fixed; color: #fff; font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; padding: env(safe-area-inset-top) 14px 28px; }
+  main { max-width: 480px; margin: 0 auto; }
+  h1 { margin: 16px 0 4px; text-align: center; font-size: 22px; font-weight: 900; background: linear-gradient(90deg, #fff, var(--gold) 60%, var(--hot)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .card { background: var(--card); border: 1px solid rgba(255,255,255,.1); border-radius: 22px; padding: 18px; margin-top: 14px; text-align: center; }
+  .lab { font-size: 13px; letter-spacing: .3em; color: #ff8aa8; font-weight: 800; }
+  .team { font-size: 34px; font-weight: 900; margin-top: 4px; line-height: 1.15; word-break: keep-all; }
+  .pill { display: inline-block; margin-top: 10px; padding: 5px 14px; border-radius: 99px; font-size: 14px; font-weight: 800; }
+  .pill.on { background: #123d2a; color: #6dffb0; } .pill.off { background: #3d1220; color: #ff8aa8; }
+  .me { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; text-align: left; }
+  .me b { font-size: 18px; } .me .bal { font-size: 30px; font-weight: 900; color: var(--gold); font-variant-numeric: tabular-nums; } .me .bal i { font-style: normal; font-size: 16px; color: #fff; margin-left: 2px; }
+  .cap { color: var(--mut); font-size: 13px; text-align: left; margin-top: 4px; }
+  input.amt { width: 100%; font-size: 44px; font-weight: 900; text-align: center; padding: 12px 8px; border-radius: 16px; border: 2px solid #3b3270; background: #0f0b22; color: var(--gold); font-variant-numeric: tabular-nums; margin-top: 10px; }
+  input.amt:focus { outline: none; border-color: var(--hot); }
+  .quick { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+  .quick button { flex: 1; min-width: 70px; padding: 12px 6px; border-radius: 14px; border: 0; background: #2b2455; color: #fff; font-size: 18px; font-weight: 800; }
+  .big { width: 100%; margin-top: 14px; padding: 18px; font-size: 22px; font-weight: 900; border: 0; border-radius: 18px; color: #fff; background: linear-gradient(90deg, var(--vio), var(--hot)); box-shadow: 0 8px 24px rgba(255,45,111,.35); }
+  .big:disabled { background: #3a3560; box-shadow: none; color: #8b83b5; }
+  .link { background: none; border: 0; color: var(--mut); font-size: 14px; text-decoration: underline; padding: 10px; }
+  .msg { min-height: 1.4em; margin-top: 10px; font-size: 16px; line-height: 1.45; white-space: pre-wrap; }
+  .msg.err { color: #ff8aa8; } .msg.warn { color: #ffd54a; } .msg.ok { color: #6dffb0; }
+  #reader { width: 100%; border-radius: 18px; overflow: hidden; margin-top: 12px; background: #000; min-height: 220px; }
+  input.idin { width: 100%; font-size: 24px; letter-spacing: 4px; text-align: center; padding: 12px; border-radius: 14px; border: 2px solid #3b3270; background: #0f0b22; color: #fff; text-transform: uppercase; margin-top: 8px; }
+  .row { display: flex; gap: 8px; } .row > * { flex: 1; }
+  .ghost { padding: 12px; border-radius: 14px; border: 1px solid #3b3270; background: transparent; color: #fff; font-size: 16px; font-weight: 700; }
+  #modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none; align-items: center; justify-content: center; z-index: 30; padding: 20px; }
+  #modal.on { display: flex; } #modal .box { background: #221a46; border-radius: 24px; padding: 24px 20px; width: 100%; max-width: 400px; text-align: center; }
+  #modal .q { font-size: 20px; line-height: 1.5; } #modal .q b { color: var(--gold); font-size: 32px; display: block; margin: 4px 0; }
+  #done { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; background: radial-gradient(circle, rgba(255,213,74,.35), rgba(12,9,25,.96) 70%); text-align: center; padding: 20px; }
+  #done.on { display: flex; animation: fin .3s; } @keyframes fin { from { opacity: 0; transform: scale(.9); } }
+  #done .e { font-size: 90px; animation: bounce .8s; } @keyframes bounce { 0% { transform: scale(.2) rotate(-20deg); } 60% { transform: scale(1.2); } 100% { transform: none; } }
+  #done .t { font-size: 40px; font-weight: 900; color: var(--gold); margin-top: 8px; } #done .s { font-size: 18px; color: #e8e0ff; margin-top: 8px; line-height: 1.5; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🎤 슈퍼챗 후원</h1>
+
+  <div class="card" id="stageCard">
+    <div class="lab">NOW PERFORMING</div>
+    <div class="team" id="team">불러오는 중...</div>
+    <span class="pill off" id="pill">확인 중</span>
+  </div>
+
+  <!-- 1단계: 내 카드 등록 -->
+  <div class="card" id="vId" hidden>
+    <div style="font-size:19px;font-weight:800">내 학생 QR 카드를 비춰 주세요</div>
+    <div style="color:var(--mut);font-size:14px;margin-top:4px">한 번만 등록하면 다음부터는 바로 후원할 수 있어요.</div>
+    <button class="big" id="btnCam" onclick="startCam()">📷 카메라 켜기</button>
+    <div id="reader" hidden></div>
+    <div style="margin:14px 0 4px;color:var(--mut);font-size:14px">카메라가 안 되면 카드 QR 아래 글자(8자리)를 입력</div>
+    <div class="row"><input class="idin" id="idin" maxlength="12" autocomplete="off" autocapitalize="characters"><button class="ghost" style="flex:0 0 84px" onclick="useId($('idin').value)">확인</button></div>
+    <div class="msg" id="idMsg"></div>
+  </div>
+
+  <!-- 2단계: 후원 -->
+  <div class="card" id="vMain" hidden>
+    <div class="me"><b id="myName">-</b><span class="bal" id="myBal">0<i>C</i></span></div>
+    <div class="cap" id="myCap"></div>
+    <input class="amt" id="amt" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="금액 입력" maxlength="6" oninput="this.value=this.value.replace(/[^0-9]/g,'');checkAmt()">
+    <div class="quick" id="quick"></div>
+    <button class="big" id="btnGo" onclick="ask()" disabled>💸 후원하기</button>
+    <div class="msg" id="msg"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px">
+      <button class="link" onclick="refresh()">🔄 새로고침</button>
+      <button class="link" onclick="forget()">다른 카드로 바꾸기</button>
+    </div>
+  </div>
+  <div class="card" id="vKey" hidden><div style="font-size:18px;font-weight:800">전광판의 QR 코드를 카메라로 찍어서 들어와 주세요</div><div style="color:var(--mut);margin-top:8px;font-size:14px">이 주소는 강당에서만 쓸 수 있어요.</div></div>
+</main>
+
+<div id="modal"><div class="box"><div class="q" id="mq"></div><div class="row" style="margin-top:18px"><button class="ghost" onclick="closeModal()">취소</button><button class="big" style="margin:0;padding:14px" onclick="go()">확인</button></div></div></div>
+<div id="done"><div class="e">🎉</div><div class="t" id="dT"></div><div class="s" id="dS"></div><button class="big" style="max-width:300px" onclick="$('done').classList.remove('on')">닫기</button></div>
+
+<script>
+/* 서버 주소 (index.html 의 API_URL 과 같은 주소) */
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
+
+function $(id) { return document.getElementById(id); }
+function fmt(n) { return String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; }
+function api(fn, args) {
+  return fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }) })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (j) { if (j && j.error) throw new Error(j.error); return j.result; });
+}
+
+var key = '', myId = '', st = null, me = null, qr = null, pending = null, busy = false;
+var dev = ls('superDev') || (function () { var s = ''; for (var i = 0; i < 6; i++) s += 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'.charAt(Math.random() * 32 | 0); ls('superDev', s); return s; })();
+
+(function init() {
+  var m = /[?&]k=([A-Za-z0-9]+)/.exec(location.search);
+  if (m) { key = m[1].toUpperCase(); ls('superKey', key); try { history.replaceState(null, '', location.pathname); } catch (e) {} } else key = (ls('superKey') || '').toUpperCase();
+  if (!key) { $('stageCard').hidden = true; $('vKey').hidden = false; return; }
+  myId = (ls('superId') || '').toUpperCase();
+  refresh();
+})();
+
+function refresh() {
+  $('msg').className = 'msg'; $('msg').innerText = '';
+  return api('superLookup', [key, myId]).then(function (r) {
+    if (!r.ok) {
+      if (r.code === 'key') { $('stageCard').hidden = true; $('vMain').hidden = true; $('vId').hidden = true; $('vKey').hidden = false; $('vKey').querySelector('div').innerText = r.msg; return; }
+      if (r.code === 'id') { myId = ''; ls('superId', null); show(); $('idMsg').innerText = r.msg; $('idMsg').className = 'msg err'; return; }
+      return;
+    }
+    st = r; if (myId) me = r; show();
+  }).catch(function () { $('team').innerText = '연결 확인 중…'; $('pill').innerText = '인터넷 연결 확인'; });
+}
+function show() {
+  if (!st) return;
+  $('team').innerText = st.stage ? st.stage.name : '공연 준비 중';
+  var p = $('pill'); p.className = 'pill ' + (st.open && st.stage ? 'on' : 'off');
+  p.innerText = !st.stage ? '공연 팀 대기 중' : (st.open ? '● 후원 가능' : '후원이 닫혀 있어요');
+  $('vId').hidden = !!myId; $('vMain').hidden = !myId;
+  if (myId && me && me.name !== undefined) {
+    $('myName').innerText = me.name + ' 님'; $('myBal').innerHTML = fmt(me.balance) + '<i>C</i>';
+    $('myCap').innerText = me.cap ? ('슈퍼챗 사용 ' + fmt(me.used) + ' / 한도 ' + fmt(me.cap) + 'C') : '';
+    var q = $('quick'); q.innerHTML = '';
+    (st.options || []).forEach(function (a) { var b = document.createElement('button'); b.innerText = fmt(a); b.onclick = function () { $('amt').value = a; checkAmt(); }; q.appendChild(b); });
+    checkAmt();
+  }
+}
+function checkAmt() {
+  var a = parseInt($('amt').value, 10) || 0, ok = a > 0 && st && st.open && st.stage && !busy;
+  $('btnGo').disabled = !ok;
+}
+
+/* ---------- 내 카드 등록 ---------- */
+function startCam() {
+  $('reader').hidden = false; $('btnCam').hidden = true; $('idMsg').innerText = '';
+  try {
+    qr = new Html5Qrcode('reader');
+    qr.start({ facingMode: 'environment' }, { fps: 10, qrbox: function (w, h) { var s = Math.floor(Math.min(w, h) * .75); return { width: s, height: s }; } },
+      function (t) { stopCam(); useId(t); }, function () {})
+      .catch(function (e) { $('reader').hidden = true; $('btnCam').hidden = false; $('idMsg').className = 'msg warn'; $('idMsg').innerText = '카메라를 켤 수 없어요. 권한을 허용하거나, 아래에 8자리 글자를 입력해 주세요.'; });
+  } catch (e) { $('idMsg').innerText = '카메라를 켤 수 없어요. 아래에 글자를 입력해 주세요.'; }
+}
+function stopCam() { if (qr) { var q = qr; qr = null; q.stop().then(function () { q.clear(); }).catch(function () {}); } $('reader').hidden = true; $('btnCam').hidden = false; }
+function useId(t) {
+  t = String(t || '').trim().toUpperCase(); if (!/^[A-Z0-9]{6,12}$/.test(t)) { $('idMsg').className = 'msg err'; $('idMsg').innerText = '학생 QR이 아니에요. 다시 확인해 주세요.'; return; }
+  $('idMsg').className = 'msg'; $('idMsg').innerText = '확인 중...';
+  api('superLookup', [key, t]).then(function (r) {
+    if (!r.ok) { $('idMsg').className = 'msg err'; $('idMsg').innerText = r.msg; return; }
+    myId = t; ls('superId', t); st = r; me = r; $('idMsg').innerText = ''; show();
+  }).catch(function () { $('idMsg').className = 'msg err'; $('idMsg').innerText = '연결에 실패했어요. 다시 시도해 주세요.'; });
+}
+function forget() { if (!confirm('다른 카드로 바꿀까요?')) return; myId = ''; me = null; ls('superId', null); show(); }
+
+/* ---------- 후원 ---------- */
+function ask() {
+  var a = parseInt($('amt').value, 10) || 0;
+  if (!st.open || !st.stage) return;
+  var msg = '';
+  if (a < st.min) msg = '최소 ' + fmt(st.min) + 'C부터 후원할 수 있어요.';
+  else if (st.max && a > st.max) msg = '한 번에 최대 ' + fmt(st.max) + 'C까지 가능해요.';
+  else if (me && a > me.balance) msg = '잔액이 부족해요. (잔액 ' + fmt(me.balance) + 'C)';
+  else if (me && me.cap && me.used + a > me.cap) msg = '슈퍼챗 한도를 넘어요. (남은 한도 ' + fmt(Math.max(0, me.cap - me.used)) + 'C)';
+  if (msg) { $('msg').className = 'msg warn'; $('msg').innerText = msg; return; }
+  pending = { team: st.stage.no, name: st.stage.name, amount: a, qid: newQid() };
+  $('mq').innerHTML = '<span style="color:#ff8aa8">' + esc(pending.name) + '</span> 에<b>' + fmt(a) + 'C</b>후원할까요?';
+  $('modal').classList.add('on');
+}
+function closeModal() { $('modal').classList.remove('on'); }
+function go() {
+  closeModal(); if (!pending || busy) return; busy = true; checkAmt();
+  $('msg').className = 'msg'; $('msg').innerText = '⏳ 처리 중...'; send(pending, 0);
+}
+function send(p, n) {
+  api('superDonate', [key, myId, p.team, p.amount, p.qid, dev]).then(function (r) {
+    if (r.retry && n < 5) { $('msg').innerText = '⏳ 사람이 많아요. 다시 시도 중... (' + (n + 1) + ')'; return setTimeout(function () { send(p, n + 1); }, 2500); }
+    finish(r, p);
+  }).catch(function () {
+    if (n < 5) { $('msg').innerText = '⏳ 연결이 불안정해요. 다시 시도 중... (' + (n + 1) + ')'; return setTimeout(function () { send(p, n + 1); }, 2500); }
+    busy = false; checkAmt(); $('msg').className = 'msg err'; $('msg').innerText = '연결에 실패했어요.\n후원이 되었는지 아래 [새로고침]으로 잔액을 확인한 뒤 다시 시도해 주세요.';
+  });
+}
+function finish(r, p) {
+  busy = false;
+  if (r.ok) {
+    try { navigator.vibrate && navigator.vibrate([80, 40, 80]); } catch (e) {}
+    $('dT').innerText = fmt(p.amount) + 'C 후원 완료!'; $('dS').innerHTML = esc(p.name) + ' 에 마음을 전했어요 👏<br>남은 잔액 ' + (r.balance !== undefined ? fmt(r.balance) + 'C' : '');
+    $('done').classList.add('on'); $('amt').value = ''; pending = null;
+    if (me && r.balance !== undefined) { me.balance = r.balance; me.used = r.used !== undefined ? r.used : me.used; }
+    show(); return;
+  }
+  $('msg').className = 'msg ' + (r.level === 'err' ? 'err' : 'warn'); $('msg').innerText = r.msg || '실패했어요.';
+  if (r.stage) { st.stage = r.stage; $('amt').value = ''; }
+  if (r.code === 'closed') st.open = false;
+  show(); checkAmt();
+}
+function newQid() { var s = 'P'; for (var i = 0; i < 11; i++) s += 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'.charAt(Math.random() * 32 | 0); return s; }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+</script>
+</body>
+</html>
