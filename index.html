@@ -60,6 +60,56 @@
   #banner .bsub { position: absolute; bottom: 18px; font-size: 18px; opacity: .8; }
   [hidden] { display: none !important; }
 </style>
+<style>
+/* ===== 화면 다듬기 (기존 스타일 위에 덮어쓰기) ===== */
+:root { --ink: #1b2437; --muted: #6b7690; --line: #e3e7f0; --card: #fff; --brand: #3b5bfd; }
+body { min-height: 100vh; background: linear-gradient(180deg, #eef1fb 0%, #f7f8fc 60%); color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; }
+header { background: linear-gradient(90deg, #1b2a52, #31408a); font-size: 20px; letter-spacing: .02em; padding: 14px; box-shadow: 0 2px 10px rgba(27,42,82,.25); position: sticky; top: 0; z-index: 40; }
+header button { background: rgba(255,255,255,.18); border-radius: 999px; padding: 7px 14px; top: 10px; }
+#modeLabel { font-size: 15px; font-weight: 600; margin-left: 8px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.18); }
+#modeLabel:empty { display: none; }
+section > p { color: var(--muted); font-weight: 700; }
+
+/* 역할 선택: 카드형 버튼 */
+#vMenu { max-width: 860px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; padding: 18px 16px; }
+#vMenu > p { grid-column: 1 / -1; margin: 4px 0 0; font-size: 18px; }
+#vMenu .big { width: 100%; max-width: none; margin: 0; padding: 22px 20px; border-radius: 20px; text-align: left; font-size: 22px; display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 6px 16px rgba(30,40,80,.16); transition: transform .08s; position: relative; overflow: hidden; }
+#vMenu .big:active { transform: scale(.98); }
+#vMenu .big::before { content: attr(data-ic); font-size: 34px; width: 56px; height: 56px; border-radius: 16px; background: rgba(255,255,255,.22); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+#vMenu .big[disabled] { background: #d9dde8 !important; color: #8b93a8; box-shadow: none; }
+#vMenu .big[disabled]::before { background: rgba(0,0,0,.06); filter: grayscale(1); opacity: .6; }
+.c-work { background: linear-gradient(135deg, #34c38f, #1f9d6f); } .c-in { background: linear-gradient(135deg, #14b8c4, #0b8f9b); }
+.c-out { background: linear-gradient(135deg, #5b7cfa, #3b4fd1); } .c-booth { background: linear-gradient(135deg, #3aa0ff, #2272d6); }
+.c-super { background: linear-gradient(135deg, #ff5c8a, #d81b60); } .c-wage { background: linear-gradient(135deg, #ffb347, #f08a00); }
+.c-test { background: #6b7690; }
+
+/* PIN */
+#vPin { max-width: 420px; margin: 8vh auto 0; background: var(--card); border-radius: 24px; padding: 30px 22px; box-shadow: 0 10px 30px rgba(30,40,80,.12); }
+#vPin .big { width: 100%; margin-top: 16px; border-radius: 16px; background: linear-gradient(135deg, #3b5bfd, #2a3fc9) !important; }
+input.pin { border: 2px solid var(--line); background: #f6f7fb; width: 100%; }
+input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
+
+/* 선택 칩 */
+.chip { border: 2px solid var(--line); background: var(--card); border-radius: 16px; box-shadow: 0 2px 6px rgba(30,40,80,.07); font-weight: 700; padding: 14px 18px; }
+.chip.sel { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 4px 12px rgba(59,91,253,.4); }
+#cfg { font-size: 16px; color: var(--muted); padding: 4px 8px; font-weight: 600; }
+
+/* 카메라 */
+#reader { border: 0; border-radius: 22px; box-shadow: 0 8px 24px rgba(20,30,70,.28); outline: 4px solid #fff; }
+#vRun .chip[onclick*="Cam"], #vRun .chip[onclick*="Mirror"], #vRun .chip[onclick*="camFile"], #vRun .chip[onclick*="scanBeep"] { font-size: 14px; font-weight: 600; background: #eceff7; box-shadow: none; border: 0; color: #43506c; border-radius: 999px; }
+
+/* 결과 카드 */
+#result { border-radius: 18px; border: 0; border-left: 8px solid #c5cbdb; background: var(--card); box-shadow: 0 4px 14px rgba(30,40,80,.1); font-size: 26px; }
+#result.ok { border-left-color: #2fb36a; background: #eefaf2; } #result.err { border-left-color: #e5484d; background: #fff1f1; }
+#result.warn { border-left-color: #f5a524; background: #fff8e8; } #result.wait { border-left-color: #3b82f6; background: #eef5ff; }
+
+/* 팝업·키패드 */
+.kpbox { border-radius: 24px; } .keys button { border: 0; background: #eef0f7; font-weight: 700; box-shadow: 0 2px 0 #d7dbe8; } .keys button:active { background: #dfe3f2; }
+.row2 button { border-radius: 16px; } .wbtn { border: 2px solid var(--line); border-radius: 16px; box-shadow: 0 2px 6px rgba(30,40,80,.07); }
+.wbtn.sel { background: var(--brand); border-color: var(--brand); box-shadow: 0 4px 12px rgba(59,91,253,.4); }
+.toast { border-radius: 20px; }
+</style>
 </head>
 <body>
 <header><button id="btnHome" hidden onclick="goHome()">◀ 처음</button>🪙 문화코인 <span id="modeLabel"></span></header>
@@ -75,13 +125,13 @@
 <!-- 2. 모드 선택 -->
 <section id="vMenu" hidden>
   <p style="font-size:18px;font-weight:bold;color:#555">이 기기의 역할을 선택하세요</p>
-  <button class="big c-work" id="mWork" onclick="pickMode('work')">학술제 작품 응원</button>
-  <button class="big c-in" id="mEnter" onclick="pickMode('enter')">발표장 입장</button>
-  <button class="big c-out" id="mExit" onclick="pickMode('exit')">발표장 퇴장</button>
-  <button class="big c-booth" id="mBooth" onclick="pickMode('booth')">학급 부스</button>
-  <button class="big c-super" id="mSuper" onclick="pickMode('super')">슈퍼챗</button>
-  <button class="big c-wage" id="mWage" onclick="pickMode('wage')">근로 지급 (선생님용)</button>
-  <button class="big c-test" id="mTest" onclick="pickMode('test')" hidden>부하테스트 (복사본 전용)</button>
+  <button class="big c-work" id="mWork" data-ic="🖼️" onclick="pickMode('work')">학술제 작품 응원</button>
+  <button class="big c-in" id="mEnter" data-ic="🚪" onclick="pickMode('enter')">발표장 입장</button>
+  <button class="big c-out" id="mExit" data-ic="🏁" onclick="pickMode('exit')">발표장 퇴장</button>
+  <button class="big c-booth" id="mBooth" data-ic="🎪" onclick="pickMode('booth')">학급 부스</button>
+  <button class="big c-super" id="mSuper" data-ic="💸" onclick="pickMode('super')">슈퍼챗</button>
+  <button class="big c-wage" id="mWage" data-ic="🧑‍🏫" onclick="pickMode('wage')">근로 지급 (선생님용)</button>
+  <button class="big c-test" id="mTest" data-ic="🧪" onclick="pickMode('test')" hidden>부하테스트 (복사본 전용)</button>
 </section>
 
 <!-- 3. 대상 선택(발표/부스) -->
