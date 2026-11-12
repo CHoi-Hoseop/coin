@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; margin: 0; background: #f4f4f9; text-align: center; -webkit-user-select: none; user-select: none; }
+  header { background: #333; color: #fff; padding: 12px; font-size: 19px; font-weight: bold; position: relative; }
+  header button { position: absolute; left: 8px; top: 8px; font-size: 14px; padding: 6px 10px; border-radius: 8px; border: 0; background: #666; color: #fff; }
+  section { padding: 14px; }
+  .big { font-size: 22px; padding: 18px; border-radius: 12px; border: 0; color: #fff; font-weight: bold; width: 92%; max-width: 480px; display: block; margin: 12px auto; box-shadow: 0 3px 6px rgba(0,0,0,.15); }
+  .big[disabled] { background: #bbb !important; }
+  .c-work { background: #4CAF50; } .c-in { background: #009688; } .c-out { background: #3F51B5; }
+  .c-booth { background: #2196F3; } .c-super { background: #E91E63; } .c-wage { background: #FF9800; } .c-test { background: #777; font-size: 15px; padding: 10px; }
+  input.pin { font-size: 28px; padding: 12px; width: 70%; max-width: 280px; text-align: center; border-radius: 10px; border: 2px solid #999; letter-spacing: 6px; }
+  .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 8px 0; }
+  .chip { font-size: 18px; padding: 12px 14px; border-radius: 10px; border: 2px solid #888; background: #fff; color: #222; min-width: 90px; }
+  .chip.sel { background: #222; color: #fff; border-color: #222; }
+  .chip small { display: block; font-size: 14px; opacity: .85; }
+  #reader { width: 100%; max-width: 380px; margin: 10px auto; border-radius: 14px; overflow: hidden; border: 3px solid #333; background: #000; min-height: 120px; }
+  #cfg { font-size: 17px; color: #333; margin-bottom: 6px; }
+  #result { font-size: 24px; font-weight: bold; margin: 12px auto; padding: 16px; background: #fff; border-radius: 12px; max-width: 480px; white-space: pre-line; box-shadow: 0 2px 5px rgba(0,0,0,.1); color: #333; }
+  #result.ok { background: #e8f5e9; color: #1b7a2b; } #result.err { background: #ffebee; color: #c62828; }
+  #result.warn { background: #fff8e1; color: #b26a00; } #result.wait { background: #e3f2fd; color: #1565c0; }
+  #keypad { max-width: 360px; margin: 8px auto; background: #fff; border-radius: 14px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+  #kpDisp { font-size: 30px; font-weight: bold; margin: 6px 0; min-height: 40px; }
+  #kpInfo { font-size: 18px; min-height: 48px; color: #333; }
+  .keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0; }
+  .keys button { font-size: 26px; padding: 14px 0; border-radius: 10px; border: 1px solid #aaa; background: #f5f5f5; }
+  .row2 { display: flex; gap: 8px; } .row2 button { flex: 1; font-size: 20px; padding: 14px; border-radius: 10px; border: 0; color: #fff; font-weight: bold; }
+  .small { font-size: 14px; color: #666; }
+  .wgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 44vh; overflow: auto; margin: 8px 0; text-align: left; }
+  .wbtn { font-size: 16px; padding: 10px 8px; border: 2px solid #888; border-radius: 10px; background: #fff; color: #222; text-align: left; line-height: 1.3; }
+  .wbtn b { display: inline-block; min-width: 2.2em; }
+  .wbtn.sel { background: #222; color: #fff; border-color: #222; }
+  textarea, .field { font-size: 16px; padding: 8px; width: 80px; text-align: center; }
+  #testLog { text-align: left; white-space: pre-wrap; font-size: 15px; background: #fff; padding: 10px; border-radius: 8px; max-width: 480px; margin: 10px auto; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="btnHome" hidden onclick="goHome()">◀ 처음</button>🪙 문화코인 <span id="modeLabel"></span></header>
+
+<!-- 1. PIN -->
+<section id="vPin">
+  <p style="font-size:18px;font-weight:bold;">운영 PIN을 입력하세요</p>
+  <input id="pin" class="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')unlock()">
+  <button class="big c-super" style="background:#333" onclick="unlock()">확인</button>
+  <div id="pinMsg" class="small" style="color:#c62828;font-size:16px"></div>
+</section>
+
+<!-- 2. 모드 선택 -->
+<section id="vMenu" hidden>
+  <p style="font-size:18px;font-weight:bold;color:#555">이 기기의 역할을 선택하세요</p>
+  <button class="big c-work" id="mWork" onclick="pickMode('work')">학술제 작품 응원</button>
+  <button class="big c-in" id="mEnter" onclick="pickMode('enter')">발표장 입장</button>
+  <button class="big c-out" id="mExit" onclick="pickMode('exit')">발표장 퇴장</button>
+  <button class="big c-booth" id="mBooth" onclick="pickMode('booth')">학급 부스</button>
+  <button class="big c-super" id="mSuper" onclick="pickMode('super')">슈퍼챗</button>
+  <button class="big c-wage" id="mWage" onclick="pickMode('wage')">근로 지급 (선생님용)</button>
+  <button class="big c-test" id="mTest" onclick="pickMode('test')" hidden>부하테스트 (복사본 전용)</button>
+</section>
+
+<!-- 3. 대상 선택(발표/부스) -->
+<section id="vSetup" hidden>
+  <p id="setupTitle" style="font-size:18px;font-weight:bold"></p>
+  <div id="setupList" class="grid"></div>
+</section>
+
+<!-- 4. 작동 화면 -->
+<section id="vRun" hidden>
+  <div id="cfg"></div>
+  <div id="cfgBtns" class="grid"></div>
+  <div id="reader"></div>
+  <div style="margin:4px">
+    <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="flipCam()">📷 카메라 전환</button>
+    <button id="btnPhoto" class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="$('camFile').click()">📸 사진 찍어서 스캔</button>
+    <input id="camFile" type="file" accept="image/*" capture="environment" hidden onchange="photoScan(this)">
+  </div>
+
+  <div id="keypad" hidden>
+    <div class="small" id="kpTitle">작품 번호를 입력하세요</div>
+    <div id="kpDisp"></div>
+    <div id="wgrid" class="wgrid" hidden></div>
+    <div id="kpInfo"></div>
+    <div class="keys" id="keys">
+      <button onclick="kp('1')">1</button><button onclick="kp('2')">2</button><button onclick="kp('3')">3</button>
+      <button onclick="kp('4')">4</button><button onclick="kp('5')">5</button><button onclick="kp('6')">6</button>
+      <button onclick="kp('7')">7</button><button onclick="kp('8')">8</button><button onclick="kp('9')">9</button>
+      <button onclick="kp('C')">지움</button><button onclick="kp('0')">0</button><button onclick="kp('B')">←</button>
+    </div>
+    <div class="row2">
+      <button style="background:#888" onclick="kpCancel()">취소</button>
+      <button id="kpOk" style="background:#4CAF50" onclick="kpSend()">코인 보내기</button>
+    </div>
+  </div>
+
+  <div id="result" class="wait">준비 중...</div>
+  <button id="btnUndo" class="chip" style="background:#fff3e0;border-color:#ef6c00" hidden onclick="undo()">↩ 방금 결제 취소</button>
+</section>
+
+<!-- 5. 부하테스트 -->
+<section id="vTest" hidden>
+  <p style="color:#c62828;font-weight:bold;font-size:16px">⚠ 반드시 '시트 사본'에서만 실행하세요.<br>코인이 실제로 차감됩니다.</p>
+  <div>총 요청 수 <input id="tN" class="field" type="number" value="100"> 동시 요청 수 <input id="tC" class="field" type="number" value="5"></div>
+  <button class="big c-test" style="background:#c62828;font-size:18px" onclick="runTest()">테스트 시작</button>
+  <div id="testLog"></div>
+</section>
+
+<script>
+/* ===== 서버 연결 설정 =====
+ * Apps Script 안에서 열면 이 값은 쓰지 않습니다.
+ * GitHub Pages 등 '일반 웹 주소'에 올려 쓸 때만, 아래 따옴표 안에 웹 앱 URL(…/exec)을 넣으세요.
+ */
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
+
+if (typeof google === 'undefined' || !google.script || !google.script.run) {
+  (function () {
+    function build(ok, fail) {
+      return new Proxy({}, { get: function (_, fn) {
+        if (fn === 'withSuccessHandler') return function (f) { return build(f, fail); };
+        if (fn === 'withFailureHandler') return function (f) { return build(ok, f); };
+        return function () {
+          var args = Array.prototype.slice.call(arguments);
+          if (!API_URL) { if (fail) fail(new Error('API_URL이 비어 있습니다. Index 파일 위쪽에 웹 앱 주소를 넣으세요.')); return; }
+          fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }) })
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (j) { if (j && j.error) throw new Error(j.error); if (ok) ok(j.result); })
+            .catch(function (e) { if (fail) fail(e); });
+        };
+      } });
+    }
+    window.google = { script: { run: build(null, null) } };
+  })();
+}
+
+var pin = '', boot = null, mode = '', target = {}, qr = null, facing = 'environment';
+var busy = false, lastText = '', lastAt = 0, pendingId = '', kpNo = '', kpTimer = null, undoTx = '', undoTimer = null, seq = 0, actx = null;
+
+function $(id) { return document.getElementById(id); }
+function show(id) { ['vPin','vMenu','vSetup','vRun','vTest'].forEach(function (v) { $(v).hidden = (v !== id); }); $('btnHome').hidden = (id === 'vPin' || id === 'vMenu'); }
+function fmt(n) { return String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+/* ---------- PIN ---------- */
+function unlock() {
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  pin = $('pin').value.trim();
+  if (!pin) return;
+  $('pinMsg').innerText = '확인 중...';
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.ok) { $('pinMsg').innerText = r.msg; return; }
+    boot = r; $('pinMsg').innerText = ''; $('pin').value = ''; showMenu();
+  }).withFailureHandler(function (e) { $('pinMsg').innerText = '서버 연결 실패: ' + e.message; }).bootstrap(pin);
+}
+
+function showMenu() {
+  show('vMenu'); $('modeLabel').innerText = '';
+  var st = boot.status, off = (st.all !== '열림');
+  function setBtn(id, label, flag) { var b = $(id); var open = !off && flag === '열림'; b.disabled = !open; b.innerText = label + (open ? '' : ' (닫힘)'); }
+  setBtn('mWork', '학술제 작품 응원', st.work);
+  setBtn('mEnter', '발표장 입장', st.hall);
+  setBtn('mExit', '발표장 퇴장', st.hall);
+  setBtn('mBooth', '학급 부스', st.booth);
+  setBtn('mSuper', '슈퍼챗', st.sup);
+  setBtn('mWage', '근로 지급 (선생님용)', st.wage);
+  $('mTest').hidden = !boot.testAllowed;
+}
+
+function goHome() { stopCam(); clearTimeout(kpTimer); $('keypad').hidden = true; busy = false; showMenu(); }
+
+/* ---------- 모드 선택 ---------- */
+function pickMode(m) {
+  mode = m; target = {}; busy = false;
+  if (m === 'test') { show('vTest'); $('modeLabel').innerText = '· 부하테스트'; return; }
+  if (m === 'work') {
+    var zs = zoneList();
+    if (!zs.length) { $('modeLabel').innerText = '· 작품 응원'; startRun(); return; }
+    var zl = $('setupList'); zl.innerHTML = '';
+    $('setupTitle').innerText = '이 태블릿은 어느 구역입니까?';
+    zs.forEach(function (z) {
+      addChip(zl, z.name, z.count + '개 (' + z.min + '~' + z.max + '번)', function () { target = { zone: z.name }; $('modeLabel').innerText = '· 작품 응원 ' + z.name; startRun(); });
+    });
+    show('vSetup'); return;
+  }
+  if (m === 'super') { $('modeLabel').innerText = '· 슈퍼챗'; startRun(); return; }
+  if (m === 'wage') { $('modeLabel').innerText = '· 근로 지급'; startRun(); return; }
+  var list = $('setupList'); list.innerHTML = '';
+  if (m === 'enter' || m === 'exit') {
+    $('setupTitle').innerText = '어느 발표입니까?';
+    boot.sessions.filter(function (s) { return s.open; }).forEach(function (s) {
+      addChip(list, s.name, '', function () { target = { session: s.code, label: s.name }; $('modeLabel').innerText = (m === 'enter' ? '· 입장 ' : '· 퇴장 ') + s.name; startRun(); });
+    });
+    if (!list.children.length) list.innerHTML = '<div class="small">열려 있는 발표가 없습니다. (시트 [발표] 상태 확인)</div>';
+  } else if (m === 'booth') {
+    $('setupTitle').innerText = '어느 부스입니까?';
+    var names = [];
+    boot.booths.forEach(function (b) { if (names.indexOf(b.booth) < 0) names.push(b.booth); });
+    names.forEach(function (n) { addChip(list, n, '', function () { target = { booth: n, program: '' }; $('modeLabel').innerText = '· 부스 ' + n; startRun(); }); });
+    if (!names.length) list.innerHTML = '<div class="small">등록된 부스가 없습니다. (시트 [부스] 확인)</div>';
+  }
+  show('vSetup');
+}
+// 작품 시트의 '구역'별 목록 (구역이 하나도 없으면 빈 배열 → 번호 입력 방식)
+function zoneList() {
+  var zs = {};
+  Object.keys(boot.works).forEach(function (no) {
+    var z = boot.works[no].zone; if (!z) return;
+    var n = parseInt(no, 10);
+    if (!zs[z]) zs[z] = { name: z, count: 0, min: n, max: n };
+    zs[z].count++; if (n < zs[z].min) zs[z].min = n; if (n > zs[z].max) zs[z].max = n;
+  });
+  return Object.keys(zs).map(function (k) { return zs[k]; }).sort(function (a, b) { return a.min - b.min; });
+}
+function addChip(parent, text, sub, fn) {
+  var b = document.createElement('button'); b.className = 'chip'; b.innerHTML = text + (sub ? '<small>' + sub + '</small>' : ''); b.onclick = fn; parent.appendChild(b); return b;
+}
+
+/* ---------- 작동 화면 ---------- */
+function startRun() {
+  show('vRun'); renderCfg(); setResult('wait', '카메라 켜는 중...');
+  $('keypad').hidden = true; $('btnUndo').hidden = true;
+  startCam();
+}
+
+function renderCfg() {
+  var cfg = $('cfg'), box = $('cfgBtns'); box.innerHTML = '';
+  if (mode === 'work') {
+    cfg.innerText = target.zone
+      ? target.zone + ': ① 학생 QR 스캔 → ② 응원할 작품 선택 → ③ 보내기'
+      : '① 학생 QR 스캔 → ② 작품 번호 입력 → ③ 보내기';
+  } else if (mode === 'enter' || mode === 'exit') {
+    cfg.innerText = (mode === 'enter' ? '입장' : '퇴장') + ' 스캔: ' + target.label;
+  } else if (mode === 'booth') {
+    cfg.innerText = '프로그램을 먼저 선택하고, 학생 QR을 스캔하세요.';
+    boot.booths.filter(function (b) { return b.booth === target.booth; }).forEach(function (b) {
+      var c = addChip(box, b.program, fmt(b.price) + 'C', function () { target.program = b.program; renderCfg(); });
+      if (target.program === b.program) c.classList.add('sel');
+    });
+  } else if (mode === 'wage') {
+    cfg.innerText = '업무를 먼저 선택하고, 일을 마친 학생의 QR을 스캔하세요. (선택한 업무의 코인이 입금됩니다)';
+    boot.tasks.forEach(function (t) {
+      var c = addChip(box, t.name, '+' + fmt(t.pay) + 'C', function () { target.task = t.name; renderCfg(); });
+      if (target.task === t.name) c.classList.add('sel');
+    });
+    if (!boot.tasks.length) box.innerHTML = '<div class="small">등록된 업무가 없습니다. (시트 [근로] 확인)</div>';
+  } else if (mode === 'super') {
+    cfg.innerText = '① 후원할 팀 선택 ② 금액 선택 ③ 학생 QR 스캔 (자리에서 앉은 채로 진행)';
+    boot.teams.filter(function (t) { return t.open; }).forEach(function (t) {
+      var c = addChip(box, t.no + '번', t.name, function () { target.team = t.no; target.teamName = t.name; renderCfg(); });
+      if (target.team === t.no) c.classList.add('sel');
+    });
+    var br = document.createElement('div'); br.style.width = '100%'; box.appendChild(br);
+    boot.superOptions.forEach(function (a) {
+      var c = addChip(box, fmt(a) + 'C', '', function () { target.amount = a; renderCfg(); });
+      if (target.amount === a) c.classList.add('sel');
+    });
+  }
+}
+
+/* ---------- 카메라 ---------- */
+function startCam() {
+  if (qr) return;
+  try {
+    qr = new Html5Qrcode('reader');
+    qr.start({ facingMode: facing }, { fps: 10, qrbox: { width: 230, height: 230 } }, onScan, function () {})
+      .then(function () { setResult('', '학생 QR을 카메라에 보여주세요.'); })
+      .catch(function (e) { qr = null; camFail(e); });
+  } catch (e) { qr = null; camFail(e); }
+}
+function camFail(e) {
+  var n = (e && (e.name || e.message)) ? String(e.name || '') + ' ' + String(e.message || e) : String(e || '알 수 없음');
+  var hint = /NotAllowed|Permission|denied/i.test(n) ? '권한/보안 정책으로 차단됨'
+    : /NotFound|Devices/i.test(n) ? '카메라 장치를 찾지 못함'
+    : /NotReadable|TrackStart/i.test(n) ? '다른 앱이 카메라를 쓰는 중'
+    : /Security/i.test(n) ? '보안 정책(https/iframe)으로 차단됨'
+    : (typeof Html5Qrcode === 'undefined') ? '스캔 라이브러리를 불러오지 못함(인터넷 확인)' : '원인 불명';
+  setResult('err', '카메라를 켤 수 없습니다.\n[' + hint + ']\n' + n.slice(0, 120) + '\n\n아래 [📸 사진 찍어서 스캔] 버튼으로 계속 사용할 수 있습니다.');
+}
+
+// 카메라 영상 스캔이 막힌 기기용: 기본 카메라 앱으로 QR을 사진 찍어 읽습니다.
+function photoScan(inp) {
+  var f = inp.files && inp.files[0]; inp.value = '';
+  if (!f) return;
+  if (typeof Html5Qrcode === 'undefined') { setResult('err', '스캔 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인하세요.'); return; }
+  setResult('wait', '사진에서 QR 읽는 중...');
+  var tmp = qr || new Html5Qrcode('reader');
+  tmp.scanFile(f, false).then(function (text) { lastText = ''; onScan(text); })
+    .catch(function () { feedback(false); setResult('err', 'QR을 읽지 못했습니다.\nQR을 화면에 크게 담아 다시 찍어주세요.'); });
+}
+function stopCam() { if (qr) { var q = qr; qr = null; q.stop().then(function () { q.clear(); }).catch(function () {}); } }
+function flipCam() { facing = (facing === 'environment') ? 'user' : 'environment'; stopCam(); setTimeout(startCam, 400); }
+
+/* ---------- 스캔 ---------- */
+function onScan(text) {
+  var now = Date.now();
+  if (busy) return;
+  if (text === lastText && now - lastAt < 2500) return;
+  lastText = text; lastAt = now;
+  text = String(text).trim().toUpperCase();
+  if (!/^[A-Z0-9]{6,12}$/.test(text)) { feedback(false); setResult('err', '학생 QR이 아닙니다.'); return; }
+
+  if (mode === 'booth' && !target.program) { feedback(false); setResult('warn', '먼저 위에서\n프로그램을 선택하세요.'); return; }
+  if (mode === 'wage' && !target.task) { feedback(false); setResult('warn', '먼저 위에서\n업무를 선택하세요.'); return; }
+  if (mode === 'super' && (!target.team || !target.amount)) { feedback(false); setResult('warn', '먼저 후원할 팀과\n금액을 선택하세요.'); return; }
+
+  if (mode === 'work') { pendingId = text; busy = true; feedback(true); openKeypad(); return; }
+  submit(text);
+}
+
+function submit(id) {
+  busy = true; hideUndo(); setResult('wait', '처리 중... ⏳');
+  var my = ++seq, done = false;
+  var label = mode + (target.booth ? ':' + target.booth : '') + (target.session ? ':' + target.session : '') + (target.task ? ':' + target.task : '') + (target.zone ? ':' + target.zone : '');
+  var timer = setTimeout(function () { if (!done) { done = true; busy = false; feedback(false); setResult('warn', '응답이 늦습니다.\n결제가 되었는지 [거래내역]을 확인하고\n필요하면 다시 스캔하세요.'); } }, 25000);
+  google.script.run
+    .withSuccessHandler(function (r) { if (done || my !== seq) return; done = true; clearTimeout(timer); onResult(r); })
+    .withFailureHandler(function (e) { if (done || my !== seq) return; done = true; clearTimeout(timer); busy = false; feedback(false); setResult('err', '통신 오류\n결제가 되었는지 확인 후\n다시 스캔하세요.'); })
+    .processScan({ pin: pin, mode: mode, studentId: id, target: payload(), device: label });
+}
+function payload() {
+  if (mode === 'work') return { no: kpNo, zone: target.zone || '' };
+  if (mode === 'booth') return { booth: target.booth, program: target.program };
+  if (mode === 'super') return { team: target.team, amount: target.amount };
+  if (mode === 'wage') return { task: target.task };
+  return { session: target.session };
+}
+function onResult(r) {
+  feedback(r.level === 'ok');
+  setResult(r.level, r.msg);
+  if (r.level === 'ok' && r.undo && r.txId) { undoTx = r.txId; $('btnUndo').hidden = false; clearTimeout(undoTimer); undoTimer = setTimeout(hideUndo, 20000); }
+  setTimeout(function () { busy = false; lastText = ''; }, 1800);
+}
+function hideUndo() { $('btnUndo').hidden = true; undoTx = ''; clearTimeout(undoTimer); }
+function undo() {
+  if (!undoTx) return;
+  var tx = undoTx; hideUndo(); busy = true; setResult('wait', '취소 처리 중...');
+  google.script.run.withSuccessHandler(function (r) { feedback(r.level === 'ok'); setResult(r.level, r.msg); setTimeout(function () { busy = false; lastText = ''; }, 1800); })
+    .withFailureHandler(function () { busy = false; setResult('err', '통신 오류. 다시 시도하세요.'); })
+    .cancelTx({ pin: pin, txId: tx });
+}
+
+/* ---------- 작품 번호 키패드 ---------- */
+function openKeypad() {
+  kpNo = '';
+  var zmode = !!target.zone;
+  $('wgrid').hidden = !zmode; $('keys').hidden = zmode; $('kpDisp').hidden = zmode;
+  $('kpTitle').innerText = zmode ? '응원할 작품을 선택하세요' : '작품 번호를 입력하세요';
+  if (zmode) buildGrid();
+  renderKp(); $('keypad').hidden = false; setResult('ok', '학생 QR 인식 완료 ✔');
+  clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
+}
+function buildGrid() {
+  var g = $('wgrid'); g.innerHTML = '';
+  Object.keys(boot.works).map(function (n) { return parseInt(n, 10); }).sort(function (a, b) { return a - b; }).forEach(function (n) {
+    var w = boot.works[String(n)]; if (w.zone !== target.zone) return;
+    var b = document.createElement('button'); b.className = 'wbtn'; b.setAttribute('data-no', String(n));
+    var num = document.createElement('b'); num.textContent = n + '.'; b.appendChild(num); b.appendChild(document.createTextNode(' ' + w.name));
+    b.onclick = function () {
+      kpNo = String(n);
+      Array.prototype.forEach.call(g.children, function (x) { x.classList.toggle('sel', x === b); });
+      renderKp(); clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
+    };
+    g.appendChild(b);
+  });
+}
+function kp(k) {
+  if (k === 'C') kpNo = ''; else if (k === 'B') kpNo = kpNo.slice(0, -1); else if (kpNo.length < 5) kpNo += k;
+  renderKp(); clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
+}
+function renderKp() {
+  $('kpDisp').innerText = kpNo ? kpNo + '번' : '＿＿';
+  var w = kpNo ? boot.works[String(parseInt(kpNo, 10))] : null, info = $('kpInfo'), ok = $('kpOk');
+  if (!kpNo) { info.innerText = ''; ok.disabled = true; ok.style.opacity = .4; }
+  else if (!w) { info.innerText = '❌ 없는 작품 번호입니다'; info.style.color = '#c62828'; ok.disabled = true; ok.style.opacity = .4; }
+  else { var price = w.price || boot.workDefault; info.innerHTML = '<b>' + esc(w.name) + '</b><br>' + fmt(price) + 'C 사용'; info.style.color = '#1b7a2b'; ok.disabled = false; ok.style.opacity = 1; }
+}
+function kpCancel() { clearTimeout(kpTimer); $('keypad').hidden = true; pendingId = ''; busy = false; lastText = ''; setResult('', '취소되었습니다. 학생 QR을 다시 보여주세요.'); }
+function kpSend() {
+  if (!kpNo || !boot.works[String(parseInt(kpNo, 10))]) return;
+  clearTimeout(kpTimer); $('keypad').hidden = true; var id = pendingId; pendingId = ''; submit(id);
+}
+
+/* ---------- 화면/소리 ---------- */
+function setResult(cls, msg) { var r = $('result'); r.className = cls || ''; r.innerText = msg; }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function feedback(ok) {
+  try { if (navigator.vibrate) navigator.vibrate(ok ? 80 : [120, 60, 120]); } catch (e) {}
+  try {
+    if (!actx) return;
+    var o = actx.createOscillator(), g = actx.createGain(); o.connect(g); g.connect(actx.destination);
+    o.frequency.value = ok ? 880 : 220; g.gain.value = 0.15; o.start(); o.stop(actx.currentTime + (ok ? 0.12 : 0.35));
+  } catch (e) {}
+}
+
+/* ---------- 부하테스트 (사본 전용) ---------- */
+function runTest() {
+  var N = parseInt($('tN').value, 10) || 100, C = parseInt($('tC').value, 10) || 5, log = $('testLog');
+  var prog = boot.booths[0];
+  if (!prog) { log.innerText = '[부스]에 프로그램이 1개 이상 있어야 합니다. 그리고 [설정]의 부스를 "열림"으로 바꾸세요.'; return; }
+  log.innerText = '테스트 학생 ID 불러오는 중...';
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.ok) { log.innerText = r.msg; return; }
+    var ids = r.ids; if (!ids.length) { log.innerText = '학생지갑에 ID가 없습니다.'; return; }
+    var sent = 0, finished = 0, okc = 0, bad = 0, lat = [], t0 = Date.now(), msgs = {};
+    function next() {
+      if (sent >= N) return;
+      var i = sent++, t1 = Date.now();
+      google.script.run.withSuccessHandler(function (res) {
+        lat.push(Date.now() - t1); if (res.ok) okc++; else { bad++; msgs[res.msg.split('\n')[0]] = (msgs[res.msg.split('\n')[0]] || 0) + 1; }
+        fin();
+      }).withFailureHandler(function () { lat.push(Date.now() - t1); bad++; msgs['통신실패'] = (msgs['통신실패'] || 0) + 1; fin(); })
+        .processScan({ pin: pin, mode: 'booth', studentId: ids[i % ids.length], target: { booth: prog.booth, program: prog.program }, device: 'LOADTEST' });
+    }
+    function fin() {
+      finished++; log.innerText = '진행 ' + finished + ' / ' + N + ' ...';
+      if (finished < N) { next(); return; }
+      var sec = (Date.now() - t0) / 1000; lat.sort(function (a, b) { return a - b; });
+      var avg = lat.reduce(function (a, b) { return a + b; }, 0) / lat.length;
+      var m = Object.keys(msgs).map(function (k) { return '  - ' + k + ': ' + msgs[k] + '건'; }).join('\n');
+      log.innerText = '✅ 테스트 완료\n요청 ' + N + '건 / 동시 ' + C + '건\n성공 ' + okc + ' · 실패/거절 ' + bad + '\n평균 응답 ' + (avg / 1000).toFixed(2) + '초\n상위5%(느린 쪽) ' + (lat[Math.floor(lat.length * 0.95)] / 1000).toFixed(2) + '초\n최대 ' + (lat[lat.length - 1] / 1000).toFixed(2) + '초\n초당 처리량 ' + (N / sec).toFixed(2) + '건/초\n총 ' + sec.toFixed(1) + '초' + (m ? '\n거절 사유:\n' + m : '');
+    }
+    for (var c = 0; c < Math.min(C, N); c++) next();
+  }).withFailureHandler(function (e) { log.innerText = '오류: ' + e.message; }).getTestIds(pin, N);
+}
+</script>
+</body>
+</html>
