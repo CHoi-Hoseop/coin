@@ -82,7 +82,16 @@ section > p { color: var(--muted); font-weight: 700; }
 .c-work { background: linear-gradient(135deg, #34c38f, #1f9d6f); } .c-in { background: linear-gradient(135deg, #14b8c4, #0b8f9b); }
 .c-out { background: linear-gradient(135deg, #5b7cfa, #3b4fd1); } .c-booth { background: linear-gradient(135deg, #3aa0ff, #2272d6); }
 .c-super { background: linear-gradient(135deg, #ff5c8a, #d81b60); } .c-wage { background: linear-gradient(135deg, #ffb347, #f08a00); }
-.c-test { background: #6b7690; }
+.c-test { background: #6b7690; } .c-bal { background: linear-gradient(135deg, #8b5cf6, #6d3fe0); }
+#bal { position: fixed; inset: 0; z-index: 96; background: linear-gradient(160deg, #2b1d6b, #4a2bb5 60%, #6d3fe0); color: #fff; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+#bal[hidden] { display: none; }
+#bal .bn { font-size: 34px; font-weight: 700; opacity: .9; } #bal .bv { font-size: min(22vw, 150px); font-weight: 900; line-height: 1.05; color: #ffd54a; text-shadow: 0 0 30px rgba(255,213,74,.5); font-variant-numeric: tabular-nums; }
+#bal .bv i { font-style: normal; font-size: .38em; color: #fff; margin-left: .15em; }
+#bal .bs { font-size: 24px; margin: 10px 0 18px; opacity: .9; }
+#bal .bl { max-width: 520px; margin: 0 auto; background: rgba(255,255,255,.12); border-radius: 18px; padding: 10px 18px; text-align: left; font-size: 22px; }
+#bal .bl div { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.15); } #bal .bl div:last-child { border: 0; }
+#bal .bl .m { color: #ff9ab8; font-weight: 700; } #bal .bl .p { color: #8dffbf; font-weight: 700; }
+#bal .bh { margin-top: 16px; font-size: 17px; opacity: .7; }
 
 /* PIN */
 #vPin { max-width: 420px; margin: 8vh auto 0; background: var(--card); border-radius: 24px; padding: 30px 22px; box-shadow: 0 10px 30px rgba(30,40,80,.12); }
@@ -130,6 +139,7 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
   <button class="big c-out" id="mExit" data-ic="🏁" onclick="pickMode('exit')">발표장 퇴장</button>
   <button class="big c-booth" id="mBooth" data-ic="🎪" onclick="pickMode('booth')">학급 부스</button>
   <button class="big c-super" id="mSuper" data-ic="💸" onclick="pickMode('super')">슈퍼챗</button>
+  <button class="big c-bal" id="mBal" data-ic="🔍" onclick="pickMode('balance')">잔액 확인 (학생용 · 안내 태블릿)</button>
   <button class="big c-wage" id="mWage" data-ic="🧑‍🏫" onclick="pickMode('wage')">근로 지급 (선생님용)</button>
   <button class="big c-test" id="mTest" data-ic="🧪" onclick="pickMode('test')" hidden>부하테스트 (복사본 전용)</button>
 </section>
@@ -182,6 +192,7 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
   <div id="testLog"></div>
 </section>
 
+<div id="bal" hidden onclick="hideBal()"></div>
 <div id="toasts"></div>
 <div id="qbadge" hidden></div>
 <div id="banner" hidden onclick="hideBanner()"><div id="bannerMsg"></div><div class="bsub">화면을 누르면 닫힙니다</div></div>
@@ -246,7 +257,7 @@ function showMenu() {
   $('mTest').hidden = !boot.testAllowed;
 }
 
-function goHome() { stopCam(); clearTimeout(kpTimer); $('keypad').hidden = true; busy = false; showMenu(); }
+function goHome() { hideBal(); stopCam(); clearTimeout(kpTimer); $('keypad').hidden = true; busy = false; showMenu(); }
 
 /* ---------- 모드 선택 ---------- */
 function pickMode(m) {
@@ -262,6 +273,7 @@ function pickMode(m) {
     });
     show('vSetup'); return;
   }
+  if (m === 'balance') { $('modeLabel').innerText = '· 잔액 확인'; startRun(); $('btnHome').hidden = true; return; }
   if (m === 'super') { $('modeLabel').innerText = '· 슈퍼챗'; startRun(); return; }
   if (m === 'wage') { $('modeLabel').innerText = '· 근로 지급'; startRun(); return; }
   var list = $('setupList'); list.innerHTML = '';
@@ -304,6 +316,7 @@ function startRun() {
 
 function renderCfg() {
   var cfg = $('cfg'), box = $('cfgBtns'); box.innerHTML = '';
+  if (mode === 'balance') cfg.innerText = '내 QR을 카메라에 보여주세요 → 내 코인이 나옵니다 (조회만 되고 코인은 바뀌지 않아요)';
   if (mode === 'work') {
     cfg.innerText = target.zone
       ? target.zone + ': ① 학생 QR 스캔 → ② 응원할 작품 선택 → ③ 보내기'
@@ -381,7 +394,7 @@ function flipCam() { facing = (facing === 'environment') ? 'user' : 'environment
 function onScan(text) {
   var now = Date.now();
   if (busy) return;
-  if (text === lastText && now - lastAt < 2500) return;
+  if (text === lastText && now - lastAt < (mode === 'balance' ? 8000 : 2500)) return;
   lastText = text; lastAt = now;
   text = String(text).trim().toUpperCase();
   if (!/^[A-Z0-9]{6,12}$/.test(text)) { feedback(false); setResult('err', '학생 QR이 아닙니다.'); showBanner('err', '학생 QR이 아닙니다.'); return; }
@@ -391,6 +404,7 @@ function onScan(text) {
   if (mode === 'super' && (!target.team || !target.amount)) { feedback(false); setResult('warn', '먼저 후원할 팀과\n금액을 선택하세요.'); return; }
 
   scanBeep(); // QR이 인식된 즉시 큰 소리
+  if (mode === 'balance') { showBal(text); return; }
   if (mode === 'work') { pendingId = text; busy = true; openKeypad(); return; }
   submit(text);
 }
@@ -399,6 +413,32 @@ function devLabel() {
   return mode + (target.booth ? ':' + target.booth : '') + (target.session ? ':' + target.session : '') + (target.task ? ':' + target.task : '') + (target.zone ? ':' + target.zone : '');
 }
 // 입장/퇴장: 결과를 기다리지 않고 다음 학생을 바로 찍을 수 있게 처리 (결과는 위쪽 알림으로 차례로 표시)
+// 학생용 잔액 확인: 조회만 합니다. 6초 뒤 자동으로 지워져 다음 학생에게 앞 학생의 잔액이 보이지 않습니다.
+var balTimer = null;
+function showBal(id) {
+  var b = $('bal'); clearTimeout(balTimer);
+  b.innerHTML = '<div><div class="bn">⏳ 확인 중...</div></div>'; b.hidden = false;
+  var mine = ++seq;
+  google.script.run
+    .withSuccessHandler(function (r) {
+      if (mine !== seq) return;
+      if (!r.ok) { feedback(false); b.innerHTML = '<div><div class="bn" style="font-size:44px">' + esc(r.msg) + '</div><div class="bh">화면을 터치하면 닫힙니다</div></div>'; balTimer = setTimeout(hideBal, 3000); return; }
+      feedback(true);
+      var rows = r.recent.map(function (x) { return '<div><span>' + esc(x.label) + '</span><span class="' + (x.delta < 0 ? 'm' : 'p') + '">' + (x.delta > 0 ? '+' : '') + fmt(x.delta) + 'C</span></div>'; }).join('');
+      b.innerHTML = '<div><div class="bn">' + esc(r.name) + '님의 잔액</div><div class="bv">' + fmt(r.balance) + '<i>C</i></div>'
+        + '<div class="bs">처음 ' + fmt(r.initial) + 'C · 쓴 코인 ' + fmt(r.spent) + 'C' + (r.got ? ' · 받은 코인 ' + fmt(r.got) + 'C' : '') + '</div>'
+        + (rows ? '<div class="bl">' + rows + '</div>' : '<div class="bs">아직 사용 내역이 없어요</div>')
+        + '<div class="bh">6초 뒤 자동으로 사라집니다 · 터치하면 닫힘</div></div>';
+      balTimer = setTimeout(hideBal, 6000);
+    })
+    .withFailureHandler(function () { if (mine !== seq) return; feedback(false); b.innerHTML = '<div><div class="bn" style="font-size:40px">통신 오류<br>잠시 후 다시 찍어 주세요</div></div>'; balTimer = setTimeout(hideBal, 3000); })
+    .balance(pin, id);
+}
+function hideBal() { clearTimeout(balTimer); $('bal').hidden = true; }
+// 잔액 확인 태블릿에서는 [처음] 버튼이 숨겨져 있습니다. 제목을 5번 연속 누르면 다시 나타납니다(교사용).
+var hdrTaps = 0, hdrT = null;
+document.querySelector('header').addEventListener('click', function (e) { if (e.target.id === 'btnHome') return; hdrTaps++; clearTimeout(hdrT); hdrT = setTimeout(function () { hdrTaps = 0; }, 2500); if (hdrTaps >= 5) { hdrTaps = 0; $('btnHome').hidden = false; } });
+
 function submitPipe(id) {
   var qid = newQid(), req = { mode: mode, studentId: id, target: payload(), device: devLabel(), qid: qid, ts: Date.now() };
   var el = toast('wait', '⏳ 확인 중...'), done = false;
