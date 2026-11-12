@@ -226,7 +226,7 @@ if (typeof google === 'undefined' || !google.script || !google.script.run) {
 }
 
 var pin = '', boot = null, mode = '', target = {}, qr = null, facing = 'environment';
-var busy = false, lastText = '', lastAt = 0, pendingId = '', kpNo = '', kpTimer = null, undoTx = '', undoTimer = null, seq = 0, actx = null;
+var kpMode = '', busy = false, lastText = '', lastAt = 0, pendingId = '', kpNo = '', kpTimer = null, undoTx = '', undoTimer = null, seq = 0, actx = null;
 
 function $(id) { return document.getElementById(id); }
 function show(id) { ['vPin','vMenu','vSetup','vRun','vTest'].forEach(function (v) { $(v).hidden = (v !== id); }); $('btnHome').hidden = (id === 'vPin' || id === 'vMenu'); }
@@ -337,7 +337,7 @@ function renderCfg() {
     });
     if (!boot.tasks.length) box.innerHTML = '<div class="small">등록된 업무가 없습니다. (시트 [근로] 확인)</div>';
   } else if (mode === 'super') {
-    cfg.innerText = '① 후원할 팀 선택 ② 금액 선택 ③ 학생 QR 스캔 (자리에서 앉은 채로 진행)';
+    cfg.innerText = '① 후원할 팀 선택 ② 금액 선택(또는 직접 입력) ③ 학생 QR 스캔';
     boot.teams.filter(function (t) { return t.open; }).forEach(function (t) {
       var c = addChip(box, t.no + '번', t.name, function () { target.team = t.no; target.teamName = t.name; renderCfg(); });
       if (target.team === t.no) c.classList.add('sel');
@@ -347,6 +347,9 @@ function renderCfg() {
       var c = addChip(box, fmt(a) + 'C', '', function () { target.amount = a; renderCfg(); });
       if (target.amount === a) c.classList.add('sel');
     });
+    var custom = target.amount && boot.superOptions.indexOf(target.amount) < 0;
+    var cc = addChip(box, custom ? fmt(target.amount) + 'C' : '✏️ 직접 입력', custom ? '직접 입력 · 눌러서 변경' : '후원자가 말한 금액', function () { openAmountKeypad(); });
+    if (custom) cc.classList.add('sel');
   }
 }
 
@@ -393,7 +396,7 @@ function flipCam() { facing = (facing === 'environment') ? 'user' : 'environment
 /* ---------- 스캔 ---------- */
 function onScan(text) {
   var now = Date.now();
-  if (busy) return;
+  if (busy || !$('keypad').hidden) return;   // 키패드(금액 입력)가 열려 있는 동안에는 스캔하지 않음
   if (text === lastText && now - lastAt < (mode === 'balance' ? 8000 : 2500)) return;
   lastText = text; lastAt = now;
   text = String(text).trim().toUpperCase();
@@ -553,7 +556,16 @@ function undo() {
 }
 
 /* ---------- 작품 번호 키패드 ---------- */
+// 슈퍼챗 금액 직접 입력용 (같은 키패드를 재사용)
+function openAmountKeypad() {
+  kpMode = 'amount'; kpNo = ''; pendingId = '';
+  $('wgrid').hidden = true; $('keys').hidden = false; $('kpDisp').hidden = false;
+  $('kpTitle').innerText = '후원 금액을 입력하세요'; $('kpOk').innerText = '금액 정하기';
+  renderKp(); $('keypad').hidden = false;
+  clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
+}
 function openKeypad() {
+  kpMode = ''; $('kpOk').innerText = '코인 보내기';
   kpNo = '';
   var zmode = !!target.zone;
   $('wgrid').hidden = !zmode; $('keys').hidden = zmode; $('kpDisp').hidden = zmode;
@@ -581,14 +593,26 @@ function kp(k) {
   renderKp(); clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
 }
 function renderKp() {
+  if (kpMode === 'amount') {
+    var a = parseInt(kpNo, 10) || 0, mn = boot.superMin || 1, mx = boot.superMax || 0, info = $('kpInfo'), ok = $('kpOk');
+    $('kpDisp').innerText = kpNo ? fmt(a) + 'C' : '＿＿';
+    var bad = !a ? '' : (a < mn ? '최소 ' + fmt(mn) + 'C' : (mx && a > mx ? '1회 최대 ' + fmt(mx) + 'C' : ''));
+    info.innerHTML = bad ? '❌ ' + bad : (a ? '이 금액으로 후원합니다' : ''); info.style.color = bad ? '#c62828' : '#1b7a2b';
+    ok.disabled = !a || !!bad; ok.style.opacity = ok.disabled ? .4 : 1; return;
+  }
   $('kpDisp').innerText = kpNo ? kpNo + '번' : '＿＿';
   var w = kpNo ? boot.works[String(parseInt(kpNo, 10))] : null, info = $('kpInfo'), ok = $('kpOk');
   if (!kpNo) { info.innerText = ''; ok.disabled = true; ok.style.opacity = .4; }
   else if (!w) { info.innerText = '❌ 없는 작품 번호입니다'; info.style.color = '#c62828'; ok.disabled = true; ok.style.opacity = .4; }
   else { var price = w.price || boot.workDefault; info.innerHTML = '<b>' + esc(w.name) + '</b><br>' + fmt(price) + 'C 사용'; info.style.color = '#1b7a2b'; ok.disabled = false; ok.style.opacity = 1; }
 }
-function kpCancel() { clearTimeout(kpTimer); $('keypad').hidden = true; pendingId = ''; busy = false; lastText = ''; setResult('', '취소되었습니다. 학생 QR을 다시 보여주세요.'); }
+function kpCancel() { clearTimeout(kpTimer); $('keypad').hidden = true; pendingId = ''; busy = false; lastText = ''; if (kpMode === 'amount') { kpMode = ''; $('kpOk').innerText = '코인 보내기'; return; } setResult('', '취소되었습니다. 학생 QR을 다시 보여주세요.'); }
 function kpSend() {
+  if (kpMode === 'amount') {
+    var a = parseInt(kpNo, 10) || 0, mn = boot.superMin || 1, mx = boot.superMax || 0;
+    if (!a || a < mn || (mx && a > mx)) return;
+    clearTimeout(kpTimer); $('keypad').hidden = true; kpMode = ''; $('kpOk').innerText = '코인 보내기'; target.amount = a; renderCfg(); return;
+  }
   if (!kpNo || !boot.works[String(parseInt(kpNo, 10))]) return;
   clearTimeout(kpTimer); $('keypad').hidden = true; var id = pendingId; pendingId = ''; submit(id);
 }
