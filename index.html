@@ -46,6 +46,8 @@
   textarea, .field { font-size: 16px; padding: 8px; width: 80px; text-align: center; }
   #testLog { text-align: left; white-space: pre-wrap; font-size: 15px; background: #fff; padding: 10px; border-radius: 8px; max-width: 480px; margin: 10px auto; }
   /* 입장/퇴장: 카메라를 가리지 않는 위쪽 알림 (연속 스캔용) */
+  #qbadge { position: fixed; left: 8px; bottom: 8px; z-index: 95; padding: 8px 14px; border-radius: 20px; font-size: 16px; font-weight: 700; color: #fff; background: #e65100; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+  #qbadge.off { background: #c62828; }
   #toasts { position: fixed; left: 0; right: 0; top: 58px; z-index: 90; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; padding: 0 8px; }
   .toast { min-width: min(92vw, 640px); padding: 14px 20px; border-radius: 16px; color: #fff; font-weight: bold; box-shadow: 0 4px 14px rgba(0,0,0,.35); text-align: center; }
   .toast.wait { background: #1565c0; } .toast.ok { background: #2e7d32; } .toast.warn { background: #ef6c00; } .toast.err { background: #c62828; }
@@ -131,6 +133,7 @@
 </section>
 
 <div id="toasts"></div>
+<div id="qbadge" hidden></div>
 <div id="banner" hidden onclick="hideBanner()"><div id="bannerMsg"></div><div class="bsub">화면을 누르면 닫힙니다</div></div>
 
 <script>
@@ -176,7 +179,7 @@ function unlock() {
   $('pinMsg').innerText = '확인 중...';
   google.script.run.withSuccessHandler(function (r) {
     if (!r.ok) { $('pinMsg').innerText = r.msg; return; }
-    boot = r; $('pinMsg').innerText = ''; $('pin').value = ''; showMenu();
+    boot = r; $('pinMsg').innerText = ''; $('pin').value = ''; showMenu(); flushQ();
   }).withFailureHandler(function (e) { $('pinMsg').innerText = '서버 연결 실패: ' + e.message; }).bootstrap(pin);
 }
 
@@ -347,13 +350,67 @@ function devLabel() {
 }
 // 입장/퇴장: 결과를 기다리지 않고 다음 학생을 바로 찍을 수 있게 처리 (결과는 위쪽 알림으로 차례로 표시)
 function submitPipe(id) {
+  var qid = newQid(), req = { mode: mode, studentId: id, target: payload(), device: devLabel(), qid: qid, ts: Date.now() };
   var el = toast('wait', '⏳ 확인 중...'), done = false;
-  var timer = setTimeout(function () { if (!done) { done = true; setToast(el, 'warn', '응답이 늦습니다\n처리됐는지 [출결] 시트를 확인하세요'); } }, 25000);
+  function toQueue(why) {
+    if (done) return; done = true; clearTimeout(timer);
+    qAdd(req);
+    var nm = (boot && boot.students && boot.students[id]) || '';
+    feedback(true);
+    setToast(el, 'warn', (nm ? nm + '님 ' : '') + '임시 저장됨 📥\n' + why + ' — 연결되면 자동 전송');
+  }
+  // 연결이 끊겼거나 10초 안에 응답이 없으면 기기에 임시 저장 (같은 요청ID라 나중에 중복 처리되지 않음)
+  var timer = setTimeout(function () { toQueue('응답 지연'); }, 10000);
+  if (navigator.onLine === false) { toQueue('오프라인'); return; }
   google.script.run
-    .withSuccessHandler(function (r) { if (done) return; done = true; clearTimeout(timer); feedback(r.level === 'ok'); setToast(el, r.level, r.msg); })
-    .withFailureHandler(function () { if (done) return; done = true; clearTimeout(timer); feedback(false); setToast(el, 'err', '통신 오류\n다시 스캔하세요'); })
-    .processScan({ pin: pin, mode: mode, studentId: id, target: payload(), device: devLabel() });
+    .withSuccessHandler(function (r) { clearTimeout(timer); qRemove(qid); if (done) return; done = true; feedback(r.level === 'ok'); setToast(el, r.level, r.msg); })
+    .withFailureHandler(function () { toQueue('통신 끊김'); })
+    .processScan({ pin: pin, mode: req.mode, studentId: id, target: req.target, device: req.device, qid: qid, ts: req.ts });
 }
+
+/* ---------- 오프라인 임시저장 대기열 (입장/퇴장 전용) ---------- */
+var Q_KEY = 'coinQ', Q = [], flushing = false;
+try { Q = JSON.parse(localStorage.getItem(Q_KEY) || '[]') || []; } catch (e) { Q = []; }
+function newQid() { var r = ''; for (var i = 0; i < 5; i++) r += Math.floor(Math.random() * 36).toString(36); return ('Q' + Date.now().toString(36) + r).toUpperCase(); }
+function qSave() { try { localStorage.setItem(Q_KEY, JSON.stringify(Q)); } catch (e) {} qBadge(); }
+function qAdd(it) { Q.push(it); qSave(); }
+function qRemove(qid) { var n = Q.length; Q = Q.filter(function (x) { return x.qid !== qid; }); if (Q.length !== n) qSave(); }
+function qBadge() {
+  var b = $('qbadge'), off = (navigator.onLine === false);
+  if (!Q.length && !off) { b.hidden = true; return; }
+  b.hidden = false; b.className = off ? 'off' : '';
+  b.innerText = (off ? '📴 오프라인 · ' : '📤 ') + (Q.length ? '임시저장 ' + Q.length + '건' + (off ? '' : ' 전송 대기') : '연결 끊김');
+}
+function flushQ() {
+  if (flushing || !Q.length || !pin || navigator.onLine === false) return;
+  flushing = true;
+  var batch = Q.slice(0, 15);
+  batch.forEach(function (it) { if ((it.tries || 0) >= 20) it.final = true; });
+  var guard = setTimeout(function () { flushing = false; }, 60000);
+  google.script.run
+    .withSuccessHandler(function (r) {
+      clearTimeout(guard); flushing = false;
+      if (!r || !r.ok) { toast('err', (r && r.msg) || '임시저장 전송 실패'); return; }
+      var by = {}, okN = 0, badN = 0, removed = 0;
+      (r.results || []).forEach(function (x) { by[x.qid] = x; });
+      batch.forEach(function (it) {
+        var x = by[it.qid]; if (!x) return;
+        if (x.retry) { it.tries = (it.tries || 0) + 1; return; }
+        qRemove(it.qid); removed++;
+        if (x.ok || /이미/.test(x.msg || '')) okN++; else badN++;
+      });
+      qSave();
+      if (okN || badN) toast(badN ? 'warn' : 'ok', '임시저장 ' + (okN + badN) + '건 전송 완료' + (badN ? '\n확인 필요 ' + badN + '건 → [동기화실패] 시트' : ''));
+      if (removed && Q.length) setTimeout(flushQ, 500);
+    })
+    .withFailureHandler(function () { clearTimeout(guard); flushing = false; qBadge(); })
+    .syncBatch(pin, batch);
+}
+window.addEventListener('online', function () { qBadge(); setTimeout(flushQ, 1500); });
+window.addEventListener('offline', qBadge);
+window.addEventListener('beforeunload', function (e) { if (Q.length) { e.preventDefault(); e.returnValue = ''; } });
+setInterval(flushQ, 15000);
+qBadge();
 var toastSeq = 0;
 function toast(level, msg) {
   var box = $('toasts'), el = document.createElement('div'); el.id = 't' + (++toastSeq);
@@ -379,7 +436,7 @@ function submit(id) {
   var timer = setTimeout(function () { if (!done) { done = true; busy = false; feedback(false); setResult('warn', '응답이 늦습니다.\n결제가 되었는지 [거래내역]을 확인하고\n필요하면 다시 스캔하세요.'); } }, 25000);
   google.script.run
     .withSuccessHandler(function (r) { if (done || my !== seq) return; done = true; clearTimeout(timer); onResult(r); })
-    .withFailureHandler(function (e) { if (done || my !== seq) return; done = true; clearTimeout(timer); busy = false; feedback(false); setResult('err', '통신 오류\n결제가 되었는지 확인 후\n다시 스캔하세요.'); showBanner('err', '통신 오류\n처리가 되었는지 확인 후\n다시 스캔하세요.'); })
+    .withFailureHandler(function (e) { if (done || my !== seq) return; done = true; clearTimeout(timer); busy = false; feedback(false); setResult('err', '통신 오류\n결제가 되었는지 확인 후\n다시 스캔하세요.\n(이 모드는 오프라인 저장이 안 됩니다)'); showBanner('err', '통신 오류\n처리가 되었는지 확인 후\n다시 스캔하세요.'); })
     .processScan({ pin: pin, mode: mode, studentId: id, target: payload(), device: label });
 }
 function payload() {
