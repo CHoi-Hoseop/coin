@@ -101,11 +101,14 @@
   #hint { position: fixed; left: 0; right: 0; bottom: 2.4vh; text-align: center; z-index: 22; font-size: clamp(14px, 2.4vh, 28px); color: #b9aedb; animation: blink 1.6s infinite; display: none; }
 
   /* ----- 후원 접속 QR ----- */
-  #qrMini { position: fixed; left: 2vw; bottom: 3vh; z-index: 12; display: none; align-items: center; gap: 1vw; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 2vh; padding: 1vh 1.2vw 1vh 1vh; }
+  #qrMini { position: fixed; right: 3vw; left: auto; bottom: 3vh; max-width: 26vw; z-index: 12; display: none; align-items: center; gap: 1vw; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 2vh; padding: 1vh 1.2vw 1vh 1vh; }
   body[data-mode=stage] #qrMini.has { display: flex; }
+  /* QR이 오른쪽 아래에 있을 때 후원 목록이 QR 위에서 끝나도록, 무대 글자는 살짝 위로 */
+  body.hasqr[data-mode=stage] #feedBox { margin-bottom: 25vh; }
+  body[data-mode=stage] #stageV { padding-bottom: 7vh; }
   #qrMini .qb, #qrBig .qb { background: #fff; padding: 1vh; border-radius: 1.4vh; line-height: 0; } #qrMini .qb img { width: 17vh; height: 17vh; } #qrBig .qb img { width: 46vh; height: 46vh; }
   .qb canvas { display: none !important; } .qb img { display: block; }
-  #qrMini .qt { font-size: clamp(14px, 2.6vh, 32px); font-weight: 800; line-height: 1.3; } #qrMini .qt small { display: block; color: #b9aedb; font-weight: 600; font-size: .7em; }
+  #qrMini .qt { font-size: clamp(13px, 2.3vh, 28px); font-weight: 800; line-height: 1.3; } #qrMini .qt small { display: block; color: #b9aedb; font-weight: 600; font-size: .7em; }
   #qrBig { position: fixed; inset: 0; z-index: 19; background: radial-gradient(circle at 50% 40%, rgba(106,27,255,.5), rgba(7,6,13,.97) 70%); display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2vh; }
   #qrBig.on { display: flex; animation: fin .35s; } @keyframes fin { from { opacity: 0; } }
   #qrBig .t1 { font-size: clamp(22px, 6vh, 80px); font-weight: 900; color: var(--gold); text-shadow: 0 0 30px rgba(255,213,74,.5); }
@@ -120,7 +123,7 @@
   #login input { font-size: 30px; padding: 12px 18px; width: 280px; text-align: center; border-radius: 12px; border: 2px solid var(--vio); background: #14102a; color: #fff; letter-spacing: 6px; }
   #login button { font-size: 20px; padding: 12px 28px; border: 0; border-radius: 12px; background: linear-gradient(90deg, var(--vio), var(--hot)); color: #fff; font-weight: 800; }
   #msg { color: #ff8aa8; min-height: 1.4em; }
-  #ctl { position: fixed; right: 12px; bottom: 12px; z-index: 40; width: min(440px, 92vw); background: rgba(20,16,42,.94); border: 1px solid rgba(255,255,255,.18); border-radius: 16px; padding: 12px; opacity: 0; pointer-events: none; transition: opacity .3s; font-size: 14px; }
+  #ctl { position: fixed; left: 12px; bottom: 12px; z-index: 40; width: min(440px, 92vw); background: rgba(20,16,42,.94); border: 1px solid rgba(255,255,255,.18); border-radius: 16px; padding: 12px; opacity: 0; pointer-events: none; transition: opacity .3s; font-size: 14px; }
   body.showctl #ctl { opacity: 1; pointer-events: auto; }
   #ctl .r { display: flex; gap: 6px; margin-bottom: 7px; align-items: center; flex-wrap: wrap; }
   #ctl button, #ctl select { font-size: 14px; padding: 8px 10px; border: 0; border-radius: 9px; background: #2f2866; color: #fff; font-weight: 700; }
@@ -174,8 +177,8 @@
     <div class="r"><button onclick="toTally()">🏁 결과 집계</button><button onclick="toWinner()">🏆 우승 공개</button><button onclick="reopen()">🔓 후원 열기</button><button onclick="closeSuper()">🔒 후원 닫기</button></div>
     <div class="r"><button onclick="showQr(0)">📱 후원 QR 크게 (Q)</button><button onclick="newKey()">🔑 QR 재발급</button></div>
   </div>
-  <div class="r"><button id="btnSnd" onclick="toggleSound()">🔊 효과음 끄기</button><button onclick="toggleFull()">⛶ 전체화면</button><button onclick="testFx()">✨ 팝업 시험</button></div>
-  <div class="k" id="ctlKeys">단축키 · ←/→ 팀 바꾸기 · Q 후원 QR · 1 팀 집중 · 2 전체 순위 · <b>스페이스 = 다음 단계</b>(카운트다운 → 결과 집계 → 우승 공개) · Esc 처음으로 · S 소리 · F 전체화면</div>
+  <div class="r"><button id="btnSnd" onclick="toggleSound()">🔊 효과음 끄기</button><button id="btnLive" onclick="toggleLive()">🔕 공연 중 소리 꺼짐</button><button onclick="toggleFull()">⛶ 전체화면</button><button onclick="testFx()">✨ 팝업 시험</button></div>
+  <div class="k" id="ctlKeys">단축키 · ←/→ 팀 바꾸기 · Q 후원 QR · 1 팀 집중 · 2 전체 순위 · <b>스페이스 = 다음 단계</b>(카운트다운 → 결과 집계 → 우승 공개) · Esc 처음으로 · S 소리 · F 전체화면<br>🔕 공연 중에는 소리가 나지 않고, 마감 카운트다운부터 결과 발표까지만 소리가 납니다.</div>
 </div>
 
 <script>
@@ -376,7 +379,7 @@ function buildQr(key) {
     var el = $(id); el.innerHTML = '';
     try { new QRCode(el, { text: joinUrl, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M }); } catch (e) { el.style.cssText = 'font-size:14px;color:#000;max-width:40vh;word-break:break-all;line-height:1.3'; el.innerText = joinUrl; }
   });
-  $('qrMini').classList.add('has');
+  $('qrMini').classList.add('has'); document.body.classList.add('hasqr');
 }
 function showQr(sec) {
   if (!joinUrl) return;
@@ -472,7 +475,8 @@ function runQueue() {
   syncFeed();
   later(function () { showing = false; $('pop').innerHTML = ''; render(); runQueue(); }, dur * 1000);
 }
-function testFx() { // 조작판의 '팝업 시험': 금액별 연출을 차례로 보여줌 (실제 기록에는 남지 않음)
+function testFx() {
+  testing = true; setTimeout(function () { testing = false; }, 14000); // 조작판의 '팝업 시험': 금액별 연출을 차례로 보여줌 (실제 기록에는 남지 않음)
   var tn = data && data.teams.length ? (stageNo || data.teams[0].no) : '1', nm = data ? nameOf(tn) : '시험 팀';
   TIERS.forEach(function (a, i) { queue.push({ id: 'test' + Date.now() + i, team: tn, tname: nm, amt: a, who: '김○수' }); });
   if (mode === 'stage') { var t = teamOf(tn); if (t) stageShown = Math.max(0, t.total); }
@@ -517,7 +521,9 @@ function flash() { var f = $('flash'); f.classList.remove('go'); void f.offsetWi
 function shake() { document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake'); }
 
 /* ================= 소리 (Web Audio 합성음) ================= */
-function ac() { if (!sound) return null; try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); return actx; } catch (e) { return null; } }
+var liveSound = false, testing = false;
+// 공연 중에는 소리가 나지 않고, 마감 카운트다운 ~ 결과 발표(finale>=1)에서만 소리가 납니다. (조작판에서 '공연 중 소리'를 켜면 팝업음도 납니다)
+function ac() { if (!sound || !(finale >= 1 || liveSound || testing)) return null; try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); return actx; } catch (e) { return null; } }
 function tone(f, at, dur, type, vol) {
   var a = ac(); if (!a) return; var t = a.currentTime + (at || 0), o = a.createOscillator(), g = a.createGain();
   o.type = type || 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || .3, t + .015); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
@@ -541,6 +547,7 @@ function gong() { tone(110, 0, 2.2, 'sine', .6); tone(220, 0, 1.8, 'triangle', .
 function cymbal() { noise(0, 1.6, .4, 4000); }
 function winFanfare() { [523, 523, 523, 784, 659, 784, 1047].forEach(function (f, i) { tone(f, i * .16, .4, 'sawtooth', .22); tone(f / 2, i * .16, .4, 'triangle', .3); }); tone(1047, 1.2, 1.6, 'sawtooth', .22); tone(784, 1.2, 1.6, 'triangle', .3); }
 function drumroll(sec) { for (var i = 0; i < sec * 22; i++) { var t = i / 22; tone(110 + t * 20, t, .08, 'triangle', .15 + .5 * (t / sec)); } noise(sec - .05, .3, .3, 2000); }
+function toggleLive() { liveSound = !liveSound; $('btnLive').innerText = liveSound ? '🔔 공연 중 팝업음 켜짐' : '🔕 공연 중 소리 꺼짐'; if (liveSound) { testing = true; fanfareMini(); testing = false; } }
 function toggleSound() { sound = !sound; $('btnSnd').innerText = sound ? '🔊 효과음 끄기' : '🔇 효과음 켜기'; if (sound) fanfareMini(); }
 function toggleFull() { var d = document, e = d.documentElement; if (!d.fullscreenElement) (e.requestFullscreen || e.webkitRequestFullscreen || function () {}).call(e); else (d.exitFullscreen || d.webkitExitFullscreen).call(d); }
 
