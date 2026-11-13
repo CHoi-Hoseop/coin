@@ -7,177 +7,197 @@
 <script src="./html5-qrcode.min.js"></script>
 <script>if(typeof Html5Qrcode==='undefined'){document.write('<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script>');}</script>
 <style>
-  * { box-sizing: border-box; }
-  body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; margin: 0; background: #f4f4f9; text-align: center; -webkit-user-select: none; user-select: none; }
-  header { background: #333; color: #fff; padding: 12px; font-size: 19px; font-weight: bold; position: relative; }
-  header button { position: absolute; left: 8px; top: 8px; font-size: 14px; padding: 6px 10px; border-radius: 8px; border: 0; background: #666; color: #fff; }
-  section { padding: 14px; }
-  .big { font-size: 22px; padding: 18px; border-radius: 12px; border: 0; color: #fff; font-weight: bold; width: 92%; max-width: 480px; display: block; margin: 12px auto; box-shadow: 0 3px 6px rgba(0,0,0,.15); }
-  .big[disabled] { background: #bbb !important; }
-  .c-work { background: #4CAF50; } .c-in { background: #009688; } .c-out { background: #3F51B5; }
-  .c-booth { background: #2196F3; } .c-super { background: #E91E63; } .c-wage { background: #FF9800; } .c-test { background: #777; font-size: 15px; padding: 10px; }
-  input.pin { font-size: 28px; padding: 12px; width: 70%; max-width: 280px; text-align: center; border-radius: 10px; border: 2px solid #999; letter-spacing: 6px; }
-  .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 8px 0; }
-  .chip { font-size: 18px; padding: 12px 14px; border-radius: 10px; border: 2px solid #888; background: #fff; color: #222; min-width: 90px; }
-  .chip.sel { background: #222; color: #fff; border-color: #222; }
-  .chip small { display: block; font-size: 14px; opacity: .85; }
-  #reader { width: 100%; max-width: 960px; margin: 6px auto; border-radius: 14px; overflow: hidden; border: 3px solid #333; background: #000; min-height: 55vh; }
-  #reader video { width: 100% !important; height: auto !important; }
-  #reader.mirror video { transform: scaleX(-1); }
-  #cfg { font-size: 15px; color: #333; margin-bottom: 4px; }
-  #vRun { padding: 8px; }
-  #result { font-size: 28px; font-weight: bold; margin: 10px auto; padding: 18px; background: #fff; border-radius: 12px; max-width: 480px; white-space: pre-line; box-shadow: 0 2px 5px rgba(0,0,0,.1); color: #333; }
-  #result.ok { background: #e8f5e9; color: #1b7a2b; } #result.err { background: #ffebee; color: #c62828; }
-  #result.warn { background: #fff8e1; color: #b26a00; } #result.wait { background: #e3f2fd; color: #1565c0; }
-  /* 학생 QR 인식 후 나오는 큰 선택 창 (화면 전체를 덮는 팝업) */
-  #keypad { position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 50; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; padding: 8px; }
-  .kpbox { width: min(98vw, 980px); max-height: 96vh; overflow: auto; background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
-  #kpTitle { font-size: 24px; font-weight: bold; color: #333; }
-  #kpDisp { font-size: 56px; font-weight: bold; margin: 8px 0; min-height: 64px; }
-  #kpInfo { font-size: 28px; min-height: 64px; color: #333; margin: 6px 0; }
-  .keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 10px auto; max-width: 520px; }
-  .keys button { font-size: 44px; padding: 22px 0; border-radius: 14px; border: 1px solid #aaa; background: #f5f5f5; }
-  .row2 { display: flex; gap: 12px; margin-top: 10px; } .row2 button { flex: 1; font-size: 30px; padding: 24px; border-radius: 14px; border: 0; color: #fff; font-weight: bold; }
-  .small { font-size: 14px; color: #666; }
-  .wgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; max-height: 50vh; overflow: auto; margin: 10px 0; text-align: left; }
-  .wbtn { font-size: 24px; padding: 18px 14px; border: 3px solid #888; border-radius: 14px; background: #fff; color: #222; text-align: left; line-height: 1.3; }
-  .wbtn b { display: inline-block; min-width: 2.4em; }
-  .wbtn.sel { background: #222; color: #fff; border-color: #222; }
-  textarea, .field { font-size: 16px; padding: 8px; width: 80px; text-align: center; }
-  #testLog { text-align: left; white-space: pre-wrap; font-size: 15px; background: #fff; padding: 10px; border-radius: 8px; max-width: 480px; margin: 10px auto; }
-  /* 입장/퇴장: 카메라를 가리지 않는 위쪽 알림 (연속 스캔용) */
-  #qbadge { position: fixed; left: 8px; bottom: 8px; z-index: 95; padding: 8px 14px; border-radius: 20px; font-size: 16px; font-weight: 700; color: #fff; background: #e65100; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
-  #qbadge.off { background: #c62828; }
-  #toasts { position: fixed; left: 0; right: 0; top: 58px; z-index: 90; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; padding: 0 8px; }
-  .toast { min-width: min(92vw, 640px); padding: 14px 20px; border-radius: 16px; color: #fff; font-weight: bold; box-shadow: 0 4px 14px rgba(0,0,0,.35); text-align: center; }
-  .toast.wait { background: #1565c0; } .toast.ok { background: #2e7d32; } .toast.warn { background: #ef6c00; } .toast.err { background: #c62828; }
-  .toast .t1 { font-size: 40px; line-height: 1.2; } .toast .t2 { font-size: 22px; margin-top: 4px; font-weight: normal; }
-  /* 결과 전체화면 알림: 누가 처리됐는지 멀리서도 보이게 */
-  #banner { position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; color: #fff; text-align: center; }
-  #banner.ok { background: #2e7d32; } #banner.warn { background: #ef6c00; } #banner.err { background: #c62828; }
-  #banner .b1 { font-size: 72px; font-weight: bold; line-height: 1.25; word-break: keep-all; }
-  #banner .b2 { font-size: 40px; margin-top: 14px; line-height: 1.35; word-break: keep-all; }
-  #banner .bsub { position: absolute; bottom: 18px; font-size: 18px; opacity: .8; }
-  [hidden] { display: none !important; }
-</style>
-<style>
-/* ===== 화면 다듬기 (기존 스타일 위에 덮어쓰기) ===== */
-:root { --ink: #1b2437; --muted: #6b7690; --line: #e3e7f0; --card: #fff; --brand: #3b5bfd; }
-body { min-height: 100vh; background: linear-gradient(180deg, #eef1fb 0%, #f7f8fc 60%); color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; }
-header { background: linear-gradient(90deg, #1b2a52, #31408a); font-size: 20px; letter-spacing: .02em; padding: 14px; box-shadow: 0 2px 10px rgba(27,42,82,.25); position: sticky; top: 0; z-index: 40; }
-header button { background: rgba(255,255,255,.18); border-radius: 999px; padding: 7px 14px; top: 10px; }
-#modeLabel { font-size: 15px; font-weight: 600; margin-left: 8px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.18); }
-#modeLabel:empty { display: none; }
-section > p { color: var(--muted); font-weight: 700; }
+/* ===== 문화코인 태블릿 화면 · 디자인 시스템 ===== */
+:root {
+  --ink: #131a2e; --ink2: #3d4763; --muted: #7a849e; --line: #e4e8f2; --bg: #f2f4fb; --card: #fff;
+  --brand: #4f46e5; --brand2: #7c3aed;
+  --ok: #12a363; --ok-bg: #e9f9f1; --warn: #d97706; --warn-bg: #fff6e5; --err: #dc2626; --err-bg: #fff0f0; --info: #0284c7; --info-bg: #e8f5ff; --like: #db2777; --like-bg: #fff0f7;
+  --shadow: 0 10px 30px rgba(31, 41, 90, .12); --shadow-s: 0 2px 8px rgba(31, 41, 90, .08);
+  --camPad: 0px;   /* 카메라가 아직 아래로 잘리면 이 값을 키우세요 (예: 40px). 카메라가 너무 작으면 줄이세요 */
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body { margin: 0; background: radial-gradient(900px 500px at 80% -10%, #e4e1ff 0%, transparent 60%), var(--bg); color: var(--ink);
+  font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; -webkit-user-select: none; user-select: none; text-align: center; overflow-x: hidden; }
+[hidden] { display: none !important; }
+button { font-family: inherit; cursor: pointer; }
 
-/* 역할 선택: 카드형 버튼 */
-#vMenu { max-width: 860px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; padding: 18px 16px; }
-#vMenu > p { grid-column: 1 / -1; margin: 4px 0 0; font-size: 18px; }
-#vMenu .big { width: 100%; max-width: none; margin: 0; padding: 22px 20px; border-radius: 20px; text-align: left; font-size: 22px; display: flex; align-items: center; gap: 14px;
-  box-shadow: 0 6px 16px rgba(30,40,80,.16); transition: transform .08s; position: relative; overflow: hidden; }
-#vMenu .big:active { transform: scale(.98); }
-#vMenu .big::before { content: attr(data-ic); font-size: 34px; width: 56px; height: 56px; border-radius: 16px; background: rgba(255,255,255,.22); display: inline-flex; align-items: center; justify-content: center; flex: none; }
-#vMenu .big[disabled] { background: #d9dde8 !important; color: #8b93a8; box-shadow: none; }
-#vMenu .big[disabled]::before { background: rgba(0,0,0,.06); filter: grayscale(1); opacity: .6; }
-.c-work { background: linear-gradient(135deg, #34c38f, #1f9d6f); } .c-in { background: linear-gradient(135deg, #14b8c4, #0b8f9b); }
-.c-out { background: linear-gradient(135deg, #5b7cfa, #3b4fd1); } .c-booth { background: linear-gradient(135deg, #3aa0ff, #2272d6); }
-.c-super { background: linear-gradient(135deg, #ff5c8a, #d81b60); } .c-wage { background: linear-gradient(135deg, #ffb347, #f08a00); }
-.c-test { background: #6b7690; } .c-bal { background: linear-gradient(135deg, #8b5cf6, #6d3fe0); }
-#bal { position: fixed; inset: 0; z-index: 96; background: linear-gradient(160deg, #2b1d6b, #4a2bb5 60%, #6d3fe0); color: #fff; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-#bal[hidden] { display: none; }
-#bal .bn { font-size: 34px; font-weight: 700; opacity: .9; } #bal .bv { font-size: min(22vw, 150px); font-weight: 900; line-height: 1.05; color: #ffd54a; text-shadow: 0 0 30px rgba(255,213,74,.5); font-variant-numeric: tabular-nums; }
-#bal .bv i { font-style: normal; font-size: .38em; color: #fff; margin-left: .15em; }
-#bal .bs { font-size: 24px; margin: 10px 0 18px; opacity: .9; }
-#bal .bl { max-width: 520px; margin: 0 auto; background: rgba(255,255,255,.12); border-radius: 18px; padding: 10px 18px; text-align: left; font-size: 22px; }
-#bal .bl div { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.15); } #bal .bl div:last-child { border: 0; }
-#bal .bl .m { color: #ff9ab8; font-weight: 700; } #bal .bl .p { color: #8dffbf; font-weight: 700; }
-#bal .bh { margin-top: 16px; font-size: 17px; opacity: .7; }
+/* 상단 바 */
+header { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #fff;
+  background: linear-gradient(100deg, #1e1b4b, #3730a3 60%, #5b21b6); box-shadow: 0 4px 18px rgba(30, 27, 75, .35); text-align: left; }
+header .brand { display: flex; align-items: center; gap: 8px; font-size: 19px; letter-spacing: -.01em; }
+header .logo { width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,.16); display: inline-flex; align-items: center; justify-content: center; font-size: 19px; }
+#modeLabel { font-size: 14px; font-weight: 700; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.16); max-width: 55vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#modeLabel:empty { display: none; }
+#qbadge { margin-left: auto; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 800; color: #fff; background: #ea580c; }
+#qbadge.off { background: #dc2626; }
+
+section { padding: 16px; }
+.title { font-size: 20px; font-weight: 800; letter-spacing: -.01em; color: var(--ink); margin: 6px 0 14px; }
+.small { font-size: 14px; color: var(--muted); }
 
 /* PIN */
-#vPin { max-width: 420px; margin: 8vh auto 0; background: var(--card); border-radius: 24px; padding: 30px 22px; box-shadow: 0 10px 30px rgba(30,40,80,.12); }
-#vPin .big { width: 100%; margin-top: 16px; border-radius: 16px; background: linear-gradient(135deg, #3b5bfd, #2a3fc9) !important; }
-input.pin { border: 2px solid var(--line); background: #f6f7fb; width: 100%; }
-input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
+#vPin { max-width: 440px; margin: 7vh auto 0; background: var(--card); border-radius: 28px; padding: 34px 26px 30px; box-shadow: var(--shadow); }
+#vPin .hero { width: 76px; height: 76px; border-radius: 24px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 40px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 10px 24px rgba(245, 158, 11, .4); }
+#vPin h1 { margin: 6px 0 2px; font-size: 26px; letter-spacing: -.02em; } #vPin p { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+input.pin { width: 100%; font-size: 28px; padding: 14px; text-align: center; letter-spacing: 8px; border-radius: 16px; border: 2px solid var(--line); background: #f7f8fd; font-family: inherit; }
+input.pin:focus { outline: none; border-color: var(--brand); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, .15); }
+.btn { width: 100%; margin-top: 14px; padding: 16px; font-size: 19px; font-weight: 800; color: #fff; border: 0; border-radius: 16px; background: linear-gradient(135deg, var(--brand), var(--brand2)); box-shadow: 0 8px 20px rgba(79, 70, 229, .35); }
+.btn:active { transform: translateY(1px); }
+#pinMsg { min-height: 22px; margin-top: 10px; color: var(--err); font-weight: 700; font-size: 15px; }
 
-/* 선택 칩 */
-.chip { border: 2px solid var(--line); background: var(--card); border-radius: 16px; box-shadow: 0 2px 6px rgba(30,40,80,.07); font-weight: 700; padding: 14px 18px; }
-.chip.sel { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 4px 12px rgba(59,91,253,.4); }
-#cfg { font-size: 16px; color: var(--muted); padding: 4px 8px; font-weight: 600; }
+/* 역할 선택 */
+#vMenu { max-width: 940px; margin: 0 auto; padding: 18px 16px 30px; }
+#vMenu .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+.mode { position: relative; display: flex; align-items: center; gap: 16px; text-align: left; padding: 18px 18px; border: 0; border-radius: 22px; background: var(--card); color: var(--ink); box-shadow: var(--shadow-s); border: 1px solid var(--line); transition: transform .08s, box-shadow .2s; }
+.mode:active { transform: scale(.985); }
+.mode .ic { flex: none; width: 62px; height: 62px; border-radius: 19px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #fff; background: var(--c, #6366f1); box-shadow: 0 8px 18px color-mix(in srgb, var(--c, #6366f1) 45%, transparent); }
+.mode .tx b { display: block; font-size: 20px; letter-spacing: -.01em; } .mode .tx small { display: block; margin-top: 3px; color: var(--muted); font-size: 14px; font-weight: 500; }
+.mode .tag { position: absolute; right: 14px; top: 12px; font-size: 12px; font-weight: 800; color: #fff; background: #94a3b8; padding: 3px 9px; border-radius: 999px; font-style: normal; }
+.mode[disabled] { background: #f1f3f9; box-shadow: none; opacity: .75; } .mode[disabled] .ic { background: #cbd2e1; box-shadow: none; filter: grayscale(1); }
+.m-work { --c: #ec4899; } .m-hall { --c: #0ea5e9; } .m-booth { --c: #f97316; } .m-market { --c: #eab308; } .m-super { --c: #8b5cf6; } .m-wage { --c: #10b981; } .m-bal { --c: #4f46e5; } .m-test { --c: #64748b; }
 
-/* 카메라 */
-#reader { border: 0; border-radius: 22px; box-shadow: 0 8px 24px rgba(20,30,70,.28); outline: 4px solid #fff; }
-#vRun .chip[onclick*="Cam"], #vRun .chip[onclick*="Mirror"], #vRun .chip[onclick*="camFile"], #vRun .chip[onclick*="scanBeep"] { font-size: 14px; font-weight: 600; background: #eceff7; box-shadow: none; border: 0; color: #43506c; border-radius: 999px; }
+/* 선택 칩/카드 */
+.chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.chip { min-width: 96px; padding: 12px 16px; font-size: 18px; font-weight: 800; color: var(--ink); background: var(--card); border: 2px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-s); }
+.chip small { display: block; margin-top: 2px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.chip.sel { color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand2)); border-color: transparent; box-shadow: 0 8px 18px rgba(79, 70, 229, .4); }
+.chip.sel small { color: rgba(255,255,255,.85); }
+#setupList { max-width: 900px; margin: 0 auto; max-height: calc(100dvh - 150px); overflow-y: auto; padding: 4px; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; -webkit-overflow-scrolling: touch; }
+#setupList .chip { min-width: 0; padding: 18px 14px; font-size: 19px; border-radius: 18px; }
 
-/* 결과 카드 */
-#result { border-radius: 18px; border: 0; border-left: 8px solid #c5cbdb; background: var(--card); box-shadow: 0 4px 14px rgba(30,40,80,.1); font-size: 26px; }
-#result.ok { border-left-color: #2fb36a; background: #eefaf2; } #result.err { border-left-color: #e5484d; background: #fff1f1; }
-#result.warn { border-left-color: #f5a524; background: #fff8e8; } #result.wait { border-left-color: #3b82f6; background: #eef5ff; }
+/* 작동 화면 */
+#vRun { padding: 10px 12px 0; display: flex; flex-direction: column; align-items: center; min-height: calc(100dvh - 54px); }
+#cfg { font-size: 15px; font-weight: 700; color: var(--ink2); line-height: 1.4; padding: 2px 6px 8px; max-width: 760px; }
+#cfgBtns { max-height: 20dvh; overflow-y: auto; margin-bottom: 8px; padding: 2px; max-width: 900px; -webkit-overflow-scrolling: touch; }
+#cfgBtns .chip { padding: 9px 14px; font-size: 16px; min-width: 0; border-radius: 14px; }
+#stage { position: relative; display: flex; justify-content: center; width: 100%; }
+#reader { width: 80vw; min-height: 200px; border-radius: 26px; overflow: hidden; background: #0b1020; border: 0; outline: 5px solid #fff; box-shadow: 0 14px 34px rgba(25, 30, 80, .35); }
+#reader video { width: 100% !important; height: auto !important; display: block; }
+#reader.mirror video { transform: scaleX(-1); }
+#tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 12px 0 14px; width: 100%; }
+#tools .tb { font-size: 13px; font-weight: 700; padding: 8px 13px; border: 0; border-radius: 999px; color: #475069; background: #e7eaf5; }
+#btnUndo { font-size: 14px; font-weight: 800; padding: 9px 16px; border: 0; border-radius: 999px; color: #fff; background: linear-gradient(135deg, #fb923c, #ea580c); box-shadow: 0 6px 14px rgba(234, 88, 12, .4); }
+#result { max-width: 640px; margin: 8px auto 0; padding: 10px 16px; border-radius: 14px; background: rgba(255,255,255,.75); color: var(--ink2); font-size: 15px; font-weight: 700; white-space: pre-line; line-height: 1.4; }
+#result:empty { display: none; }
+#result.err { color: var(--err); background: var(--err-bg); } #result.warn { color: var(--warn); background: var(--warn-bg); } #result.ok { color: var(--ok); background: var(--ok-bg); }
 
-/* 팝업·키패드 */
-.kpbox { border-radius: 24px; } .keys button { border: 0; background: #eef0f7; font-weight: 700; box-shadow: 0 2px 0 #d7dbe8; } .keys button:active { background: #dfe3f2; }
-.row2 button { border-radius: 16px; } .wbtn { border: 2px solid var(--line); border-radius: 16px; box-shadow: 0 2px 6px rgba(30,40,80,.07); }
-.wbtn.sel { background: var(--brand); border-color: var(--brand); box-shadow: 0 4px 12px rgba(59,91,253,.4); }
-.toast { border-radius: 20px; }
+/* 결과 팝업 */
+#pop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(15, 20, 45, .46); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fade .15s; }
+#pop .pc { position: relative; width: min(92vw, 520px); background: var(--card); border-radius: 32px; padding: 30px 26px 26px; text-align: center; box-shadow: 0 24px 60px rgba(10, 14, 40, .45); overflow: hidden; animation: pin .22s cubic-bezier(.2, .9, .3, 1.2); }
+#pop .pc::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 10px; background: var(--ac); }
+#pop .pi { width: 92px; height: 92px; margin: 0 auto 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; background: var(--abg); }
+#pop .pt { font-size: 28px; font-weight: 900; letter-spacing: -.02em; color: var(--ac); }
+#pop .pn { margin-top: 6px; font-size: 22px; font-weight: 800; color: var(--ink); }
+#pop .pa { margin: 10px 0 2px; font-size: 76px; line-height: 1.05; font-weight: 900; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+#pop .pa i { font-style: normal; font-size: .42em; margin-left: .12em; opacity: .8; } #pop .pa.neg { color: #e11d48; } #pop .pa.pos { color: var(--ok); }
+#pop .pm { margin-top: 8px; font-size: 18px; font-weight: 600; color: var(--ink2); line-height: 1.45; }
+#pop .pb { display: flex; justify-content: space-between; align-items: baseline; margin-top: 18px; padding: 14px 20px; border-radius: 18px; background: #f4f6fc; font-size: 18px; font-weight: 700; color: var(--muted); }
+#pop .pb b { font-size: 34px; color: var(--ink); font-variant-numeric: tabular-nums; } #pop .pb b i { font-style: normal; font-size: .55em; margin-left: .1em; }
+#pop .plike { margin-top: 14px; width: 100%; padding: 15px; border: 0; border-radius: 18px; font-size: 20px; font-weight: 900; color: #fff; background: linear-gradient(135deg, #f472b6, #db2777); box-shadow: 0 10px 22px rgba(219, 39, 119, .38); }
+#pop .pbar { position: absolute; left: 0; bottom: 0; height: 6px; width: 100%; background: var(--ac); opacity: .35; transform-origin: left; animation: bar linear forwards; }
+#pop .spin { width: 54px; height: 54px; border-radius: 50%; border: 6px solid #dfe3f5; border-top-color: var(--brand); animation: rot .8s linear infinite; }
+#pop.ok { --ac: var(--ok); --abg: var(--ok-bg); } #pop.warn { --ac: var(--warn); --abg: var(--warn-bg); } #pop.err { --ac: var(--err); --abg: var(--err-bg); }
+#pop.info { --ac: var(--info); --abg: var(--info-bg); } #pop.like { --ac: var(--like); --abg: var(--like-bg); } #pop.wait { --ac: var(--brand); --abg: #eceaff; }
+@keyframes fade { from { opacity: 0; } } @keyframes pin { from { transform: scale(.88); opacity: 0; } } @keyframes bar { to { transform: scaleX(0); } } @keyframes rot { to { transform: rotate(360deg); } }
+
+/* 키패드(작품·금액) */
+#keypad { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 10px; background: rgba(15, 20, 45, .55); backdrop-filter: blur(3px); }
+.kpbox { width: min(96vw, 760px); max-height: 96dvh; overflow: auto; background: var(--card); border-radius: 30px; padding: 20px 18px 18px; box-shadow: 0 24px 60px rgba(10, 14, 40, .45); }
+#kpTitle { font-size: 21px; font-weight: 900; color: var(--ink); } #kpSub { margin-top: 2px; font-size: 15px; font-weight: 700; color: var(--brand); min-height: 20px; }
+#kpDisp { font-size: 60px; font-weight: 900; margin: 8px 0 2px; min-height: 72px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+#kpInfo { font-size: 20px; font-weight: 700; min-height: 34px; color: var(--ink2); margin: 2px 0 8px; line-height: 1.35; }
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 6px auto 8px; max-width: 460px; }
+.keys button { font-size: 36px; font-weight: 800; padding: 16px 0; border-radius: 18px; border: 0; background: #eef0fa; color: var(--ink); box-shadow: 0 3px 0 #d8dcee; } .keys button:active { background: #dfe3f6; transform: translateY(2px); box-shadow: none; }
+.row2 { display: flex; gap: 12px; margin-top: 12px; } .row2 button { flex: 1; font-size: 22px; font-weight: 900; padding: 18px; border-radius: 18px; border: 0; color: #fff; }
+#kpCancel { background: #8b93a8; } #kpOk { background: linear-gradient(135deg, #f472b6, #db2777); box-shadow: 0 8px 18px rgba(219, 39, 119, .35); } #kpOk:disabled { opacity: .4; box-shadow: none; }
+.wgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; max-height: 46dvh; overflow-y: auto; margin: 10px 0; padding: 2px; text-align: left; -webkit-overflow-scrolling: touch; }
+.wbtn { font-size: 19px; font-weight: 700; padding: 14px 14px; border: 2px solid var(--line); border-radius: 16px; background: #fff; color: var(--ink); text-align: left; line-height: 1.3; box-shadow: var(--shadow-s); }
+.wbtn b { display: inline-block; min-width: 2.2em; color: var(--like); }
+.wbtn.sel { color: #fff; border-color: transparent; background: linear-gradient(135deg, #f472b6, #db2777); box-shadow: 0 8px 18px rgba(219, 39, 119, .4); } .wbtn.sel b { color: #fff; }
+
+/* 알림(동기화 등) */
+#toasts { position: fixed; left: 0; right: 0; top: 64px; z-index: 90; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; padding: 0 12px; }
+.toast { min-width: min(92vw, 520px); padding: 12px 18px; border-radius: 16px; color: #fff; font-weight: 800; text-align: center; box-shadow: 0 10px 26px rgba(10, 14, 40, .3); }
+.toast.ok { background: #12a363; } .toast.warn { background: #d97706; } .toast.err { background: #dc2626; } .toast.wait { background: #4f46e5; }
+.toast .t1 { font-size: 18px; } .toast .t2 { font-size: 14px; margin-top: 2px; font-weight: 600; opacity: .95; }
+
+/* 잔액 확인(학생용) */
+#bal { position: fixed; inset: 0; z-index: 96; background: radial-gradient(800px 600px at 50% 0%, #5b3fd1, transparent 70%), linear-gradient(160deg, #1e1550, #3b2a9c 60%, #5b3fd1); color: #fff; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+#bal .bn { font-size: 34px; font-weight: 800; opacity: .92; } #bal .bv { font-size: min(22vw, 150px); font-weight: 900; line-height: 1.05; color: #ffd54a; text-shadow: 0 0 30px rgba(255,213,74,.5); font-variant-numeric: tabular-nums; }
+#bal .bv i { font-style: normal; font-size: .38em; color: #fff; margin-left: .15em; } #bal .bs { font-size: 22px; margin: 10px 0 18px; opacity: .9; }
+#bal .bl { max-width: 520px; margin: 0 auto; background: rgba(255,255,255,.12); border-radius: 20px; padding: 10px 18px; text-align: left; font-size: 21px; }
+#bal .bl div { display: flex; justify-content: space-between; gap: 14px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.15); } #bal .bl div:last-child { border: 0; }
+#bal .bl .m { color: #ff9ab8; font-weight: 800; } #bal .bl .p { color: #8dffbf; font-weight: 800; } #bal .bh { margin-top: 16px; font-size: 16px; opacity: .7; }
 
 /* PIN 확인 창 */
-#gate { position: fixed; inset: 0; z-index: 9999; background: rgba(15,20,40,.72); display: flex; align-items: center; justify-content: center; }
-#gate[hidden] { display: none; }
-#gate .gbox { background: #fff; border-radius: 24px; padding: 26px 22px; width: min(92vw, 400px); text-align: center; box-shadow: 0 16px 48px rgba(0,0,0,.4); }
-#gate .gt { font-size: 24px; font-weight: 800; } #gate .gs { color: #667; font-size: 15px; margin: 6px 0 14px; }
-#gate #gmsg { color: #c62828; min-height: 24px; font-weight: 700; margin-top: 6px; }
-#gate .gb { display: flex; gap: 10px; margin-top: 8px; } #gate .gb button { flex: 1; border: 0; color: #fff; font-size: 18px; font-weight: 700; padding: 14px 0; border-radius: 14px; }
+#gate { position: fixed; inset: 0; z-index: 9999; background: rgba(15, 20, 40, .72); display: flex; align-items: center; justify-content: center; }
+#gate .gbox { background: #fff; border-radius: 28px; padding: 28px 24px; width: min(92vw, 400px); text-align: center; box-shadow: 0 20px 56px rgba(0,0,0,.4); }
+#gate .gt { font-size: 24px; font-weight: 900; } #gate .gs { color: var(--muted); font-size: 15px; margin: 6px 0 14px; } #gate #gmsg { color: var(--err); min-height: 24px; font-weight: 800; margin-top: 6px; }
+#gate .gb { display: flex; gap: 10px; margin-top: 8px; } #gate .gb button { flex: 1; border: 0; color: #fff; font-size: 18px; font-weight: 800; padding: 15px 0; border-radius: 16px; }
 
-/* 📐 카메라 크기 조절 (세로 거치 시 아래 안내가 잘리면 --camw 값을 줄이세요. 예: 54vh → 48vh) */
-:root { --camw: min(100%, 54vh); }
-@media (orientation: landscape) { :root { --camw: min(100%, 72vh); } }
-#reader { width: var(--camw); min-height: 0; }
+/* 부하테스트 */
+#testLog { text-align: left; white-space: pre-wrap; font-size: 15px; background: #fff; padding: 12px; border-radius: 12px; max-width: 520px; margin: 10px auto; }
+.field { font-size: 16px; padding: 8px; width: 90px; text-align: center; border-radius: 10px; border: 2px solid var(--line); }
 </style>
 </head>
 <body>
-<header>🪙 문화코인 <span id="modeLabel"></span></header>
+<header>
+  <div class="brand"><span class="logo">🪙</span><b>문화코인</b></div>
+  <span id="modeLabel"></span>
+  <span id="qbadge" hidden></span>
+</header>
 
 <!-- 1. PIN -->
 <section id="vPin">
-  <p style="font-size:18px;font-weight:bold;">운영 PIN을 입력하세요</p>
+  <div class="hero">🪙</div>
+  <h1>문화코인</h1>
+  <p>운영 PIN을 입력하세요</p>
   <input id="pin" class="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')unlock()">
-  <button class="big c-super" style="background:#333" onclick="unlock()">확인</button>
-  <div id="pinMsg" class="small" style="color:#c62828;font-size:16px"></div>
+  <button class="btn" onclick="unlock()">시작하기</button>
+  <div id="pinMsg"></div>
 </section>
 
-<!-- 2. 모드 선택 -->
+<!-- 2. 역할 선택 -->
 <section id="vMenu" hidden>
-  <p style="font-size:18px;font-weight:bold;color:#555">이 기기의 역할을 선택하세요</p>
-  <button class="big c-work" id="mWork" data-ic="🖼️" onclick="pickMode('work')">학술제 작품 좋아요</button>
-  <button class="big c-in" id="mEnter" data-ic="🚪" onclick="pickMode('enter')">발표장 입장</button>
-  <button class="big c-out" id="mExit" data-ic="🏁" onclick="pickMode('exit')">발표장 퇴장</button>
-  <button class="big c-booth" id="mBooth" data-ic="🎪" onclick="pickMode('booth')">학급 부스</button>
-  <button class="big c-super" id="mSuper" data-ic="💸" onclick="pickMode('super')">슈퍼챗</button>
-  <button class="big c-bal" id="mBal" data-ic="🔍" onclick="pickMode('balance')">잔액 확인 (학생용 · 안내 태블릿)</button>
-  <button class="big c-wage" id="mWage" data-ic="🧑‍🏫" onclick="pickMode('wage')">근로 지급 (선생님용)</button>
-  <button class="big c-test" id="mTest" data-ic="🧪" onclick="pickMode('test')" hidden>부하테스트 (복사본 전용)</button>
+  <div class="title">이 태블릿의 역할을 선택하세요</div>
+  <div class="grid2">
+    <button class="mode m-work" id="mWork" onclick="pickMode('work')"><span class="ic">🖼️</span><span class="tx"><b>학술제 작품 좋아요</b><small>좋아요를 누르면 코인을 받아요</small></span><em class="tag" hidden></em></button>
+    <button class="mode m-hall" id="mHall" onclick="pickMode('hall')"><span class="ic">🎓</span><span class="tx"><b>발표장 입·퇴장</b><small>QR 한 번으로 입장 · 외출 · 퇴장</small></span><em class="tag" hidden></em></button>
+    <button class="mode m-booth" id="mBooth" onclick="pickMode('booth')"><span class="ic">🎪</span><span class="tx"><b>학급 부스</b><small>프로그램을 고르고 결제</small></span><em class="tag" hidden></em></button>
+    <button class="mode m-market" id="mMarket" onclick="pickMode('market')"><span class="ic">🛍️</span><span class="tx"><b>코인 마켓</b><small>판매 금액을 입력하고 결제</small></span><em class="tag" hidden></em></button>
+    <button class="mode m-super" id="mSuper" onclick="pickMode('super')"><span class="ic">💜</span><span class="tx"><b>슈퍼챗</b><small>장기자랑 팀 후원</small></span><em class="tag" hidden></em></button>
+    <button class="mode m-wage" id="mWage" onclick="pickMode('wage')"><span class="ic">🧑‍🏫</span><span class="tx"><b>근로 지급</b><small>선생님용 · 근로 장학금</small></span><em class="tag" hidden></em></button>
+    <button class="mode m-bal" id="mBal" onclick="pickMode('balance')"><span class="ic">🔍</span><span class="tx"><b>잔액 확인</b><small>학생용 안내 태블릿</small></span><em class="tag" hidden></em></button>
+    <button class="mode m-test" id="mTest" onclick="pickMode('test')" hidden><span class="ic">🧪</span><span class="tx"><b>부하테스트</b><small>복사본 전용</small></span></button>
+  </div>
 </section>
 
-<!-- 3. 대상 선택(발표/부스) -->
+<!-- 3. 대상 선택 -->
 <section id="vSetup" hidden>
-  <p id="setupTitle" style="font-size:18px;font-weight:bold"></p>
-  <div id="setupList" class="grid"></div>
+  <div id="setupTitle" class="title"></div>
+  <div id="setupList"></div>
 </section>
 
 <!-- 4. 작동 화면 -->
 <section id="vRun" hidden>
   <div id="cfg"></div>
-  <div id="cfgBtns" class="grid"></div>
-  <div id="reader"></div>
-  <div style="margin:4px">
-    <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="flipCam()">📷 카메라 전환</button>
-    <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="toggleMirror()">↔ 좌우반전</button>
-    <button id="btnPhoto" class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="$('camFile').click()">📸 사진 찍어서 스캔</button>
-    <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="soundTest()">🔊 소리 테스트</button>
+  <div id="cfgBtns" class="chips"></div>
+  <div id="stage"><div id="reader"></div></div>
+  <div id="result"></div>
+  <div id="tools">
+    <button class="tb" onclick="flipCam()">📷 카메라 전환</button>
+    <button class="tb" onclick="toggleMirror()">↔ 좌우반전</button>
+    <button class="tb" onclick="$('camFile').click()">📸 사진으로 스캔</button>
+    <button class="tb" onclick="soundTest()">🔊 소리 테스트</button>
+    <button id="btnUndo" hidden onclick="undo()">↩ 방금 결제 취소</button>
     <input id="camFile" type="file" accept="image/*" capture="environment" hidden onchange="photoScan(this)">
   </div>
 
   <div id="keypad" hidden><div class="kpbox">
-    <div class="small" id="kpTitle">작품 번호를 입력하세요</div>
+    <div id="kpTitle">작품 번호를 입력하세요</div>
+    <div id="kpSub"></div>
     <div id="kpDisp"></div>
     <div id="wgrid" class="wgrid" hidden></div>
     <div id="kpInfo"></div>
@@ -188,20 +208,17 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
       <button onclick="kp('C')">지움</button><button onclick="kp('0')">0</button><button onclick="kp('B')">←</button>
     </div>
     <div class="row2">
-      <button style="background:#888" onclick="kpCancel()">취소</button>
-      <button id="kpOk" style="background:#4CAF50" onclick="kpSend()">좋아요 ♥</button>
+      <button id="kpCancel" onclick="kpCancel()">취소</button>
+      <button id="kpOk" onclick="kpSend()">좋아요 ♥</button>
     </div>
   </div></div>
-
-  <div id="result" class="wait">준비 중...</div>
-  <button id="btnUndo" class="chip" style="background:#fff3e0;border-color:#ef6c00" hidden onclick="undo()">↩ 방금 결제 취소</button>
 </section>
 
 <!-- 5. 부하테스트 -->
 <section id="vTest" hidden>
-  <p style="color:#c62828;font-weight:bold;font-size:16px">⚠ 반드시 '시트 사본'에서만 실행하세요.<br>코인이 실제로 차감됩니다.</p>
+  <p style="color:#dc2626;font-weight:800;font-size:16px">⚠ 반드시 '시트 사본'에서만 실행하세요.<br>코인이 실제로 차감됩니다.</p>
   <div>총 요청 수 <input id="tN" class="field" type="number" value="100"> 동시 요청 수 <input id="tC" class="field" type="number" value="5"></div>
-  <button class="big c-test" style="background:#c62828;font-size:18px" onclick="runTest()">테스트 시작</button>
+  <button class="btn" style="max-width:360px;background:#dc2626" onclick="runTest()">테스트 시작</button>
   <div id="testLog"></div>
 </section>
 
@@ -209,12 +226,11 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
   <div class="gt">🔒 선생님 확인</div><div class="gs">처음 화면으로 돌아가려면 운영 PIN을 입력하세요</div>
   <input id="gpin" class="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')gateOk()">
   <div id="gmsg"></div>
-  <div class="gb"><button onclick="closeGate()" style="background:#8a93a6">취소</button><button onclick="gateOk()" style="background:#3b5bfd">처음 화면으로</button></div>
+  <div class="gb"><button onclick="closeGate()" style="background:#8a93a6">취소</button><button onclick="gateOk()" style="background:linear-gradient(135deg,#4f46e5,#7c3aed)">처음 화면으로</button></div>
 </div></div>
 <div id="bal" hidden onclick="hideBal()"></div>
+<div id="pop" hidden onclick="hidePop()"></div>
 <div id="toasts"></div>
-<div id="qbadge" hidden></div>
-<div id="banner" hidden onclick="hideBanner()"><div id="bannerMsg"></div><div class="bsub">화면을 누르면 닫힙니다</div></div>
 
 <script>
 /* ===== 서버 연결 설정 =====
@@ -245,10 +261,10 @@ if (typeof google === 'undefined' || !google.script || !google.script.run) {
 }
 
 var pin = '', boot = null, mode = '', target = {}, qr = null, facing = 'environment';
-var kpMode = '', busy = false, lastText = '', lastAt = 0, pendingId = '', kpNo = '', kpTimer = null, undoTx = '', undoTimer = null, seq = 0, actx = null;
+var kpMode = '', kpKind = '', busy = false, lastText = '', lastAt = 0, pendingId = '', kpNo = '', kpTimer = null, undoTx = '', undoTimer = null, seq = 0, actx = null, lastHallId = '', lastAmt = 0;
 
 function $(id) { return document.getElementById(id); }
-function show(id) { ['vPin','vMenu','vSetup','vRun','vTest'].forEach(function (v) { $(v).hidden = (v !== id); }); }
+function show(id) { ['vPin','vMenu','vSetup','vRun','vTest'].forEach(function (v) { $(v).hidden = (v !== id); }); if (id === 'vRun') setTimeout(fitReader, 30); }
 function fmt(n) { return String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
 /* ---------- PIN ---------- */
@@ -266,47 +282,47 @@ function unlock() {
 function showMenu() {
   show('vMenu'); $('modeLabel').innerText = '';
   var st = boot.status, off = (st.all !== '열림');
-  function setBtn(id, label, flag) { var b = $(id); var open = !off && flag === '열림'; b.disabled = !open; b.innerText = label + (open ? '' : ' (닫힘)'); }
-  setBtn('mWork', '학술제 작품 좋아요', st.work);
-  setBtn('mEnter', '발표장 입장', st.hall);
-  setBtn('mExit', '발표장 퇴장', st.hall);
-  setBtn('mBooth', '학급 부스', st.booth);
-  setBtn('mSuper', '슈퍼챗', st.sup);
-  setBtn('mWage', '근로 지급 (선생님용)', st.wage);
+  function setBtn(id, flag) {
+    var b = $(id), open = !off && flag === '열림', t = b.querySelector('.tag');
+    b.disabled = !open; t.hidden = open; t.innerText = '닫힘';
+  }
+  setBtn('mWork', st.work); setBtn('mHall', st.hall); setBtn('mBooth', st.booth); setBtn('mMarket', st.market);
+  setBtn('mSuper', st.sup); setBtn('mWage', st.wage);
   $('mTest').hidden = !boot.testAllowed;
 }
 
-function goHome() { hideBal(); stopCam(); clearTimeout(kpTimer); $('keypad').hidden = true; busy = false; showMenu(); }
+function goHome() { hideBal(); hidePop(); stopCam(); clearTimeout(kpTimer); $('keypad').hidden = true; busy = false; showMenu(); }
 
 /* ---------- 모드 선택 ---------- */
 function pickMode(m) {
   mode = m; target = {}; busy = false;
-  if (m === 'test') { show('vTest'); $('modeLabel').innerText = '· 부하테스트'; return; }
+  if (m === 'test') { show('vTest'); $('modeLabel').innerText = '부하테스트'; return; }
   if (m === 'work') {
     var zs = zoneList();
-    if (!zs.length) { $('modeLabel').innerText = '· 작품 좋아요'; startRun(); return; }
+    if (!zs.length) { $('modeLabel').innerText = '작품 좋아요'; startRun(); return; }
     var zl = $('setupList'); zl.innerHTML = '';
     $('setupTitle').innerText = '이 태블릿은 어느 구역입니까?';
     zs.forEach(function (z) {
-      addChip(zl, z.name, z.count + '개 (' + z.min + '~' + z.max + '번)', function () { target = { zone: z.name }; $('modeLabel').innerText = '· 작품 좋아요 ' + z.name; startRun(); });
+      addChip(zl, z.name, z.count + '개 · ' + z.min + '~' + z.max + '번', function () { target = { zone: z.name }; $('modeLabel').innerText = '작품 좋아요 · ' + z.name; startRun(); });
     });
     show('vSetup'); return;
   }
-  if (m === 'balance') { $('modeLabel').innerText = '· 잔액 확인'; startRun(); return; }
-  if (m === 'super') { $('modeLabel').innerText = '· 슈퍼챗'; startRun(); return; }
-  if (m === 'wage') { $('modeLabel').innerText = '· 근로 지급'; startRun(); return; }
+  if (m === 'balance') { $('modeLabel').innerText = '잔액 확인'; startRun(); return; }
+  if (m === 'super') { $('modeLabel').innerText = '슈퍼챗'; startRun(); return; }
+  if (m === 'wage') { $('modeLabel').innerText = '근로 지급'; startRun(); return; }
+  if (m === 'market') { $('modeLabel').innerText = '코인 마켓'; lastAmt = 0; startRun(); return; }
   var list = $('setupList'); list.innerHTML = '';
-  if (m === 'enter' || m === 'exit') {
+  if (m === 'hall') {
     $('setupTitle').innerText = '어느 발표입니까?';
     boot.sessions.filter(function (s) { return s.open; }).forEach(function (s) {
-      addChip(list, s.name, '', function () { target = { session: s.code, label: s.name }; $('modeLabel').innerText = (m === 'enter' ? '· 입장 ' : '· 퇴장 ') + s.name; startRun(); });
+      addChip(list, s.name, '', function () { target = { session: s.code, label: s.name }; $('modeLabel').innerText = '발표장 · ' + s.name; startRun(); });
     });
     if (!list.children.length) list.innerHTML = '<div class="small">열려 있는 발표가 없습니다. (시트 [발표] 상태 확인)</div>';
   } else if (m === 'booth') {
     $('setupTitle').innerText = '어느 부스입니까?';
     var names = [];
     boot.booths.forEach(function (b) { if (names.indexOf(b.booth) < 0) names.push(b.booth); });
-    names.forEach(function (n) { addChip(list, n, '', function () { target = { booth: n, program: '' }; $('modeLabel').innerText = '· 부스 ' + n; startRun(); }); });
+    names.forEach(function (n) { addChip(list, n, '', function () { target = { booth: n, program: '' }; $('modeLabel').innerText = '부스 · ' + n; startRun(); }); });
     if (!names.length) list.innerHTML = '<div class="small">등록된 부스가 없습니다. (시트 [부스] 확인)</div>';
   }
   show('vSetup');
@@ -323,40 +339,42 @@ function zoneList() {
   return Object.keys(zs).map(function (k) { return zs[k]; }).sort(function (a, b) { return a.min - b.min; });
 }
 function addChip(parent, text, sub, fn) {
-  var b = document.createElement('button'); b.className = 'chip'; b.innerHTML = text + (sub ? '<small>' + sub + '</small>' : ''); b.onclick = fn; parent.appendChild(b); return b;
+  var b = document.createElement('button'); b.className = 'chip'; b.innerHTML = esc(text) + (sub ? '<small>' + esc(sub) + '</small>' : ''); b.onclick = fn; parent.appendChild(b); return b;
 }
 
 /* ---------- 작동 화면 ---------- */
 function startRun() {
-  show('vRun'); renderCfg(); setResult('wait', '카메라 켜는 중...');
-  $('keypad').hidden = true; $('btnUndo').hidden = true;
+  show('vRun'); renderCfg(); setResult('', '');
+  $('keypad').hidden = true; hideUndo();
   startCam();
+  if (mode === 'market') setTimeout(function () { if (!target.amount && $('keypad').hidden) openAmountKeypad('market'); }, 350);
 }
 
 function renderCfg() {
   var cfg = $('cfg'), box = $('cfgBtns'); box.innerHTML = '';
-  if (mode === 'balance') cfg.innerText = '내 QR을 카메라에 보여주세요 → 내 코인이 나옵니다 (조회만 되고 코인은 바뀌지 않아요)';
-  if (mode === 'work') {
-    cfg.innerText = target.zone
-      ? target.zone + ': ① 학생 QR 스캔 → ② 좋아요할 작품 선택 → ③ 좋아요 ♥'
-      : '① 학생 QR 스캔 → ② 작품 번호 입력 → ③ 좋아요 ♥';
-  } else if (mode === 'enter' || mode === 'exit') {
-    cfg.innerText = (mode === 'enter' ? '입장' : '퇴장') + ' 스캔: ' + target.label;
-  } else if (mode === 'booth') {
-    cfg.innerText = '프로그램을 먼저 선택하고, 학생 QR을 스캔하세요.';
+  if (mode === 'balance') cfg.innerText = '내 QR을 보여주세요 → 내 코인이 나와요 (조회만 돼요)';
+  else if (mode === 'work') cfg.innerText = target.zone ? '학생 QR 스캔 → 작품 선택 → 좋아요 ♥' : '학생 QR 스캔 → 작품 번호 입력 → 좋아요 ♥';
+  else if (mode === 'hall') cfg.innerText = '학생 QR만 찍으면 입장 · 외출 · 퇴장이 자동으로 처리돼요';
+  else if (mode === 'booth') {
+    cfg.innerText = '프로그램을 고른 뒤 학생 QR을 스캔하세요';
     boot.booths.filter(function (b) { return b.booth === target.booth; }).forEach(function (b) {
       var c = addChip(box, b.program, fmt(b.price) + 'C', function () { target.program = b.program; renderCfg(); });
       if (target.program === b.program) c.classList.add('sel');
     });
+  } else if (mode === 'market') {
+    cfg.innerText = target.amount ? '판매 금액 ' + fmt(target.amount) + 'C · 학생 QR을 스캔하세요' : '판매 금액을 입력한 뒤 학생 QR을 스캔하세요';
+    var c1 = addChip(box, target.amount ? fmt(target.amount) + 'C' : '✏️ 금액 입력', target.amount ? '눌러서 금액 변경' : '', function () { openAmountKeypad('market'); });
+    if (target.amount) c1.classList.add('sel');
+    if (!target.amount && lastAmt) addChip(box, fmt(lastAmt) + 'C', '직전 금액 다시 쓰기', function () { target.amount = lastAmt; renderCfg(); });
   } else if (mode === 'wage') {
-    cfg.innerText = '업무를 먼저 선택하고, 일을 마친 학생의 QR을 스캔하세요. (선택한 업무의 코인이 입금됩니다)';
+    cfg.innerText = '업무를 고른 뒤, 일을 마친 학생의 QR을 스캔하세요';
     boot.tasks.forEach(function (t) {
       var c = addChip(box, t.name, '+' + fmt(t.pay) + 'C', function () { target.task = t.name; renderCfg(); });
       if (target.task === t.name) c.classList.add('sel');
     });
     if (!boot.tasks.length) box.innerHTML = '<div class="small">등록된 업무가 없습니다. (시트 [근로] 확인)</div>';
   } else if (mode === 'super') {
-    cfg.innerText = '① 후원할 팀 선택 ② 금액 선택(또는 직접 입력) ③ 학생 QR 스캔';
+    cfg.innerText = '팀과 금액을 고른 뒤 학생 QR을 스캔하세요';
     boot.teams.filter(function (t) { return t.open; }).forEach(function (t) {
       var c = addChip(box, t.no + '번', t.name, function () { target.team = t.no; target.teamName = t.name; renderCfg(); });
       if (target.team === t.no) c.classList.add('sel');
@@ -367,18 +385,31 @@ function renderCfg() {
       if (target.amount === a) c.classList.add('sel');
     });
     var custom = target.amount && boot.superOptions.indexOf(target.amount) < 0;
-    var cc = addChip(box, custom ? fmt(target.amount) + 'C' : '✏️ 직접 입력', custom ? '직접 입력 · 눌러서 변경' : '후원자가 말한 금액', function () { openAmountKeypad(); });
+    var cc = addChip(box, custom ? fmt(target.amount) + 'C' : '✏️ 직접 입력', custom ? '직접 입력 · 눌러서 변경' : '', function () { openAmountKeypad('super'); });
     if (custom) cc.classList.add('sel');
   }
+  fitReader();
 }
 
+/* 카메라 크기: 남은 화면 높이에 맞춰 자동으로 줄여서 아래가 잘리지 않게 합니다 */
+function fitReader() {
+  var r = $('reader'); if (!r || $('vRun').hidden) return;
+  var v = r.querySelector('video'), ar = (v && v.videoWidth) ? v.videoHeight / v.videoWidth : 0.75;
+  var top = $('stage').getBoundingClientRect().top + window.scrollY;
+  var pad = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--camPad')) || 0;
+  var reserve = 74 + pad + ($('result').offsetHeight || 0);          // 아래 도구 줄 + 여백
+  var availH = window.innerHeight - top - reserve, availW = document.documentElement.clientWidth - 28;
+  var w = Math.max(220, Math.min(availW, availH / ar, 900));
+  r.style.width = Math.floor(w) + 'px';
+}
+window.addEventListener('resize', fitReader); window.addEventListener('orientationchange', function () { setTimeout(fitReader, 300); });
 /* ---------- 카메라 ---------- */
 function startCam() {
   if (qr) return;
   try {
     qr = new Html5Qrcode('reader');
     qr.start({ facingMode: facing }, { fps: 10, aspectRatio: 1.333, qrbox: function (w, h) { var m = Math.min(w, h), q = Math.floor(m * 0.72); return { width: q, height: q }; } }, onScan, function () {})
-      .then(function () { applyMirror(); setResult('', '학생 QR을 카메라에 보여주세요.'); })
+      .then(function () { applyMirror(); setResult('', ''); var v = $('reader').querySelector('video'); if (v) { v.addEventListener('loadedmetadata', fitReader); } setTimeout(fitReader, 200); setTimeout(fitReader, 800); })
       .catch(function (e) { qr = null; camFail(e); });
   } catch (e) { qr = null; camFail(e); }
 }
@@ -397,7 +428,7 @@ function photoScan(inp) {
   var f = inp.files && inp.files[0]; inp.value = '';
   if (!f) return;
   if (typeof Html5Qrcode === 'undefined') { setResult('err', '스캔 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인하세요.'); return; }
-  setResult('wait', '사진에서 QR 읽는 중...');
+  setResult('', '사진에서 QR 읽는 중...');
   var tmp = qr || new Html5Qrcode('reader');
   tmp.scanFile(f, false).then(function (text) { lastText = ''; onScan(text); })
     .catch(function () { feedback(false); setResult('err', 'QR을 읽지 못했습니다.\nQR을 화면에 크게 담아 다시 찍어주세요.'); });
@@ -415,26 +446,26 @@ function flipCam() { facing = (facing === 'environment') ? 'user' : 'environment
 /* ---------- 스캔 ---------- */
 function onScan(text) {
   var now = Date.now();
-  if (busy || !$('keypad').hidden || !$('gate').hidden) return;   // 키패드(금액 입력)가 열려 있는 동안에는 스캔하지 않음
+  if (busy || !$('keypad').hidden || !$('gate').hidden) return;   // 키패드가 열려 있는 동안에는 스캔하지 않음
   if (text === lastText && now - lastAt < (mode === 'balance' ? 8000 : 2500)) return;
   lastText = text; lastAt = now;
   text = String(text).trim().toUpperCase();
-  if (!/^[A-Z0-9]{6,12}$/.test(text)) { feedback(false); setResult('err', '학생 QR이 아닙니다.'); showBanner('err', '학생 QR이 아닙니다.'); return; }
+  if (!/^[A-Z0-9]{6,12}$/.test(text)) { feedback(false); popup({ lv: 'err', ic: '⛔', title: '학생 QR이 아니에요', note: '학생 카드의 QR을 보여주세요', ms: 2000 }); return; }
 
-  if (mode === 'booth' && !target.program) { feedback(false); setResult('warn', '먼저 위에서\n프로그램을 선택하세요.'); return; }
-  if (mode === 'wage' && !target.task) { feedback(false); setResult('warn', '먼저 위에서\n업무를 선택하세요.'); return; }
-  if (mode === 'super' && (!target.team || !target.amount)) { feedback(false); setResult('warn', '먼저 후원할 팀과\n금액을 선택하세요.'); return; }
+  if (mode === 'booth' && !target.program) { feedback(false); popup({ lv: 'warn', ic: '👆', title: '프로그램을 먼저 선택하세요', ms: 1800 }); return; }
+  if (mode === 'wage' && !target.task) { feedback(false); popup({ lv: 'warn', ic: '👆', title: '업무를 먼저 선택하세요', ms: 1800 }); return; }
+  if (mode === 'super' && (!target.team || !target.amount)) { feedback(false); popup({ lv: 'warn', ic: '👆', title: '팀과 금액을 먼저 선택하세요', ms: 1800 }); return; }
 
   scanBeep(); // QR이 인식된 즉시 큰 소리
   if (mode === 'balance') { showBal(text); return; }
   if (mode === 'work') { pendingId = text; busy = true; openKeypad(); return; }
+  if (mode === 'market' && !target.amount) { pendingId = text; busy = true; openAmountKeypad('market', true); return; }
   submit(text);
 }
 
 function devLabel() {
   return mode + (target.booth ? ':' + target.booth : '') + (target.session ? ':' + target.session : '') + (target.task ? ':' + target.task : '') + (target.zone ? ':' + target.zone : '');
 }
-// 입장/퇴장: 결과를 기다리지 않고 다음 학생을 바로 찍을 수 있게 처리 (결과는 위쪽 알림으로 차례로 표시)
 // 학생용 잔액 확인: 조회만 합니다. 6초 뒤 자동으로 지워져 다음 학생에게 앞 학생의 잔액이 보이지 않습니다.
 var balTimer = null;
 function showBal(id) {
@@ -471,26 +502,7 @@ function gateOk() {
   else { $('gmsg').innerText = 'PIN이 달라요'; $('gpin').value = ''; }
 }
 
-function submitPipe(id) {
-  var qid = newQid(), req = { mode: mode, studentId: id, target: payload(), device: devLabel(), qid: qid, ts: Date.now() };
-  var el = toast('wait', '⏳ ' + (nameOf(id) ? nameOf(id) + '님 ' : '') + '확인 중...'), done = false;
-  function toQueue(why) {
-    if (done) return; done = true; clearTimeout(timer);
-    qAdd(req);
-    var nm = (boot && boot.students && boot.students[id]) || '';
-    announce({ level: 'ok', _say: '임시저장' }, id);
-    setToast(el, 'warn', (nm ? nm + '님 ' : '') + '임시 저장됨 📥\n' + why + ' — 연결되면 자동 전송');
-  }
-  // 연결이 끊겼거나 10초 안에 응답이 없으면 기기에 임시 저장 (같은 요청ID라 나중에 중복 처리되지 않음)
-  var timer = setTimeout(function () { toQueue('응답 지연'); }, 10000);
-  if (navigator.onLine === false) { toQueue('오프라인'); return; }
-  google.script.run
-    .withSuccessHandler(function (r) { clearTimeout(timer); qRemove(qid); if (done) return; done = true; announce(r, id); setToast(el, r.level, r.msg); })
-    .withFailureHandler(function () { toQueue('통신 끊김'); })
-    .processScan({ pin: pin, mode: req.mode, studentId: id, target: req.target, device: req.device, qid: qid, ts: req.ts });
-}
-
-/* ---------- 오프라인 임시저장 대기열 (입장/퇴장 전용) ---------- */
+/* ---------- 오프라인 임시저장 대기열 (발표장 전용) ---------- */
 var Q_KEY = 'coinQ', Q = [], flushing = false;
 try { Q = JSON.parse(localStorage.getItem(Q_KEY) || '[]') || []; } catch (e) { Q = []; }
 function newQid() { var r = ''; for (var i = 0; i < 5; i++) r += Math.floor(Math.random() * 36).toString(36); return ('Q' + Date.now().toString(36) + r).toUpperCase(); }
@@ -552,59 +564,136 @@ function setToast(el, level, msg) {
   if (level !== 'wait') el._t = setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, level === 'ok' ? 2200 : 3500);
 }
 
-var pendingLast = '';
-function submit(id) {
-  pendingLast = id;
-  if (mode === 'enter' || mode === 'exit') { submitPipe(id); return; }
-  busy = true; hideUndo(); setResult('wait', (nameOf(id) ? nameOf(id) + '님 ' : '') + '처리 중... ⏳');
-  var my = ++seq, done = false;
-  var label = devLabel();
-  var timer = setTimeout(function () { if (!done) { done = true; busy = false; feedback(false); setResult('warn', '응답이 늦습니다.\n결제가 되었는지 [거래내역]을 확인하고\n필요하면 다시 스캔하세요.'); } }, 25000);
+/* ---------- 결과 팝업 (결제금액 + 잔액) ---------- */
+var popTimer = null, hallLikeInfo = null;
+function popup(o) {
+  var p = $('pop'); clearTimeout(popTimer); hallLikeInfo = null;
+  var ms = o.ms || 2400, h = '<div class="pc">';
+  h += '<div class="pi">' + (o.lv === 'wait' ? '<div class="spin"></div>' : o.ic || '') + '</div>';
+  h += '<div class="pt">' + esc(o.title || '') + '</div>';
+  if (o.name) h += '<div class="pn">' + esc(o.name) + '님</div>';
+  if (typeof o.amt === 'number' && o.amt !== 0) h += '<div class="pa ' + (o.amt < 0 ? 'neg' : 'pos') + '">' + (o.amt < 0 ? '−' : '+') + fmt(Math.abs(o.amt)) + '<i>C</i></div>';
+  if (o.note) h += '<div class="pm">' + esc(o.note).replace(/\n/g, '<br>') + '</div>';
+  if (typeof o.bal === 'number') h += '<div class="pb"><span>잔액</span><b>' + fmt(o.bal) + '<i>C</i></b></div>';
+  if (o.likeOffer) { hallLikeInfo = o.likeOffer; h += '<button class="plike" onclick="event.stopPropagation();hallLike()">♥ 이 발표 좋아요' + (boot && boot.like && boot.like.coin ? ' · +' + fmt(boot.like.coin) + 'C' : '') + '</button>'; }
+  if (o.lv !== 'wait') h += '<div class="pbar" style="animation-duration:' + ms + 'ms"></div>';
+  p.className = o.lv; p.innerHTML = h + '</div>'; p.hidden = false;
+  if (o.lv !== 'wait') popTimer = setTimeout(hidePop, ms);
+}
+function hidePop() { clearTimeout(popTimer); $('pop').hidden = true; hallLikeInfo = null; }
+function waitPop(id) { popup({ lv: 'wait', title: '확인 중...', name: nameOf(id) }); }
+
+function ctxLabel() {
+  if (mode === 'booth') return target.booth + ' · ' + target.program;
+  if (mode === 'super') return (target.teamName || target.team + '번 팀') + ' 슈퍼챗';
+  if (mode === 'market') return '코인 마켓';
+  if (mode === 'wage') return target.task || '';
+  return '';
+}
+// 서버 결과 → 팝업 구성
+function showResult(r, id, m) {
+  var L = String(r.msg || '').split('\n').filter(Boolean), d = (typeof r.delta === 'number') ? r.delta : null;
+  var o = { lv: r.level === 'ok' ? 'ok' : (r.level === 'warn' ? 'warn' : 'err'), name: r.name || nameOf(id), ms: r.level === 'ok' ? 2200 : 3200 };
+  if (r.level === 'ok') {
+    if (r.hall === 'in') { o.lv = 'info'; o.ic = '🚪'; o.title = '입장 완료'; o.ms = 1500; }
+    else if (r.hall === 'back') { o.lv = 'info'; o.ic = '🔁'; o.title = '다시 입장했어요'; o.note = ((L[0] || '').match(/\(([^)]*)\)/) || [])[1] || ''; o.ms = 1800; }
+    else if (r.hall === 'pause') { o.lv = 'info'; o.ic = '🚻'; o.title = '잠시 외출'; o.note = r.limit + '분 안에 돌아와\n다시 한 번 찍어 주세요'; o.ms = 3000; }
+    else if (r.hall === 'out') { o.ic = '🎉'; o.title = '발표 참여 완료'; o.amt = d; o.bal = r.balance; o.note = '끝까지 들어줘서 고마워요'; o.ms = 6500; if (r.likeOffer) o.likeOffer = { code: r.likeOffer, id: id }; }
+    else if (r.like === 'ok' || r.like === 'limit') { o.lv = 'like'; o.ic = '💖'; o.title = '좋아요 완료'; o.amt = d; o.bal = r.balance; o.note = r.like === 'limit' ? '오늘 받을 수 있는 코인을\n모두 받았어요' : (L[1] || ''); }
+    else if (d !== null && d < 0) { o.ic = '💳'; o.title = '결제 완료'; o.amt = d; o.bal = r.balance; o.note = ctxLabel(); }
+    else if (d !== null && d > 0) { o.ic = m === 'wage' ? '💼' : '💰'; o.title = m === 'wage' ? '근로 장학금' : '코인 지급'; o.amt = d; o.bal = r.balance; o.note = ctxLabel(); }
+    else { o.ic = '✅'; o.title = (L[0] || '완료').replace(/^.*?님\s*/, '') || '완료'; o.note = L.slice(1).join('\n'); }
+  } else {
+    o.ic = r.level === 'warn' ? '⚠️' : '⛔';
+    var t = (L[0] || '처리되지 않았어요');
+    if (o.name && t.indexOf(o.name + '님') === 0 && t.length > o.name.length + 2) t = t.slice(o.name.length + 2).trim();
+    o.title = t; o.note = L.slice(1).join('\n');
+    if (r.like === 'dup') { o.title = '이미 좋아요를 눌렀어요'; o.note = ''; }
+  }
+  popup(o);
+}
+function hallLike() {
+  var info = hallLikeInfo; if (!info) return; hidePop();
+  waitPop(info.id);
   google.script.run
-    .withSuccessHandler(function (r) { if (done || my !== seq) return; done = true; clearTimeout(timer); onResult(r); })
-    .withFailureHandler(function (e) { if (done || my !== seq) return; done = true; clearTimeout(timer); busy = false; feedback(false); setResult('err', '통신 오류\n결제가 되었는지 확인 후\n다시 스캔하세요.\n(이 모드는 오프라인 저장이 안 됩니다)'); showBanner('err', '통신 오류\n처리가 되었는지 확인 후\n다시 스캔하세요.'); })
+    .withSuccessHandler(function (r) { feedback(r.level === 'ok'); showResult(r, info.id, 'work'); })
+    .withFailureHandler(function () { feedback(false); popup({ lv: 'err', ic: '📡', title: '통신 오류', note: '잠시 후 다시 눌러 주세요' }); })
+    .processScan({ pin: pin, mode: 'plike', studentId: info.id, target: { session: info.code }, device: 'hall:like', qid: newQid(), ts: Date.now() });
+}
+
+/* ---------- 제출 ---------- */
+function submit(id) {
+  if (mode === 'hall') { submitPipe(id); return; }
+  busy = true; hideUndo(); waitPop(id);
+  var my = ++seq, done = false, label = devLabel(), m = mode;
+  var timer = setTimeout(function () { if (!done) { done = true; busy = false; feedback(false); popup({ lv: 'warn', ic: '⏱', title: '응답이 늦어요', note: '처리 여부를 [거래내역]에서 확인하고\n필요하면 다시 스캔하세요', ms: 5000 }); } }, 25000);
+  google.script.run
+    .withSuccessHandler(function (r) { if (done || my !== seq) return; done = true; clearTimeout(timer); onResult(r, id, m); })
+    .withFailureHandler(function () { if (done || my !== seq) return; done = true; clearTimeout(timer); busy = false; feedback(false); popup({ lv: 'err', ic: '📡', title: '통신 오류', note: '처리되었는지 확인한 뒤\n다시 스캔하세요', ms: 4500 }); })
     .processScan({ pin: pin, mode: mode, studentId: id, target: payload(), device: label });
+}
+// 발표장: 결과를 기다리지 않고 다음 학생을 바로 찍을 수 있게 처리. 연결이 끊기면 기기에 임시 저장했다가 나중에 자동 전송
+function submitPipe(id) {
+  var qid = newQid(), req = { mode: 'hall', studentId: id, target: payload(), device: devLabel(), qid: qid, ts: Date.now() };
+  lastHallId = id; waitPop(id);
+  var done = false;
+  function toQueue(why) {
+    if (done) return; done = true; clearTimeout(timer);
+    qAdd(req); feedback(true);
+    popup({ lv: 'warn', ic: '📥', title: '임시 저장됨', name: nameOf(id), note: why + ' · 연결되면 자동 전송돼요', ms: 2200 });
+  }
+  var timer = setTimeout(function () { toQueue('응답 지연'); }, 10000);
+  if (navigator.onLine === false) { toQueue('오프라인'); return; }
+  google.script.run
+    .withSuccessHandler(function (r) { clearTimeout(timer); qRemove(qid); if (done) return; done = true; feedback(r.level === 'ok'); showResult(r, id, 'hall'); })
+    .withFailureHandler(function () { toQueue('통신 끊김'); })
+    .processScan({ pin: pin, mode: req.mode, studentId: id, target: req.target, device: req.device, qid: qid, ts: req.ts });
 }
 function payload() {
   if (mode === 'work') return { no: kpNo, zone: target.zone || '' };
   if (mode === 'booth') return { booth: target.booth, program: target.program };
   if (mode === 'super') return { team: target.team, amount: target.amount };
+  if (mode === 'market') return { amount: target.amount };
   if (mode === 'wage') return { task: target.task };
   return { session: target.session };
 }
-function onResult(r) {
-  announce(r, pendingLast);
-  setResult(r.level, r.msg);
-  showBanner(r.level, r.msg);
+function onResult(r, id, m) {
+  feedback(r.level === 'ok');
+  showResult(r, id, m);
+  if (r.level === 'ok' && m === 'market') { lastAmt = target.amount || lastAmt; target.amount = 0; renderCfg(); }
   if (r.level === 'ok' && r.undo && r.txId) { undoTx = r.txId; $('btnUndo').hidden = false; clearTimeout(undoTimer); undoTimer = setTimeout(hideUndo, 20000); }
   setTimeout(function () { busy = false; lastText = ''; }, 600);
 }
 function hideUndo() { $('btnUndo').hidden = true; undoTx = ''; clearTimeout(undoTimer); }
 function undo() {
   if (!undoTx) return;
-  var tx = undoTx; hideUndo(); busy = true; setResult('wait', '취소 처리 중...');
-  google.script.run.withSuccessHandler(function (r) { feedback(r.level === 'ok'); setResult(r.level, r.msg); showBanner(r.level, r.msg); setTimeout(function () { busy = false; lastText = ''; }, 1800); })
-    .withFailureHandler(function () { busy = false; setResult('err', '통신 오류. 다시 시도하세요.'); })
+  var tx = undoTx; hideUndo(); busy = true; popup({ lv: 'wait', title: '취소 처리 중...' });
+  google.script.run.withSuccessHandler(function (r) { feedback(r.level === 'ok'); showResult(r, '', mode); setTimeout(function () { busy = false; lastText = ''; }, 1800); })
+    .withFailureHandler(function () { busy = false; popup({ lv: 'err', ic: '📡', title: '통신 오류', note: '다시 시도하세요' }); })
     .cancelTx({ pin: pin, txId: tx });
 }
 
-/* ---------- 작품 번호 키패드 ---------- */
-// 슈퍼챗 금액 직접 입력용 (같은 키패드를 재사용)
-function openAmountKeypad() {
-  kpMode = 'amount'; kpNo = ''; pendingId = '';
+/* ---------- 키패드: 작품 선택 / 금액 입력 ---------- */
+// 금액 직접 입력: 슈퍼챗(후원 금액) · 코인 마켓(판매 금액)
+function openAmountKeypad(kind, keepPending) {
+  kpMode = 'amount'; kpKind = kind || 'super'; kpNo = ''; if (!keepPending) pendingId = '';
   $('wgrid').hidden = true; $('keys').hidden = false; $('kpDisp').hidden = false;
-  $('kpTitle').innerText = '후원 금액을 입력하세요'; $('kpOk').innerText = '금액 정하기';
+  $('kpTitle').innerText = kpKind === 'market' ? '판매 금액을 입력하세요' : '후원 금액을 입력하세요';
+  $('kpSub').innerText = pendingId && nameOf(pendingId) ? nameOf(pendingId) + '님' : '';
+  $('kpOk').innerText = pendingId ? (kpKind === 'market' ? '결제하기' : '확인') : '금액 정하기';
+  $('kpOk').style.background = 'linear-gradient(135deg,#6366f1,#7c3aed)';
   renderKp(); $('keypad').hidden = false;
   clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
 }
 function openKeypad() {
-  kpMode = ''; $('kpOk').innerText = '좋아요 ♥';
+  kpMode = ''; kpKind = ''; $('kpOk').innerText = '좋아요 ♥'; $('kpOk').style.background = '';
   kpNo = '';
   var zmode = !!target.zone;
   $('wgrid').hidden = !zmode; $('keys').hidden = zmode; $('kpDisp').hidden = zmode;
   $('kpTitle').innerText = zmode ? '좋아요할 작품을 선택하세요' : '작품 번호를 입력하세요';
+  $('kpSub').innerText = nameOf(pendingId) ? nameOf(pendingId) + '님' : '';
   if (zmode) buildGrid();
-  renderKp(); $('keypad').hidden = false; setResult('ok', (nameOf(pendingId) ? nameOf(pendingId) + '님 ' : '') + 'QR 인식 완료 ✔');
+  renderKp(); $('keypad').hidden = false;
   clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
 }
 function buildGrid() {
@@ -622,49 +711,47 @@ function buildGrid() {
   });
 }
 function kp(k) {
-  if (k === 'C') kpNo = ''; else if (k === 'B') kpNo = kpNo.slice(0, -1); else if (kpNo.length < 5) kpNo += k;
+  if (k === 'C') kpNo = ''; else if (k === 'B') kpNo = kpNo.slice(0, -1); else if (kpNo.length < 6) kpNo += k;
   renderKp(); clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
 }
+function amtLimits() { return kpKind === 'market' ? { mn: 1, mx: boot.marketMax || 0 } : { mn: boot.superMin || 1, mx: boot.superMax || 0 }; }
 function renderKp() {
+  var info = $('kpInfo'), ok = $('kpOk');
   if (kpMode === 'amount') {
-    var a = parseInt(kpNo, 10) || 0, mn = boot.superMin || 1, mx = boot.superMax || 0, info = $('kpInfo'), ok = $('kpOk');
+    var a = parseInt(kpNo, 10) || 0, lm = amtLimits();
     $('kpDisp').innerText = kpNo ? fmt(a) + 'C' : '＿＿';
-    var bad = !a ? '' : (a < mn ? '최소 ' + fmt(mn) + 'C' : (mx && a > mx ? '1회 최대 ' + fmt(mx) + 'C' : ''));
-    info.innerHTML = bad ? '❌ ' + bad : (a ? '이 금액으로 후원합니다' : ''); info.style.color = bad ? '#c62828' : '#1b7a2b';
-    ok.disabled = !a || !!bad; ok.style.opacity = ok.disabled ? .4 : 1; return;
+    var bad = !a ? '' : (a < lm.mn ? '최소 ' + fmt(lm.mn) + 'C' : (lm.mx && a > lm.mx ? '1회 최대 ' + fmt(lm.mx) + 'C' : ''));
+    info.innerHTML = bad ? '❌ ' + bad : (a ? (kpKind === 'market' ? '이 금액을 결제합니다' : '이 금액으로 후원합니다') : ''); info.style.color = bad ? '#dc2626' : '#12a363';
+    ok.disabled = !a || !!bad; return;
   }
   $('kpDisp').innerText = kpNo ? kpNo + '번' : '＿＿';
-  var w = kpNo ? boot.works[String(parseInt(kpNo, 10))] : null, info = $('kpInfo'), ok = $('kpOk');
-  if (!kpNo) { info.innerText = ''; ok.disabled = true; ok.style.opacity = .4; }
-  else if (!w) { info.innerText = '❌ 없는 작품 번호입니다'; info.style.color = '#c62828'; ok.disabled = true; ok.style.opacity = .4; }
-  else { var lk = boot.like || {}; info.innerHTML = '<b>' + esc(w.name) + '</b><br>❤ 좋아요 → ' + (lk.coin ? '+' + fmt(lk.coin) + 'C 받아요' : '코인 없음'); info.style.color = '#d6336c'; ok.disabled = false; ok.style.opacity = 1; }
+  var w = kpNo ? boot.works[String(parseInt(kpNo, 10))] : null;
+  if (!kpNo) { info.innerText = ''; ok.disabled = true; }
+  else if (!w) { info.innerText = '❌ 없는 작품 번호입니다'; info.style.color = '#dc2626'; ok.disabled = true; }
+  else { var lk = boot.like || {}; info.innerHTML = '<b>' + esc(w.name) + '</b> · ❤ ' + (lk.coin ? '+' + fmt(lk.coin) + 'C 받아요' : '좋아요'); info.style.color = '#db2777'; ok.disabled = false; }
 }
-function kpCancel() { clearTimeout(kpTimer); $('keypad').hidden = true; pendingId = ''; busy = false; lastText = ''; if (kpMode === 'amount') { kpMode = ''; $('kpOk').innerText = '좋아요 ♥'; return; } setResult('', '취소되었습니다. 학생 QR을 다시 보여주세요.'); }
+function kpCancel() {
+  clearTimeout(kpTimer); $('keypad').hidden = true; pendingId = ''; busy = false; lastText = '';
+  kpMode = ''; kpKind = ''; $('kpOk').innerText = '좋아요 ♥'; $('kpOk').style.background = '';
+  setResult('', '취소되었습니다. 학생 QR을 다시 보여주세요.');
+}
 function kpSend() {
   if (kpMode === 'amount') {
-    var a = parseInt(kpNo, 10) || 0, mn = boot.superMin || 1, mx = boot.superMax || 0;
-    if (!a || a < mn || (mx && a > mx)) return;
-    clearTimeout(kpTimer); $('keypad').hidden = true; kpMode = ''; $('kpOk').innerText = '좋아요 ♥'; target.amount = a; renderCfg(); return;
+    var a = parseInt(kpNo, 10) || 0, lm = amtLimits();
+    if (!a || a < lm.mn || (lm.mx && a > lm.mx)) return;
+    clearTimeout(kpTimer); $('keypad').hidden = true; target.amount = a; var kind = kpKind; kpMode = ''; kpKind = ''; $('kpOk').innerText = '좋아요 ♥'; $('kpOk').style.background = '';
+    renderCfg();
+    if (kind === 'market' && pendingId) { var id = pendingId; pendingId = ''; busy = false; submit(id); }
+    return;
   }
   if (!kpNo || !boot.works[String(parseInt(kpNo, 10))]) return;
-  clearTimeout(kpTimer); $('keypad').hidden = true; var id = pendingId; pendingId = ''; submit(id);
+  clearTimeout(kpTimer); $('keypad').hidden = true; var id2 = pendingId; pendingId = ''; submit(id2);
 }
 
 /* ---------- 화면/소리 ---------- */
-var bannerTimer = null;
-function showBanner(level, msg) {
-  var b = $('banner'), box = $('bannerMsg'); box.innerHTML = '';
-  String(msg).split('\n').forEach(function (line, i) {
-    if (!line) return;
-    var d = document.createElement('div'); d.className = i === 0 ? 'b1' : 'b2'; d.textContent = line; box.appendChild(d);
-  });
-  b.className = level === 'ok' ? 'ok' : (level === 'warn' ? 'warn' : 'err');
-  b.hidden = false;
-  clearTimeout(bannerTimer); bannerTimer = setTimeout(hideBanner, level === 'ok' ? 1200 : 2200);
-}
-function hideBanner() { $('banner').hidden = true; clearTimeout(bannerTimer); }
-function setResult(cls, msg) { var r = $('result'); r.className = cls || ''; r.innerText = msg; }
+function setResult(cls, msg) { var r = $('result'); r.className = cls || ''; r.innerText = msg; fitReader(); }
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function nameOf(id) { return (boot && boot.students && id && boot.students[String(id).toUpperCase()]) || ''; }
 // 소리: 모든 QR 인식/결과에 반드시 소리가 나도록, 일시정지된 오디오를 매번 깨운 뒤 재생합니다.
 function playTones(tones) {
   try { if (navigator.vibrate) navigator.vibrate(tones.vib); } catch (e) {}
@@ -687,49 +774,7 @@ function feedback(ok) {
   playTones(ok ? { vib: 80, list: [{ f: 1000, at: 0, dur: 0.1, type: 'sine' }, { f: 1500, at: 0.11, dur: 0.16, type: 'sine' }] }
                : { vib: [120, 60, 120], list: [{ f: 260, at: 0, dur: 0.4 }] });
 }
-
-/* ---------- 음성 안내 (기기에 내장된 한국어 음성 사용, 인터넷 불필요) ---------- */
-function nameOf(id) { return (boot && boot.students && id && boot.students[String(id).toUpperCase()]) || ''; }
-var koVoice = null;
-function pickVoice() {
-  if (koVoice) return koVoice;
-  try {
-    var vs = speechSynthesis.getVoices().filter(function (v) { return /^ko/i.test(v.lang); });
-    if (!vs.length) return null;
-    var pref = vs.filter(function (v) { return /google|yuna|sun-?hi|heami|seoyeon|natural|online/i.test(v.name); });
-    koVoice = (pref[0] || vs[0]); return koVoice;
-  } catch (e) { return null; }
-}
-try { speechSynthesis.onvoiceschanged = function () { koVoice = null; pickVoice(); }; speechSynthesis.getVoices(); } catch (e) {}
-function speak(key, name, rawText) {
-  var v = boot && boot.voice; if (!v || v.mode === '삑' || v.mode === '무음') return;
-  var txt = rawText || String((v.say && v.say[key]) || '');
-  txt = txt.replace(/\{이름\}/g, name || '').trim();
-  if (!txt) return;
-  try {
-    speechSynthesis.cancel();
-    var u = new SpeechSynthesisUtterance(txt); u.lang = 'ko-KR'; u.rate = v.rate || 1.05; u.pitch = 1.05; u.volume = 1;
-    var vo = pickVoice(); if (vo) u.voice = vo;
-    setTimeout(function () { try { speechSynthesis.speak(u); } catch (e) {} }, v.mode === '둘다' ? 260 : 0);
-  } catch (e) {}
-}
-// 결과 안내: 설정 [안내방식] = 삑 / 음성 / 둘다 / 무음
-function announce(r, id) {
-  var v = (boot && boot.voice) || { mode: '삑' }, ok = r.level === 'ok';
-  if (v.mode !== '음성' && v.mode !== '무음') feedback(ok);
-  else if (v.mode === '음성' && !ok) { /* 음성 전용이어도 실패는 낮은 부저를 함께 */ feedback(false); }
-  var key;
-  if (r._say) key = r._say;
-  else if (r.like === 'limit') key = '한도';
-  else if (r.like === 'dup') key = '중복';
-  else if (!ok) key = /잔액 부족/.test(r.msg || '') ? '잔액부족' : '실패';
-  else key = ({ work: '좋아요', enter: '입장', exit: '퇴장', wage: '근로', booth: '결제', super: '결제' })[mode] || '결제';
-  speak(key, r.name || nameOf(id));
-}
-function soundTest() {
-  scanBeep();
-  setTimeout(function () { announce({ level: 'ok' }, ''); }, 450);
-}
+function soundTest() { scanBeep(); setTimeout(function () { feedback(true); }, 450); }
 
 /* ---------- 부하테스트 (사본 전용) ---------- */
 function runTest() {
