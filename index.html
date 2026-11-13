@@ -118,10 +118,23 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
 .row2 button { border-radius: 16px; } .wbtn { border: 2px solid var(--line); border-radius: 16px; box-shadow: 0 2px 6px rgba(30,40,80,.07); }
 .wbtn.sel { background: var(--brand); border-color: var(--brand); box-shadow: 0 4px 12px rgba(59,91,253,.4); }
 .toast { border-radius: 20px; }
+
+/* PIN 확인 창 */
+#gate { position: fixed; inset: 0; z-index: 9999; background: rgba(15,20,40,.72); display: flex; align-items: center; justify-content: center; }
+#gate[hidden] { display: none; }
+#gate .gbox { background: #fff; border-radius: 24px; padding: 26px 22px; width: min(92vw, 400px); text-align: center; box-shadow: 0 16px 48px rgba(0,0,0,.4); }
+#gate .gt { font-size: 24px; font-weight: 800; } #gate .gs { color: #667; font-size: 15px; margin: 6px 0 14px; }
+#gate #gmsg { color: #c62828; min-height: 24px; font-weight: 700; margin-top: 6px; }
+#gate .gb { display: flex; gap: 10px; margin-top: 8px; } #gate .gb button { flex: 1; border: 0; color: #fff; font-size: 18px; font-weight: 700; padding: 14px 0; border-radius: 14px; }
+
+/* 📐 카메라 크기 조절 (세로 거치 시 아래 안내가 잘리면 --camw 값을 줄이세요. 예: 54vh → 48vh) */
+:root { --camw: min(100%, 54vh); }
+@media (orientation: landscape) { :root { --camw: min(100%, 72vh); } }
+#reader { width: var(--camw); min-height: 0; }
 </style>
 </head>
 <body>
-<header><button id="btnHome" hidden onclick="goHome()">◀ 처음</button>🪙 문화코인 <span id="modeLabel"></span></header>
+<header>🪙 문화코인 <span id="modeLabel"></span></header>
 
 <!-- 1. PIN -->
 <section id="vPin">
@@ -134,7 +147,7 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
 <!-- 2. 모드 선택 -->
 <section id="vMenu" hidden>
   <p style="font-size:18px;font-weight:bold;color:#555">이 기기의 역할을 선택하세요</p>
-  <button class="big c-work" id="mWork" data-ic="🖼️" onclick="pickMode('work')">학술제 작품 응원</button>
+  <button class="big c-work" id="mWork" data-ic="🖼️" onclick="pickMode('work')">학술제 작품 좋아요</button>
   <button class="big c-in" id="mEnter" data-ic="🚪" onclick="pickMode('enter')">발표장 입장</button>
   <button class="big c-out" id="mExit" data-ic="🏁" onclick="pickMode('exit')">발표장 퇴장</button>
   <button class="big c-booth" id="mBooth" data-ic="🎪" onclick="pickMode('booth')">학급 부스</button>
@@ -159,7 +172,7 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
     <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="flipCam()">📷 카메라 전환</button>
     <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="toggleMirror()">↔ 좌우반전</button>
     <button id="btnPhoto" class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="$('camFile').click()">📸 사진 찍어서 스캔</button>
-    <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="scanBeep()">🔊 소리 테스트</button>
+    <button class="chip" style="min-width:0;font-size:14px;padding:6px 10px" onclick="soundTest()">🔊 소리 테스트</button>
     <input id="camFile" type="file" accept="image/*" capture="environment" hidden onchange="photoScan(this)">
   </div>
 
@@ -176,7 +189,7 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
     </div>
     <div class="row2">
       <button style="background:#888" onclick="kpCancel()">취소</button>
-      <button id="kpOk" style="background:#4CAF50" onclick="kpSend()">코인 보내기</button>
+      <button id="kpOk" style="background:#4CAF50" onclick="kpSend()">좋아요 ♥</button>
     </div>
   </div></div>
 
@@ -192,6 +205,12 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; }
   <div id="testLog"></div>
 </section>
 
+<div id="gate" hidden><div class="gbox">
+  <div class="gt">🔒 선생님 확인</div><div class="gs">처음 화면으로 돌아가려면 운영 PIN을 입력하세요</div>
+  <input id="gpin" class="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')gateOk()">
+  <div id="gmsg"></div>
+  <div class="gb"><button onclick="closeGate()" style="background:#8a93a6">취소</button><button onclick="gateOk()" style="background:#3b5bfd">처음 화면으로</button></div>
+</div></div>
 <div id="bal" hidden onclick="hideBal()"></div>
 <div id="toasts"></div>
 <div id="qbadge" hidden></div>
@@ -229,7 +248,7 @@ var pin = '', boot = null, mode = '', target = {}, qr = null, facing = 'environm
 var kpMode = '', busy = false, lastText = '', lastAt = 0, pendingId = '', kpNo = '', kpTimer = null, undoTx = '', undoTimer = null, seq = 0, actx = null;
 
 function $(id) { return document.getElementById(id); }
-function show(id) { ['vPin','vMenu','vSetup','vRun','vTest'].forEach(function (v) { $(v).hidden = (v !== id); }); $('btnHome').hidden = (id === 'vPin' || id === 'vMenu'); }
+function show(id) { ['vPin','vMenu','vSetup','vRun','vTest'].forEach(function (v) { $(v).hidden = (v !== id); }); }
 function fmt(n) { return String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
 /* ---------- PIN ---------- */
@@ -248,7 +267,7 @@ function showMenu() {
   show('vMenu'); $('modeLabel').innerText = '';
   var st = boot.status, off = (st.all !== '열림');
   function setBtn(id, label, flag) { var b = $(id); var open = !off && flag === '열림'; b.disabled = !open; b.innerText = label + (open ? '' : ' (닫힘)'); }
-  setBtn('mWork', '학술제 작품 응원', st.work);
+  setBtn('mWork', '학술제 작품 좋아요', st.work);
   setBtn('mEnter', '발표장 입장', st.hall);
   setBtn('mExit', '발표장 퇴장', st.hall);
   setBtn('mBooth', '학급 부스', st.booth);
@@ -265,15 +284,15 @@ function pickMode(m) {
   if (m === 'test') { show('vTest'); $('modeLabel').innerText = '· 부하테스트'; return; }
   if (m === 'work') {
     var zs = zoneList();
-    if (!zs.length) { $('modeLabel').innerText = '· 작품 응원'; startRun(); return; }
+    if (!zs.length) { $('modeLabel').innerText = '· 작품 좋아요'; startRun(); return; }
     var zl = $('setupList'); zl.innerHTML = '';
     $('setupTitle').innerText = '이 태블릿은 어느 구역입니까?';
     zs.forEach(function (z) {
-      addChip(zl, z.name, z.count + '개 (' + z.min + '~' + z.max + '번)', function () { target = { zone: z.name }; $('modeLabel').innerText = '· 작품 응원 ' + z.name; startRun(); });
+      addChip(zl, z.name, z.count + '개 (' + z.min + '~' + z.max + '번)', function () { target = { zone: z.name }; $('modeLabel').innerText = '· 작품 좋아요 ' + z.name; startRun(); });
     });
     show('vSetup'); return;
   }
-  if (m === 'balance') { $('modeLabel').innerText = '· 잔액 확인'; startRun(); $('btnHome').hidden = true; return; }
+  if (m === 'balance') { $('modeLabel').innerText = '· 잔액 확인'; startRun(); return; }
   if (m === 'super') { $('modeLabel').innerText = '· 슈퍼챗'; startRun(); return; }
   if (m === 'wage') { $('modeLabel').innerText = '· 근로 지급'; startRun(); return; }
   var list = $('setupList'); list.innerHTML = '';
@@ -319,8 +338,8 @@ function renderCfg() {
   if (mode === 'balance') cfg.innerText = '내 QR을 카메라에 보여주세요 → 내 코인이 나옵니다 (조회만 되고 코인은 바뀌지 않아요)';
   if (mode === 'work') {
     cfg.innerText = target.zone
-      ? target.zone + ': ① 학생 QR 스캔 → ② 응원할 작품 선택 → ③ 보내기'
-      : '① 학생 QR 스캔 → ② 작품 번호 입력 → ③ 보내기';
+      ? target.zone + ': ① 학생 QR 스캔 → ② 좋아요할 작품 선택 → ③ 좋아요 ♥'
+      : '① 학생 QR 스캔 → ② 작품 번호 입력 → ③ 좋아요 ♥';
   } else if (mode === 'enter' || mode === 'exit') {
     cfg.innerText = (mode === 'enter' ? '입장' : '퇴장') + ' 스캔: ' + target.label;
   } else if (mode === 'booth') {
@@ -396,7 +415,7 @@ function flipCam() { facing = (facing === 'environment') ? 'user' : 'environment
 /* ---------- 스캔 ---------- */
 function onScan(text) {
   var now = Date.now();
-  if (busy || !$('keypad').hidden) return;   // 키패드(금액 입력)가 열려 있는 동안에는 스캔하지 않음
+  if (busy || !$('keypad').hidden || !$('gate').hidden) return;   // 키패드(금액 입력)가 열려 있는 동안에는 스캔하지 않음
   if (text === lastText && now - lastAt < (mode === 'balance' ? 8000 : 2500)) return;
   lastText = text; lastAt = now;
   text = String(text).trim().toUpperCase();
@@ -438,25 +457,35 @@ function showBal(id) {
     .balance(pin, id);
 }
 function hideBal() { clearTimeout(balTimer); $('bal').hidden = true; }
-// 잔액 확인 태블릿에서는 [처음] 버튼이 숨겨져 있습니다. 제목을 5번 연속 누르면 다시 나타납니다(교사용).
-var hdrTaps = 0, hdrT = null;
-document.querySelector('header').addEventListener('click', function (e) { if (e.target.id === 'btnHome') return; hdrTaps++; clearTimeout(hdrT); hdrT = setTimeout(function () { hdrTaps = 0; }, 2500); if (hdrTaps >= 5) { hdrTaps = 0; $('btnHome').hidden = false; } });
+// [처음] 버튼은 없습니다(학생이 누르는 것 방지). 선생님은 상단 제목줄을 5번 연속 터치 → PIN 입력 → 처음 화면으로.
+var hdrTaps = 0, hdrT = null, gateT = null;
+document.querySelector('header').addEventListener('click', function () {
+  if (!pin || !$('vPin').hidden) return;
+  hdrTaps++; clearTimeout(hdrT); hdrT = setTimeout(function () { hdrTaps = 0; }, 2500);
+  if (hdrTaps >= 5) { hdrTaps = 0; openGate(); }
+});
+function openGate() { $('gate').hidden = false; $('gpin').value = ''; $('gmsg').innerText = ''; setTimeout(function () { $('gpin').focus(); }, 50); clearTimeout(gateT); gateT = setTimeout(closeGate, 25000); }
+function closeGate() { clearTimeout(gateT); $('gate').hidden = true; $('gpin').value = ''; }
+function gateOk() {
+  if ($('gpin').value.trim() === pin) { closeGate(); goHome(); }
+  else { $('gmsg').innerText = 'PIN이 달라요'; $('gpin').value = ''; }
+}
 
 function submitPipe(id) {
   var qid = newQid(), req = { mode: mode, studentId: id, target: payload(), device: devLabel(), qid: qid, ts: Date.now() };
-  var el = toast('wait', '⏳ 확인 중...'), done = false;
+  var el = toast('wait', '⏳ ' + (nameOf(id) ? nameOf(id) + '님 ' : '') + '확인 중...'), done = false;
   function toQueue(why) {
     if (done) return; done = true; clearTimeout(timer);
     qAdd(req);
     var nm = (boot && boot.students && boot.students[id]) || '';
-    feedback(true);
+    announce({ level: 'ok', _say: '임시저장' }, id);
     setToast(el, 'warn', (nm ? nm + '님 ' : '') + '임시 저장됨 📥\n' + why + ' — 연결되면 자동 전송');
   }
   // 연결이 끊겼거나 10초 안에 응답이 없으면 기기에 임시 저장 (같은 요청ID라 나중에 중복 처리되지 않음)
   var timer = setTimeout(function () { toQueue('응답 지연'); }, 10000);
   if (navigator.onLine === false) { toQueue('오프라인'); return; }
   google.script.run
-    .withSuccessHandler(function (r) { clearTimeout(timer); qRemove(qid); if (done) return; done = true; feedback(r.level === 'ok'); setToast(el, r.level, r.msg); })
+    .withSuccessHandler(function (r) { clearTimeout(timer); qRemove(qid); if (done) return; done = true; announce(r, id); setToast(el, r.level, r.msg); })
     .withFailureHandler(function () { toQueue('통신 끊김'); })
     .processScan({ pin: pin, mode: req.mode, studentId: id, target: req.target, device: req.device, qid: qid, ts: req.ts });
 }
@@ -503,6 +532,8 @@ window.addEventListener('online', function () { qBadge(); setTimeout(flushQ, 150
 window.addEventListener('offline', qBadge);
 window.addEventListener('beforeunload', function (e) { if (Q.length) { e.preventDefault(); e.returnValue = ''; } });
 setInterval(flushQ, 15000);
+// 서버가 식어서 느려지는 것을 막기 위해 4분마다 가볍게 깨워 둡니다
+setInterval(function () { if (pin && navigator.onLine !== false) { try { google.script.run.withSuccessHandler(function () {}).withFailureHandler(function () {}).ping(); } catch (e) {} } }, 240000);
 qBadge();
 var toastSeq = 0;
 function toast(level, msg) {
@@ -521,9 +552,11 @@ function setToast(el, level, msg) {
   if (level !== 'wait') el._t = setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, level === 'ok' ? 2200 : 3500);
 }
 
+var pendingLast = '';
 function submit(id) {
+  pendingLast = id;
   if (mode === 'enter' || mode === 'exit') { submitPipe(id); return; }
-  busy = true; hideUndo(); setResult('wait', '처리 중... ⏳');
+  busy = true; hideUndo(); setResult('wait', (nameOf(id) ? nameOf(id) + '님 ' : '') + '처리 중... ⏳');
   var my = ++seq, done = false;
   var label = devLabel();
   var timer = setTimeout(function () { if (!done) { done = true; busy = false; feedback(false); setResult('warn', '응답이 늦습니다.\n결제가 되었는지 [거래내역]을 확인하고\n필요하면 다시 스캔하세요.'); } }, 25000);
@@ -540,7 +573,7 @@ function payload() {
   return { session: target.session };
 }
 function onResult(r) {
-  feedback(r.level === 'ok');
+  announce(r, pendingLast);
   setResult(r.level, r.msg);
   showBanner(r.level, r.msg);
   if (r.level === 'ok' && r.undo && r.txId) { undoTx = r.txId; $('btnUndo').hidden = false; clearTimeout(undoTimer); undoTimer = setTimeout(hideUndo, 20000); }
@@ -565,13 +598,13 @@ function openAmountKeypad() {
   clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
 }
 function openKeypad() {
-  kpMode = ''; $('kpOk').innerText = '코인 보내기';
+  kpMode = ''; $('kpOk').innerText = '좋아요 ♥';
   kpNo = '';
   var zmode = !!target.zone;
   $('wgrid').hidden = !zmode; $('keys').hidden = zmode; $('kpDisp').hidden = zmode;
-  $('kpTitle').innerText = zmode ? '응원할 작품을 선택하세요' : '작품 번호를 입력하세요';
+  $('kpTitle').innerText = zmode ? '좋아요할 작품을 선택하세요' : '작품 번호를 입력하세요';
   if (zmode) buildGrid();
-  renderKp(); $('keypad').hidden = false; setResult('ok', '학생 QR 인식 완료 ✔');
+  renderKp(); $('keypad').hidden = false; setResult('ok', (nameOf(pendingId) ? nameOf(pendingId) + '님 ' : '') + 'QR 인식 완료 ✔');
   clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
 }
 function buildGrid() {
@@ -604,14 +637,14 @@ function renderKp() {
   var w = kpNo ? boot.works[String(parseInt(kpNo, 10))] : null, info = $('kpInfo'), ok = $('kpOk');
   if (!kpNo) { info.innerText = ''; ok.disabled = true; ok.style.opacity = .4; }
   else if (!w) { info.innerText = '❌ 없는 작품 번호입니다'; info.style.color = '#c62828'; ok.disabled = true; ok.style.opacity = .4; }
-  else { var price = w.price || boot.workDefault; info.innerHTML = '<b>' + esc(w.name) + '</b><br>' + fmt(price) + 'C 사용'; info.style.color = '#1b7a2b'; ok.disabled = false; ok.style.opacity = 1; }
+  else { var lk = boot.like || {}; info.innerHTML = '<b>' + esc(w.name) + '</b><br>❤ 좋아요 → ' + (lk.coin ? '+' + fmt(lk.coin) + 'C 받아요' : '코인 없음'); info.style.color = '#d6336c'; ok.disabled = false; ok.style.opacity = 1; }
 }
-function kpCancel() { clearTimeout(kpTimer); $('keypad').hidden = true; pendingId = ''; busy = false; lastText = ''; if (kpMode === 'amount') { kpMode = ''; $('kpOk').innerText = '코인 보내기'; return; } setResult('', '취소되었습니다. 학생 QR을 다시 보여주세요.'); }
+function kpCancel() { clearTimeout(kpTimer); $('keypad').hidden = true; pendingId = ''; busy = false; lastText = ''; if (kpMode === 'amount') { kpMode = ''; $('kpOk').innerText = '좋아요 ♥'; return; } setResult('', '취소되었습니다. 학생 QR을 다시 보여주세요.'); }
 function kpSend() {
   if (kpMode === 'amount') {
     var a = parseInt(kpNo, 10) || 0, mn = boot.superMin || 1, mx = boot.superMax || 0;
     if (!a || a < mn || (mx && a > mx)) return;
-    clearTimeout(kpTimer); $('keypad').hidden = true; kpMode = ''; $('kpOk').innerText = '코인 보내기'; target.amount = a; renderCfg(); return;
+    clearTimeout(kpTimer); $('keypad').hidden = true; kpMode = ''; $('kpOk').innerText = '좋아요 ♥'; target.amount = a; renderCfg(); return;
   }
   if (!kpNo || !boot.works[String(parseInt(kpNo, 10))]) return;
   clearTimeout(kpTimer); $('keypad').hidden = true; var id = pendingId; pendingId = ''; submit(id);
@@ -653,6 +686,49 @@ function scanBeep() { playTones({ vib: 60, list: [{ f: 1500, at: 0, dur: 0.1 }, 
 function feedback(ok) {
   playTones(ok ? { vib: 80, list: [{ f: 1000, at: 0, dur: 0.1, type: 'sine' }, { f: 1500, at: 0.11, dur: 0.16, type: 'sine' }] }
                : { vib: [120, 60, 120], list: [{ f: 260, at: 0, dur: 0.4 }] });
+}
+
+/* ---------- 음성 안내 (기기에 내장된 한국어 음성 사용, 인터넷 불필요) ---------- */
+function nameOf(id) { return (boot && boot.students && id && boot.students[String(id).toUpperCase()]) || ''; }
+var koVoice = null;
+function pickVoice() {
+  if (koVoice) return koVoice;
+  try {
+    var vs = speechSynthesis.getVoices().filter(function (v) { return /^ko/i.test(v.lang); });
+    if (!vs.length) return null;
+    var pref = vs.filter(function (v) { return /google|yuna|sun-?hi|heami|seoyeon|natural|online/i.test(v.name); });
+    koVoice = (pref[0] || vs[0]); return koVoice;
+  } catch (e) { return null; }
+}
+try { speechSynthesis.onvoiceschanged = function () { koVoice = null; pickVoice(); }; speechSynthesis.getVoices(); } catch (e) {}
+function speak(key, name, rawText) {
+  var v = boot && boot.voice; if (!v || v.mode === '삑' || v.mode === '무음') return;
+  var txt = rawText || String((v.say && v.say[key]) || '');
+  txt = txt.replace(/\{이름\}/g, name || '').trim();
+  if (!txt) return;
+  try {
+    speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(txt); u.lang = 'ko-KR'; u.rate = v.rate || 1.05; u.pitch = 1.05; u.volume = 1;
+    var vo = pickVoice(); if (vo) u.voice = vo;
+    setTimeout(function () { try { speechSynthesis.speak(u); } catch (e) {} }, v.mode === '둘다' ? 260 : 0);
+  } catch (e) {}
+}
+// 결과 안내: 설정 [안내방식] = 삑 / 음성 / 둘다 / 무음
+function announce(r, id) {
+  var v = (boot && boot.voice) || { mode: '삑' }, ok = r.level === 'ok';
+  if (v.mode !== '음성' && v.mode !== '무음') feedback(ok);
+  else if (v.mode === '음성' && !ok) { /* 음성 전용이어도 실패는 낮은 부저를 함께 */ feedback(false); }
+  var key;
+  if (r._say) key = r._say;
+  else if (r.like === 'limit') key = '한도';
+  else if (r.like === 'dup') key = '중복';
+  else if (!ok) key = /잔액 부족/.test(r.msg || '') ? '잔액부족' : '실패';
+  else key = ({ work: '좋아요', enter: '입장', exit: '퇴장', wage: '근로', booth: '결제', super: '결제' })[mode] || '결제';
+  speak(key, r.name || nameOf(id));
+}
+function soundTest() {
+  scanBeep();
+  setTimeout(function () { announce({ level: 'ok' }, ''); }, 450);
 }
 
 /* ---------- 부하테스트 (사본 전용) ---------- */
