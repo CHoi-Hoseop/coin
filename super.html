@@ -23,6 +23,10 @@
   .cap { color: var(--mut); font-size: 13px; text-align: left; margin-top: 4px; }
   input.amt { width: 100%; font-size: 44px; font-weight: 900; text-align: center; padding: 12px 8px; border-radius: 16px; border: 2px solid #3b3270; background: #0f0b22; color: var(--gold); font-variant-numeric: tabular-nums; margin-top: 10px; }
   input.amt:focus { outline: none; border-color: var(--hot); }
+  .tg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 260px; overflow-y: auto; }
+  .tg button { padding: 12px 8px; border-radius: 14px; border: 2px solid #3b3270; background: #120e29; color: #fff; font-size: 16px; font-weight: 800; line-height: 1.25; word-break: keep-all; }
+  .tg button small { display: block; color: #ff8aa8; font-size: 12px; font-weight: 700; }
+  .tg button.sel { border-color: var(--hot); background: #3a1450; box-shadow: 0 0 0 2px rgba(255,45,111,.35); }
   .quick { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
   .quick button { flex: 1; min-width: 70px; padding: 12px 6px; border-radius: 14px; border: 0; background: #2b2455; color: #fff; font-size: 18px; font-weight: 800; }
   .big { width: 100%; margin-top: 14px; padding: 18px; font-size: 22px; font-weight: 900; border: 0; border-radius: 18px; color: #fff; background: linear-gradient(90deg, var(--vio), var(--hot)); box-shadow: 0 8px 24px rgba(255,45,111,.35); }
@@ -69,6 +73,8 @@
   <div class="card" id="vMain" hidden>
     <div class="me"><b id="myName">-</b><span class="bal" id="myBal">0<i>C</i></span></div>
     <div class="cap" id="myCap"></div>
+    <div class="lab" style="margin:14px 0 6px;color:#a79ccf">후원할 팀 (끝난 팀도 선택할 수 있어요)</div>
+    <div id="teams" class="tg"></div>
     <input class="amt" id="amt" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="금액 입력" maxlength="6" oninput="this.value=this.value.replace(/[^0-9]/g,'');checkAmt()">
     <div class="quick" id="quick"></div>
     <button class="big" id="btnGo" onclick="ask()" disabled>💸 후원하기</button>
@@ -97,7 +103,7 @@ function api(fn, args) {
     .then(function (j) { if (j && j.error) throw new Error(j.error); return j.result; });
 }
 
-var key = '', myId = '', st = null, me = null, qr = null, pending = null, busy = false;
+var key = '', myId = '', st = null, me = null, qr = null, pending = null, busy = false, pick = '', picked = false;
 var dev = ls('superDev') || (function () { var s = ''; for (var i = 0; i < 6; i++) s += 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'.charAt(Math.random() * 32 | 0); ls('superDev', s); return s; })();
 
 (function init() {
@@ -122,19 +128,32 @@ function refresh() {
 function show() {
   if (!st) return;
   $('team').innerText = st.stage ? st.stage.name : '공연 준비 중';
-  var p = $('pill'); p.className = 'pill ' + (st.open && st.stage ? 'on' : 'off');
-  p.innerText = !st.stage ? '공연 팀 대기 중' : (st.open ? '● 후원 가능' : '후원이 닫혀 있어요');
+  var p = $('pill'); p.className = 'pill ' + (st.open ? 'on' : 'off');
+  p.innerText = !st.open ? '후원이 닫혀 있어요' : (st.stage ? '● 후원 가능' : '● 후원 가능 · 공연 대기 중');
   $('vId').hidden = !!myId; $('vMain').hidden = !myId;
   if (myId && me && me.name !== undefined) {
     $('myName').innerText = me.name + ' 님'; $('myBal').innerHTML = fmt(me.balance) + '<i>C</i>';
     $('myCap').innerText = me.cap ? ('슈퍼챗 사용 ' + fmt(me.used) + ' / 한도 ' + fmt(me.cap) + 'C') : '';
+    drawTeams();
     var q = $('quick'); q.innerHTML = '';
     (st.options || []).forEach(function (a) { var b = document.createElement('button'); b.innerText = fmt(a); b.onclick = function () { $('amt').value = a; checkAmt(); }; q.appendChild(b); });
     checkAmt();
   }
 }
+function teamName(no) { var l = (st && st.teams) || []; for (var i = 0; i < l.length; i++) if (l[i].no === no) return l[i].name; return no + '번'; }
+function drawTeams() {
+  var l = (st && st.teams) || [], g = $('teams'); g.innerHTML = '';
+  var ok = l.some(function (t) { return t.no === pick; });
+  if (!picked || !ok) pick = st.stage ? st.stage.no : (l.length ? l[0].no : '');   // 직접 고르지 않았다면 '지금 공연 팀'을 따라감
+  l.forEach(function (t) {
+    var b = document.createElement('button'); b.className = t.no === pick ? 'sel' : '';
+    b.innerHTML = '<span></span>' + (st.stage && st.stage.no === t.no ? '<small>🎤 지금 공연 중</small>' : '');
+    b.querySelector('span').innerText = t.name; b.onclick = function () { pick = t.no; picked = true; drawTeams(); checkAmt(); };
+    g.appendChild(b);
+  });
+}
 function checkAmt() {
-  var a = parseInt($('amt').value, 10) || 0, ok = a > 0 && st && st.open && st.stage && !busy;
+  var a = parseInt($('amt').value, 10) || 0, ok = a > 0 && st && st.open && pick && !busy;
   $('btnGo').disabled = !ok;
 }
 
@@ -162,14 +181,14 @@ function forget() { if (!confirm('다른 카드로 바꿀까요?')) return; myId
 /* ---------- 후원 ---------- */
 function ask() {
   var a = parseInt($('amt').value, 10) || 0;
-  if (!st.open || !st.stage) return;
+  if (!st.open || !pick) return;
   var msg = '';
   if (a < st.min) msg = '최소 ' + fmt(st.min) + 'C부터 후원할 수 있어요.';
   else if (st.max && a > st.max) msg = '한 번에 최대 ' + fmt(st.max) + 'C까지 가능해요.';
   else if (me && a > me.balance) msg = '잔액이 부족해요. (잔액 ' + fmt(me.balance) + 'C)';
   else if (me && me.cap && me.used + a > me.cap) msg = '슈퍼챗 한도를 넘어요. (남은 한도 ' + fmt(Math.max(0, me.cap - me.used)) + 'C)';
   if (msg) { $('msg').className = 'msg warn'; $('msg').innerText = msg; return; }
-  pending = { team: st.stage.no, name: st.stage.name, amount: a, qid: newQid() };
+  pending = { team: pick, name: teamName(pick), amount: a, qid: newQid() };
   $('mq').innerHTML = '<span style="color:#ff8aa8">' + esc(pending.name) + '</span> 에<b>' + fmt(a) + 'C</b>후원할까요?';
   $('modal').classList.add('on');
 }
@@ -197,7 +216,7 @@ function finish(r, p) {
     show(); return;
   }
   $('msg').className = 'msg ' + (r.level === 'err' ? 'err' : 'warn'); $('msg').innerText = r.msg || '실패했어요.';
-  if (r.stage) { st.stage = r.stage; $('amt').value = ''; }
+  if (r.stage) st.stage = r.stage;
   if (r.code === 'closed') st.open = false;
   show(); checkAmt();
 }
