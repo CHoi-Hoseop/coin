@@ -28,6 +28,7 @@
   body[data-mode=tally] #main { grid-template-columns: 1fr; } body[data-mode=tally] #feedBox { display: none; }
 
   /* ----- 전체 순위 ----- */
+  body.hidevals .val { visibility: hidden; }
   #rank { position: relative; min-height: 0; display: none; }
   body[data-mode=all] #rank, body[data-mode=tally] #rank { display: block; }
   .row { position: absolute; left: 0; right: 0; display: flex; align-items: center; gap: 1.2vw; transition: top .8s cubic-bezier(.2,.8,.2,1); }
@@ -180,7 +181,7 @@
     <div class="r"><button onclick="showQr(0)">📱 후원 QR 크게 (Q)</button><button onclick="newKey()">🔑 QR 재발급</button></div>
   </div>
   <div class="r"><button id="btnSnd" onclick="toggleSound()">🔊 효과음 끄기</button><button id="btnLive" onclick="toggleLive()">🔕 공연 중 소리 꺼짐</button><button onclick="toggleFull()">⛶ 전체화면</button><button onclick="testFx()">✨ 팝업 시험</button></div>
-  <div class="k" id="ctlKeys">단축키 · ←/→ 팀 바꾸기 · Q 후원 QR · 1 팀 집중 · 2 전체 순위 · <b>스페이스 = 다음 단계</b>(카운트다운 → 결과 집계 → 우승 공개) · Esc 처음으로 · S 소리 · H 조작판 닫기/열기 · F 전체화면<br>🔕 공연 중에는 소리가 나지 않고, 마감 카운트다운부터 결과 발표까지만 소리가 납니다.</div>
+  <div class="k" id="ctlKeys">단축키 · ←/→ 팀 바꾸기 · Q 후원 QR · 1 팀 집중 · 2 전체 순위 · <b>스페이스 = 마감 카운트다운 시작</b>(이후 집계 → 우승 → 전체 결과는 자동) · Esc 처음으로 · S 소리 · H 조작판 닫기/열기 · F 전체화면<br>🔕 공연 중에는 소리가 나지 않고, 마감 카운트다운부터 결과 발표까지만 소리가 납니다.</div>
 </div>
 
 <script>
@@ -337,7 +338,7 @@ function tween(el, from, to, f, dur) {
 /* ================= 모드 전환 / 조작 ================= */
 function setMode(m) {
   if (m === 'stage' && VIEW === 'work') return;
-  clearTimers(); finale = 0; $('cd').classList.remove('on'); $('win').classList.remove('on'); $('hint').style.display = 'none';
+  clearTimers(); finale = 0; document.body.classList.remove('hidevals'); $('cd').classList.remove('on'); $('win').classList.remove('on'); $('hint').style.display = 'none';
   mode = m; document.body.dataset.mode = m;
   $('mStage').classList.toggle('on', m === 'stage'); $('mAll').classList.toggle('on', m === 'all');
   queue = []; showing = false; $('pop').innerHTML = '';
@@ -417,18 +418,31 @@ function closeNow() {
 }
 function reopen() { api('superToggle', [pin, true]).then(function (r) { toast(r && r.ok ? '후원을 열었습니다' : ((r && r.msg) || '실패')); poll(); }).catch(function () { toast('연결 실패'); }); }
 
+// 결과 집계(자동 진행): 순위가 계속 뒤바뀌는 연출(금액 숨김) → 드럼롤 → 우승팀 공개 → 잠시 후 전체 결과. 스페이스바는 필요 없습니다.
 function toTally() {
   if (VIEW === 'work' || !data) return;
   clearTimers(); $('cd').classList.remove('on'); $('win').classList.remove('on'); queue = []; showing = false; $('pop').innerHTML = '';
-  mode = 'tally'; finale = 2; document.body.dataset.mode = 'tally';
+  mode = 'tally'; finale = 2; document.body.dataset.mode = 'tally'; document.body.classList.add('hidevals'); hint('');
   rows = {}; shown = {}; $('rank').innerHTML = '';
-  var DUR = 6500; layout(teamsByNo(), { dur: DUR, noRank: true, medal: false });
-  var i = 0, iv = setInterval(function () { tick(380 + i * 14, .05); i++; if (i * 90 > DUR) clearInterval(iv); }, 90); timers.push(iv);
-  later(function () { layout(teamsByTotal(), { medal: true }); fanfareMini(); hint('▶ 스페이스 : 우승 공개'); finale = 3; }, DUR + 1200);
+  var base = teamsByNo(), step = 0, N = 13, t = 400, acc = 0;
+  function shuffleOnce() {
+    var fk = base.map(function (x) { return { no: x.no, name: x.name, total: 10 + Math.floor(Math.random() * 90) }; }).sort(function (p, q) { return q.total - p.total; });
+    layout(fk, { dur: 520, noRank: true, medal: false });
+    tick(380 + step * 30, .06);
+  }
+  for (var i = 0; i < N; i++) { (function (k) { later(shuffleOnce.bind(null, k), acc); })(i); acc += t; t = Math.min(900, t + 40); step++; }
+  later(function () { fanfareMini(); toWinner(); }, acc + 500);
+}
+function showFull() {   // 우승 발표 후: 전체 결과
+  if (mode !== 'tally') return;
+  $('win').classList.remove('on'); document.body.classList.remove('hidevals'); finale = 5;
+  Object.keys(shown).forEach(function (k) { shown[k] = 0; });
+  layout(teamsByTotal(), { medal: true, dur: 1800 }); fanfareMini();
 }
 function toWinner() {
   if (VIEW === 'work' || !data) return;
   clearTimers(); $('cd').classList.remove('on'); hint(''); finale = 4;
+  if (mode !== 'tally') { mode = 'tally'; document.body.dataset.mode = 'tally'; document.body.classList.add('hidevals'); rows = {}; shown = {}; $('rank').innerHTML = ''; layout(teamsByNo(), { noRank: true, medal: false, dur: 1 }); }
   var l = teamsByTotal(), top = l.length ? l[0].total : 0, win = l.filter(function (t) { return t.total === top; });
   var w = $('win'), main = $('wMain'), crown = $('wCrown'), tot = $('wTotal'), rest = $('wRest');
   w.classList.add('on'); main.style.fontSize = ''; crown.className = ''; tot.innerHTML = ''; rest.innerText = ''; main.className = 'q'; main.innerText = '?';
@@ -447,6 +461,7 @@ function toWinner() {
       if (n % 3 === 0) fxBurst('spark', 50, innerWidth * (.15 + Math.random() * .7), innerHeight * (.15 + Math.random() * .35), 1);
       if (++n > 14) clearInterval(iv);
     }, 600); timers.push(iv);
+    later(showFull, 11000);
   }, 3600);
 }
 function hint(t) { var h = $('hint'); h.innerText = t; h.style.display = t ? 'block' : 'none'; }
@@ -576,7 +591,7 @@ addEventListener('keydown', function (e) {
 });
 function next() { // 스페이스: 공연 중 → 카운트다운 → (자동) 결과 집계 → 우승 공개
   if (mode === 'stage' || mode === 'all') startCountdown();
-  else if (mode === 'tally') { if (finale >= 3) toWinner(); else toast('집계가 끝난 뒤 눌러 주세요'); }
+  else if (mode === 'tally') { if (finale === 4) showFull(); }   // 우승 발표 중 스페이스: 바로 전체 결과로
   else if (mode === 'count') { /* 카운트다운 진행 중 */ }
 }
 
