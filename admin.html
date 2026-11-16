@@ -535,7 +535,7 @@ function drawDash() {
 function drawAwd() {
   var p = $('p-awd'); p.innerHTML = '';
   var h = el('div', 'card'); h.appendChild(el('h3', '', '시상 후보 (관리자용: 실명·학번 전체)'));
-  h.appendChild(el('div', 'desc', '스크루지상: 코인을 벌었는데 가장 적게 쓴 사람 · 플렉스상: 가장 많이 쓴 사람 · 후원왕: 후원 투표에 가장 많이 쓴 사람 · 응원왕: 응원 메시지를 가장 많이 보낸 사람(차단·숨김 제외). 동점이면 잔액이 많은 순이에요. 전광판 시상 화면의 이름 표시는 ⚙ 설정값 [시상이름표시] 에서 정해요.'));
+  h.appendChild(el('div', 'desc', '작품·발표 좋아요상: 좋아요를 가장 많이 받은 작품·발표 · 스크루지상: 코인을 벌었는데 가장 적게 쓴 사람 · 플렉스상: 가장 많이 쓴 사람 · 후원왕: 후원 투표에 가장 많이 쓴 사람 · 응원왕: 응원 메시지를 가장 많이 보낸 사람(차단·숨김 제외). 동점이면 잔액이 많은 순이에요. 전광판 시상 화면의 이름 표시는 ⚙ 설정값 [시상이름표시] 에서 정해요.'));
   var row = el('div', 'row'); var rb = el('button', 'btn', '🔄 다시 계산'); rb.onclick = function () { run(rb, load); }; row.appendChild(rb);
   var ob = el('button', 'btn sec', '📄 성과 보고서 열기'); ob.onclick = function () { ss('apw', PW); window.open('report.html', '_blank'); }; row.appendChild(ob);
   h.appendChild(row); p.appendChild(h);
@@ -545,7 +545,7 @@ function drawAwd() {
     a.forEach(function (x) {
       var c = el('div', 'card'); c.appendChild(el('h3', '', x.emoji + ' ' + x.title)); c.appendChild(el('div', 'desc', x.sub));
       if (!x.list.length) c.appendChild(el('div', 'desc', '아직 후보가 없어요.'));
-      x.list.forEach(function (w) { var r = el('div', 'dv'); r.appendChild(el('span', 'chip ' + (w.rank === 1 ? 'in' : ''), w.rank + '위')); r.appendChild(el('b', '', w.name + ' (' + w.no + ')')); r.appendChild(el('span', 'desc', w.cls + ' · ' + w.val.toLocaleString() + x.unit + ' · 잔액 ' + w.bal.toLocaleString() + 'C')); c.appendChild(r); });
+      x.list.forEach(function (w) { var r = el('div', 'dv'); r.appendChild(el('span', 'chip ' + (w.rank === 1 ? 'in' : ''), w.rank + '위')); r.appendChild(el('b', '', w.name + ' (' + w.no + ')')); r.appendChild(el('span', 'desc', w.cls + ' · ' + w.val.toLocaleString() + x.unit + (w.bal == null ? '' : ' · 잔액 ' + w.bal.toLocaleString() + 'C'))); c.appendChild(r); });
       box.appendChild(c);
     });
   }
