@@ -545,7 +545,8 @@ window.addEventListener('offline', qBadge);
 window.addEventListener('beforeunload', function (e) { if (Q.length) { e.preventDefault(); e.returnValue = ''; } });
 setInterval(flushQ, 15000);
 // 서버가 식어서 느려지는 것을 막기 위해 4분마다 가볍게 깨워 둡니다
-setInterval(function () { if (pin && navigator.onLine !== false) { try { google.script.run.withSuccessHandler(function () {}).withFailureHandler(function () {}).ping(); } catch (e) {} } }, 240000);
+function beat() { if (pin && navigator.onLine !== false) { try { google.script.run.withSuccessHandler(function () {}).withFailureHandler(function () {}).ping(devLabel(), mode); } catch (e) {} } }
+setInterval(beat, 120000); setTimeout(beat, 4000);
 qBadge();
 var toastSeq = 0;
 function toast(level, msg) {
