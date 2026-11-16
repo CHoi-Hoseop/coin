@@ -118,6 +118,19 @@
   #openPill.on { background: #123d2a; color: #6dffb0; } #openPill.off { background: #3d1220; color: #ff8aa8; }
   body[data-mode=stage] #openPill, body[data-mode=all] #openPill { display: inline-block; }
 
+  /* ----- 응원 메시지 (하트와 함께 날아가는 글) ----- */
+  #msgFly { position: fixed; inset: 0; z-index: 14; overflow: hidden; pointer-events: none; }
+  body:not([data-mode=stage]):not([data-mode=all]) #msgFly { display: none; }
+  .fm { position: absolute; bottom: -12vh; display: flex; align-items: center; gap: .8vh; max-width: 46vw; padding: 1.1vh 2vh 1.1vh 1.3vh; border-radius: 99px; pointer-events: auto; cursor: pointer;
+        background: linear-gradient(90deg, rgba(255,45,111,.88), rgba(106,27,255,.88)); border: 1px solid rgba(255,255,255,.4); box-shadow: 0 0 3vh rgba(255,45,111,.55), 0 1vh 3vh rgba(0,0,0,.35);
+        font-size: clamp(16px, 3.1vh, 40px); font-weight: 800; line-height: 1.25; animation: flyUp var(--dur, 9s) linear forwards; will-change: transform, opacity; }
+  .fm .h { font-size: 1.25em; animation: beat .9s ease-in-out infinite; } .fm .w { font-size: .62em; font-weight: 700; opacity: .8; white-space: nowrap; } .fm .t { word-break: keep-all; overflow-wrap: anywhere; }
+  @keyframes flyUp { 0% { transform: translate(0, 0) scale(.6); opacity: 0; } 6% { transform: translate(0, -6vh) scale(1.08); opacity: 1; } 12% { transform: translate(0, -12vh) scale(1); }
+    35% { transform: translate(var(--sw, 3vw), -42vh) scale(1); } 65% { transform: translate(calc(var(--sw, 3vw) * -1), -76vh) scale(1); opacity: 1; } 100% { transform: translate(0, -118vh) scale(.95); opacity: 0; } }
+  @keyframes beat { 50% { transform: scale(1.3); } }
+  .fh { position: absolute; bottom: -6vh; font-size: clamp(18px, 4vh, 48px); pointer-events: none; animation: heartUp var(--dur, 7s) ease-out forwards; will-change: transform, opacity; }
+  @keyframes heartUp { 0% { transform: translateY(0) scale(.4); opacity: 0; } 12% { opacity: .95; } 100% { transform: translateY(-110vh) translateX(var(--sw, 2vw)) scale(1.2); opacity: 0; } }
+
   /* ----- 로그인 / 조작판 ----- */
   #login { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
   #login[hidden], [hidden] { display: none !important; }
@@ -166,6 +179,7 @@
 <div id="hint"></div>
 <div id="flash"></div>
 <canvas id="fx"></canvas>
+<div id="msgFly"></div>
 <div id="pop"></div>
 <div id="conn"></div>
 <div id="toast"></div>
@@ -180,7 +194,7 @@
     <div class="r"><button onclick="toTally()">🏁 결과 집계</button><button onclick="toWinner()">🏆 우승 공개</button><button onclick="reopen()">🔓 후원 열기</button><button onclick="closeSuper()">🔒 후원 닫기</button></div>
     <div class="r"><button onclick="showQr(0)">📱 후원 QR 크게 (Q)</button><button onclick="newKey()">🔑 QR 재발급</button></div>
   </div>
-  <div class="r"><button id="btnSnd" onclick="toggleSound()">🔊 효과음 끄기</button><button id="btnLive" onclick="toggleLive()">🔕 공연 중 소리 꺼짐</button><button onclick="toggleFull()">⛶ 전체화면</button><button onclick="testFx()">✨ 팝업 시험</button></div>
+  <div class="r"><button id="btnSnd" onclick="toggleSound()">🔊 효과음 끄기</button><button id="btnLive" onclick="toggleLive()">🔕 공연 중 소리 꺼짐</button><button id="btnMsg" onclick="toggleMsg()">💌 응원 메시지 켜짐</button><button onclick="clearMsgs()">🧹 화면 메시지 지우기</button><button onclick="toggleFull()">⛶ 전체화면</button><button onclick="testFx()">✨ 팝업 시험</button></div>
   <div class="k" id="ctlKeys">단축키 · ←/→ 팀 바꾸기 · Q 후원 QR · 1 팀 집중 · 2 전체 순위 · <b>스페이스 = 마감 카운트다운 시작</b>(이후 집계 → 우승 → 전체 결과는 자동) · Esc 처음으로 · S 소리 · H 조작판 닫기/열기 · F 전체화면<br>🔕 공연 중에는 소리가 나지 않고, 마감 카운트다운부터 결과 발표까지만 소리가 납니다.</div>
 </div>
 
@@ -238,6 +252,7 @@ function apply(r) {
   if (VIEW !== 'work') { var op = $('openPill'); op.className = r.superOpen ? 'on' : 'off'; op.innerText = r.superOpen ? '● 후원 열림' : '후원 닫힘'; }
   fillTeamSel();
   // 새 후원 → 알림 대기열 (지금 화면에 해당하는 것만 팝업)
+  if (VIEW !== 'work') handleMsgs(r.msgs || []);
   r.recent.forEach(function (d) {
     if (seen[d.id]) return; seen[d.id] = 1;
     if (firstLoad) return;
@@ -247,6 +262,46 @@ function apply(r) {
   render();
   runQueue();
 }
+/* ================= 응원 메시지 ================= */
+var msgSeen = {}, msgFirst = true, msgQ = [], msgBusy = false, msgOn = true, msgLive = 0;
+function handleMsgs(list) {
+  list.forEach(function (m) {
+    if (msgSeen[m.id]) return; msgSeen[m.id] = 1;
+    if (msgFirst) return;                       // 처음 접속할 때 이미 있던 글은 날리지 않음
+    if (m.ts && data && data.serverTime && data.serverTime - m.ts > 60000) return;
+    msgQ.push(m);
+  });
+  msgFirst = false;
+  if (msgQ.length > 14) msgQ = msgQ.slice(-14);
+  pumpMsgs();
+}
+function pumpMsgs() {
+  if (msgBusy || !msgQ.length || !msgOn) return;
+  if (mode !== 'stage' && mode !== 'all') return;
+  if (msgLive >= 12) { setTimeout(pumpMsgs, 700); return; }
+  msgBusy = true; flyMsg(msgQ.shift());
+  setTimeout(function () { msgBusy = false; pumpMsgs(); }, msgQ.length > 4 ? 450 : 1100);
+}
+function flyMsg(m) {
+  var box = $('msgFly'), el = document.createElement('div'), dur = 9 + Math.random() * 2.5;
+  el.className = 'fm'; el.style.left = (4 + Math.random() * 42) + 'vw'; el.style.setProperty('--dur', dur + 's'); el.style.setProperty('--sw', (Math.random() < .5 ? -1 : 1) * (1.5 + Math.random() * 3) + 'vw');
+  el.title = '클릭하면 이 메시지를 숨깁니다';
+  var h = document.createElement('span'); h.className = 'h'; h.textContent = '💖';
+  var t = document.createElement('span'); t.className = 't'; t.textContent = m.text;
+  var w = document.createElement('span'); w.className = 'w'; w.textContent = '- ' + m.who;
+  el.appendChild(h); el.appendChild(t); el.appendChild(w);
+  el.onclick = function () { if (el.parentNode) el.parentNode.removeChild(el); msgLive = Math.max(0, msgLive - 1); api('msgHide', [pin, m.id]).then(function () { toast('메시지를 숨겼습니다 (시트에 기록은 남아요)'); }).catch(function () {}); };
+  box.appendChild(el); msgLive++;
+  setTimeout(function () { if (el.parentNode) { el.parentNode.removeChild(el); msgLive = Math.max(0, msgLive - 1); } }, dur * 1000 + 300);
+  for (var i = 0; i < 3; i++) (function (i) { setTimeout(function () {
+    var hh = document.createElement('div'); hh.className = 'fh'; hh.textContent = ['💗', '💖', '💕', '❤️'][Math.random() * 4 | 0];
+    hh.style.left = (parseFloat(el.style.left) + Math.random() * 20) + 'vw'; hh.style.setProperty('--dur', (6 + Math.random() * 3) + 's'); hh.style.setProperty('--sw', (Math.random() * 6 - 3) + 'vw');
+    box.appendChild(hh); setTimeout(function () { if (hh.parentNode) hh.parentNode.removeChild(hh); }, 9500);
+  }, i * 260); })(i);
+}
+function toggleMsg() { msgOn = !msgOn; $('btnMsg').innerText = msgOn ? '💌 응원 메시지 켜짐' : '💌 응원 메시지 꺼짐'; if (!msgOn) clearMsgs(); else pumpMsgs(); }
+function clearMsgs() { $('msgFly').innerHTML = ''; msgLive = 0; msgQ = []; }
+
 function defaultTeam() { // 가장 최근 후원을 받은 팀, 없으면 1번 팀
   if (data.recent.length) return data.recent[data.recent.length - 1].team;
   var l = teamsByNo(); return l.length ? l[0].no : null;
