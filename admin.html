@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>문화코인 관리자</title>
+<style>
+  :root { --bg: #f3f4f8; --card: #fff; --ink: #161a2b; --mut: #6b7090; --line: #e3e5ef; --pri: #4b3df2; --pri2: #7a3cff; --ok: #12905a; --okbg: #e3f6ec; --bad: #d12a4d; --badbg: #fde8ed; --warn: #b36b00; --warnbg: #fff3da; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0e1020; --card: #181b33; --ink: #eef0ff; --mut: #9aa0c8; --line: #2a2e52; --okbg: #11382a; --badbg: #3b1523; --warnbg: #3a2d10; --ok: #5be0a4; --bad: #ff8aa5; --warn: #ffc766; } }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; } body { background: var(--bg); color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; padding: env(safe-area-inset-top) 0 40px; }
+  header { position: sticky; top: 0; z-index: 10; background: linear-gradient(90deg, var(--pri), var(--pri2)); color: #fff; padding: 14px 16px 0; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+  header h1 button { background: rgba(255,255,255,.2); border: 0; color: #fff; padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; }
+  nav { display: flex; gap: 0; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }
+  nav button { flex: 1 0 auto; padding: 11px 14px; border: 0; background: transparent; color: rgba(255,255,255,.75); font-size: 14px; font-weight: 700; border-bottom: 3px solid transparent; white-space: nowrap; }
+  nav button.on { color: #fff; border-bottom-color: #fff; }
+  main { max-width: 760px; margin: 0 auto; padding: 14px 14px 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; }
+  .card h3 { margin: 0 0 4px; font-size: 16px; } .desc { color: var(--mut); font-size: 12.5px; line-height: 1.5; margin-top: 3px; }
+  .sw { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); } .sw:last-child { border-bottom: 0; }
+  .sw .nm { font-weight: 800; font-size: 15px; } .sw .tx { flex: 1; min-width: 0; }
+  .tg { flex: 0 0 auto; display: flex; border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+  .tg button { border: 0; padding: 9px 16px; font-size: 14px; font-weight: 800; background: transparent; color: var(--mut); min-width: 64px; }
+  .tg button.on.pos { background: var(--ok); color: #fff; } .tg button.on.neg { background: var(--bad); color: #fff; }
+  input, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; font-size: 15px; }
+  input:focus { outline: 2px solid var(--pri); border-color: transparent; }
+  label { display: block; font-size: 12.5px; font-weight: 700; color: var(--mut); margin: 10px 0 4px; }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } @media (max-width: 460px) { .g2 { grid-template-columns: 1fr; } }
+  .btn { border: 0; border-radius: 11px; padding: 11px 16px; font-size: 15px; font-weight: 800; background: var(--pri); color: #fff; }
+  .btn.sec { background: var(--bg); color: var(--ink); border: 1px solid var(--line); } .btn.red { background: var(--bad); } .btn:disabled { opacity: .5; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .chip { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12.5px; font-weight: 800; background: var(--bg); color: var(--mut); border: 1px solid var(--line); }
+  .chip.in { background: var(--okbg); color: var(--ok); border-color: transparent; } .chip.out { background: var(--warnbg); color: var(--warn); border-color: transparent; } .chip.bad { background: var(--badbg); color: var(--bad); border-color: transparent; }
+  .st { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 99px; } .st.정상 { background: var(--okbg); color: var(--ok); } .st.숨김 { background: var(--warnbg); color: var(--warn); } .st.차단 { background: var(--badbg); color: var(--bad); }
+  .msg1 { padding: 12px 0; border-bottom: 1px solid var(--line); } .msg1:last-child { border-bottom: 0; } .msg1 .t { font-size: 16px; font-weight: 700; margin: 4px 0; word-break: break-all; } .msg1 .m { color: var(--mut); font-size: 12.5px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #161a2b; color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; z-index: 50; display: none; max-width: 90vw; text-align: center; white-space: pre-wrap; }
+  #login { max-width: 360px; margin: 14vh auto 0; text-align: center; padding: 0 20px; } #login h2 { font-size: 22px; margin-bottom: 6px; } #login input { text-align: center; font-size: 22px; letter-spacing: 4px; margin: 14px 0; } #login .err { color: var(--bad); min-height: 1.4em; white-space: pre-wrap; font-size: 14px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="login">
+  <h2>🔐 문화코인 관리자</h2>
+  <div class="desc">관리자 비밀번호를 입력하세요.<br>운영 PIN(태블릿용)과는 다른 번호예요.</div>
+  <input id="pw" type="password" autocomplete="off" onkeydown="if(event.key==='Enter')login()">
+  <button class="btn" style="width:100%" onclick="login()">들어가기</button>
+  <div class="err" id="lerr"></div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <h1><span>🪙 문화코인 관리자</span><button onclick="reload(true)">🔄 새로고침</button></h1>
+    <nav id="nav"></nav>
+  </header>
+  <main>
+    <section id="p-sw"></section>
+    <section id="p-ses" hidden></section>
+    <section id="p-msg" hidden></section>
+    <section id="p-all" hidden></section>
+    <section id="p-sec" hidden></section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* 서버 주소 (index.html 의 API_URL 과 같은 주소) */
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
+function $(id) { return document.getElementById(id); }
+function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} return null; }
+function api(fn, args) {
+  return fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }) })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (j) { if (j && j.error) throw new Error(j.error); return j.result; });
+}
+function toast(m, ms) { var t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(function () { t.style.display = 'none'; }, ms || 2600); }
+
+var PW = '', D = null, tab = 'sw';
+var TABS = [['sw', '⚡ 스위치'], ['ses', '🎤 발표'], ['msg', '💌 응원 메시지'], ['all', '⚙ 전체 설정'], ['sec', '🔑 비밀번호']];
+// 열림/닫힘 처럼 두 값 중 하나인 설정은 스위치로 보여줍니다
+var PAIRS = { '열림': ['열림', '닫힘'], '닫힘': ['열림', '닫힘'], '허용': ['허용', '차단'], '차단': ['허용', '차단'] };
+var NICE = { '전체': '비상 스위치 (전체)', '슈퍼챗': '후원 투표 (전광판)', '슈퍼챗폰후원': '폰으로 후원', '응원메시지': '응원 메시지', '근로지급': '근로 장학금 지급', '코인마켓': '코인 마켓', '발표장': '발표장 (입장·퇴장)', '부스': '학급 부스', '학술제응원': '작품 좋아요' };
+
+function login() {
+  PW = $('pw').value; if (!PW) return;
+  $('lerr').textContent = '확인 중...';
+  api('adminLoad', [PW]).then(function (r) {
+    if (!r.ok) { $('lerr').textContent = r.msg || '들어갈 수 없어요.'; return; }
+    ss('apw', PW); $('login').hidden = true; $('app').hidden = false; D = r; build(); draw();
+  }).catch(function () { $('lerr').textContent = '연결에 실패했어요. 인터넷을 확인해 주세요.'; });
+}
+function logout() { ss('apw', null); PW = ''; location.reload(); }
+function reload(show) {
+  return api('adminLoad', [PW]).then(function (r) { if (!r.ok) { toast(r.msg || '불러오지 못했어요'); return; } D = r; draw(); if (show) toast('새로 불러왔어요'); }).catch(function () { toast('연결에 실패했어요'); });
+}
+(function init() { var p = ss('apw'); if (p) { $('pw').value = p; login(); } })();
+
+function build() {
+  var n = $('nav'); n.innerHTML = '';
+  TABS.forEach(function (t) { var b = el('button', t[0] === tab ? 'on' : '', t[1]); b.onclick = function () { tab = t[0]; build(); draw(); }; n.appendChild(b); });
+}
+function draw() {
+  TABS.forEach(function (t) { $('p-' + t[0]).hidden = t[0] !== tab; });
+  ({ sw: drawSw, ses: drawSes, msg: drawMsg, all: drawAll, sec: drawSec })[tab]();
+}
+function save(k, v) { return api('adminSet', [PW, k, v]).then(function (r) { if (!r.ok) { toast(r.msg || '저장하지 못했어요'); return false; } toast('저장했어요 ✓'); return true; }).catch(function () { toast('연결에 실패했어요'); return false; }); }
+function find(k) { for (var i = 0; i < D.settings.length; i++) if (D.settings[i].k === k) return D.settings[i]; return null; }
+
+/* ---------- 스위치 ---------- */
+function toggle(s, onSave) {
+  var pair = PAIRS[s.v], g = el('div', 'tg');
+  pair.forEach(function (opt, i) {
+    var b = el('button', (s.v === opt ? 'on ' : '') + (i === 0 ? 'pos' : 'neg'), opt);
+    b.onclick = function () { if (s.v === opt) return; save(s.k, opt).then(function (ok) { if (ok) { s.v = opt; if (onSave) onSave(); else draw(); } }); };
+    g.appendChild(b);
+  });
+  return g;
+}
+function drawSw() {
+  var p = $('p-sw'); p.innerHTML = '';
+  var c = el('div', 'card'); c.appendChild(el('h3', '', '행사 스위치')); c.appendChild(el('div', 'desc', '눌러서 바로 열고 닫을 수 있어요. 비상 스위치를 닫으면 모든 결제가 멈춥니다.'));
+  var order = ['전체', '발표장', '학술제응원', '부스', '코인마켓', '슈퍼챗', '슈퍼챗폰후원', '응원메시지', '근로지급'], shown = 0;
+  order.forEach(function (k) {
+    var s = find(k); if (!s || !PAIRS[s.v]) return; shown++;
+    var row = el('div', 'sw'), tx = el('div', 'tx'); tx.appendChild(el('div', 'nm', NICE[k] || k)); tx.appendChild(el('div', 'desc', s.d));
+    row.appendChild(tx); row.appendChild(toggle(s)); c.appendChild(row);
+  });
+  if (!shown) c.appendChild(el('div', 'desc', '스위치 항목이 없어요. 시트 메뉴 5번(새 설정 항목 추가)을 먼저 실행해 주세요.'));
+  p.appendChild(c);
+}
+
+/* ---------- 발표 ---------- */
+function drawSes() {
+  var p = $('p-ses'); p.innerHTML = '';
+  var intro = el('div', 'card'); intro.appendChild(el('h3', '', '발표 시간 · 종료 처리'));
+  intro.appendChild(el('div', 'desc', '시작·종료 시각을 넣으면 그 사이에 머문 시간만 인정해요. 미리 입장해도 시작 전 시간은 빠집니다. 발표가 끝난 뒤 [종료 처리]를 누르면 퇴장을 안 찍은 학생도 일괄로 코인이 지급돼요.'));
+  p.appendChild(intro);
+  D.sessions.forEach(function (s) { p.appendChild(sesCard(s, false)); });
+  var add = el('button', 'btn sec', '+ 발표 추가'); add.style.width = '100%';
+  add.onclick = function () { add.replaceWith(sesCard({ code: '', name: '', reward: 400, open: true, start: '', end: '', counts: {} }, true)); };
+  p.appendChild(add);
+}
+function sesCard(s, isNew) {
+  var c = el('div', 'card'), head = el('h3', '', isNew ? '새 발표' : s.name + '  (' + s.code + ')'); c.appendChild(head);
+  if (!isNew) {
+    var k = s.counts || {}, ch = el('div', ''); ch.style.margin = '6px 0 2px';
+    [['입장중', 'in'], ['외출중', 'out'], ['완료', ''], ['시간부족', 'bad']].forEach(function (x) { var sp = el('span', 'chip ' + x[1], x[0] + ' ' + (k[x[0]] || 0)); sp.style.marginRight = '6px'; ch.appendChild(sp); });
+    c.appendChild(ch);
+    c.appendChild(el('div', 'desc', s.start && s.end ? '진행시간 ' + s.mins + '분 (시작~종료 시각으로 자동 계산)' : '시작·종료 시각이 없어 진행시간 ' + s.mins + '분 기준(입장 시각부터 계산)'));
+  }
+  var f = {};
+  function field(lbl, type, val, ph) { var w = el('div'); w.appendChild(el('label', '', lbl)); var i = document.createElement('input'); i.type = type; i.value = val === undefined ? '' : val; if (ph) i.placeholder = ph; w.appendChild(i); f[lbl] = i; return w; }
+  var g1 = el('div', 'g2'); g1.appendChild(field('발표 이름', 'text', s.name)); g1.appendChild(field('지급 코인', 'number', s.reward)); c.appendChild(g1);
+  if (isNew) { var gc = el('div'); gc.appendChild(field('발표 코드 (영문·숫자, 예: W1)', 'text', s.code)); c.appendChild(gc); }
+  var g2 = el('div', 'g2'); g2.appendChild(field('시작 시각', 'datetime-local', s.start)); g2.appendChild(field('종료 시각', 'datetime-local', s.end)); c.appendChild(g2);
+  var op = { v: s.open }, row = el('div', 'sw'); row.style.borderBottom = '0'; row.appendChild(el('div', 'nm', '이 발표 열기'));
+  var tg = el('div', 'tg'); function paint() { tg.innerHTML = ''; ['열림', '닫힘'].forEach(function (o, i) { var b = el('button', ((o === '열림') === op.v ? 'on ' : '') + (i === 0 ? 'pos' : 'neg'), o); b.onclick = function () { op.v = o === '열림'; paint(); }; tg.appendChild(b); }); } paint();
+  row.appendChild(tg); c.appendChild(row);
+  var btns = el('div', 'row'), sv = el('button', 'btn', '💾 저장');
+  sv.onclick = function () {
+    var o = { code: isNew ? f['발표 코드 (영문·숫자, 예: W1)'].value.trim() : s.code, name: f['발표 이름'].value.trim(), reward: Number(f['지급 코인'].value) || 0, start: f['시작 시각'].value, end: f['종료 시각'].value, open: op.v, mins: s.mins };
+    if (!o.name) { toast('발표 이름을 입력해 주세요'); return; }
+    sv.disabled = true;
+    api('adminSession', [PW, o]).then(function (r) { sv.disabled = false; if (!r.ok) { toast(r.msg || '저장하지 못했어요', 4000); return; } toast('저장했어요 ✓'); reload(); }).catch(function () { sv.disabled = false; toast('연결에 실패했어요'); });
+  };
+  btns.appendChild(sv);
+  if (!isNew) {
+    var en = el('button', 'btn red', '🏁 종료 처리');
+    en.onclick = function () {
+      var k = s.counts || {}, n = (k['입장중'] || 0) + (k['외출중'] || 0);
+      if (!n) { toast('아직 입장중인 학생이 없어요'); return; }
+      if (!confirm('[' + s.name + '] 종료 처리를 할까요?\n\n입장중 ' + (k['입장중'] || 0) + '명 · 외출중 ' + (k['외출중'] || 0) + '명을 지금 정산합니다.\n(인정 시간이 충분한 학생에게 ' + s.reward + 'C 지급, 되돌리려면 거래를 하나씩 취소해야 해요)')) return;
+      en.disabled = true; en.textContent = '처리 중...';
+      api('adminEnd', [PW, s.code]).then(function (r) { en.disabled = false; en.textContent = '🏁 종료 처리'; if (!r.ok) { toast(r.msg || '처리하지 못했어요', 5000); return; } toast('완료 ' + r.paid + '명 지급 (' + r.coins + 'C) · 시간부족 ' + r.short + '명', 5000); reload(); }).catch(function () { en.disabled = false; en.textContent = '🏁 종료 처리'; toast('연결이 끊겼어요. 새로고침해서 처리 결과를 확인해 주세요', 5000); });
+    };
+    btns.appendChild(en);
+  }
+  c.appendChild(btns); return c;
+}
+
+/* ---------- 응원 메시지 ---------- */
+function drawMsg() {
+  var p = $('p-msg'); p.innerHTML = '';
+  var c = el('div', 'card'); c.appendChild(el('h3', '', '최근 응원 메시지 (최신 60개)'));
+  c.appendChild(el('div', 'desc', '모든 메시지는 학번·이름과 함께 [응원메시지] 시트에 남아요. [숨김]은 전광판에서만 빼고 기록은 그대로 둡니다. [차단]은 금칙어에 걸려 올라가지 못한 글이에요.'));
+  var s = find('응원메시지'); if (s && PAIRS[s.v]) { var r = el('div', 'sw'); r.appendChild(el('div', 'nm', '응원 메시지 받기')); r.appendChild(toggle(s)); c.appendChild(r); }
+  if (!D.msgs.length) c.appendChild(el('div', 'desc', '아직 메시지가 없어요.'));
+  D.msgs.forEach(function (m) {
+    var b = el('div', 'msg1'), mt = el('div', 'm');
+    var d = new Date(m.ts); mt.appendChild(el('span', 'st ' + m.st, m.st));
+    mt.appendChild(el('span', '', ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ' · ' + m.no + ' ' + m.name));
+    b.appendChild(mt); b.appendChild(el('div', 't', m.text));
+    if (m.st !== '차단') {
+      var btn = el('button', 'btn sec', m.st === '정상' ? '🙈 숨김' : '↩ 다시 보이기'); btn.style.padding = '7px 12px'; btn.style.fontSize = '13px';
+      btn.onclick = function () { api('adminMsg', [PW, m.id, m.st === '정상' ? '숨김' : '정상']).then(function (r) { if (!r.ok) { toast(r.msg); return; } m.st = m.st === '정상' ? '숨김' : '정상'; draw(); }); };
+      b.appendChild(btn);
+    }
+    c.appendChild(b);
+  });
+  p.appendChild(c);
+}
+
+/* ---------- 전체 설정 ---------- */
+function drawAll() {
+  var p = $('p-all'); p.innerHTML = '';
+  var top = el('div', 'card'), q = document.createElement('input'); q.placeholder = '🔍 설정 이름·설명 검색 (예: 좋아요, 전광판)'; top.appendChild(q);
+  top.appendChild(el('div', 'desc', '값을 바꾸고 [저장]을 누르면 바로 반영돼요. 운영 PIN도 여기서 바꿀 수 있어요.'));
+  p.appendChild(top);
+  var list = el('div'); p.appendChild(list);
+  function render() {
+    list.innerHTML = ''; var w = q.value.trim();
+    D.settings.forEach(function (s) {
+      if (w && (s.k + ' ' + s.d).indexOf(w) < 0) return;
+      var c = el('div', 'card'); c.appendChild(el('div', '', '')); var nm = el('div', 'nm', s.k); nm.style.fontWeight = '800'; c.appendChild(nm);
+      c.appendChild(el('div', 'desc', s.d));
+      if (PAIRS[s.v]) { var r = el('div', 'row'); r.appendChild(toggle(s, render)); c.appendChild(r); }
+      else {
+        var r2 = el('div', 'row'), i = document.createElement('input'); i.value = s.v; i.style.flex = '1'; var b = el('button', 'btn', '저장'); b.disabled = true;
+        i.oninput = function () { b.disabled = i.value.trim() === s.v; };
+        b.onclick = function () { b.disabled = true; save(s.k, i.value).then(function (ok) { if (ok) { s.v = i.value.trim(); } else b.disabled = false; }); };
+        r2.appendChild(i); r2.appendChild(b); c.appendChild(r2);
+      }
+      list.appendChild(c);
+    });
+    if (!list.children.length) list.appendChild(el('div', 'desc', '검색 결과가 없어요.'));
+  }
+  q.oninput = render; render();
+}
+
+/* ---------- 비밀번호 ---------- */
+function drawSec() {
+  var p = $('p-sec'); p.innerHTML = '';
+  var c = el('div', 'card'); c.appendChild(el('h3', '', '관리자 비밀번호 바꾸기'));
+  c.appendChild(el('div', 'desc', '이 화면에 들어오는 비밀번호예요. 태블릿에서 쓰는 운영 PIN과는 따로 관리됩니다. 4자 이상.'));
+  var a = document.createElement('input'); a.type = 'password'; a.placeholder = '새 비밀번호'; a.style.marginTop = '10px'; c.appendChild(a);
+  var b2 = document.createElement('input'); b2.type = 'password'; b2.placeholder = '새 비밀번호 한 번 더'; b2.style.marginTop = '8px'; c.appendChild(b2);
+  var r = el('div', 'row'), sv = el('button', 'btn', '변경'), lo = el('button', 'btn sec', '로그아웃');
+  sv.onclick = function () {
+    if (a.value.length < 4) { toast('4자 이상으로 입력해 주세요'); return; } if (a.value !== b2.value) { toast('두 번 입력한 값이 달라요'); return; }
+    api('adminSetPw', [PW, a.value]).then(function (x) { if (!x.ok) { toast(x.msg || '변경하지 못했어요'); return; } PW = a.value; ss('apw', PW); a.value = b2.value = ''; toast('비밀번호를 바꿨어요 ✓'); });
+  };
+  lo.onclick = logout; r.appendChild(sv); r.appendChild(lo); c.appendChild(r); p.appendChild(c);
+}
+</script>
+</body>
+</html>
