@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문화코인 성과 보고서</title>
+<style>
+  :root { --ink: #1a1d2e; --mut: #666b85; --line: #dfe2ee; --pri: #4b3df2; --pri2: #7a3cff; --gold: #f2a900; --bg: #eef0f7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; line-height: 1.5; }
+  .bar { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .bar b { flex: 1 1 200px; font-size: 15px; }
+  .btn { border: 0; border-radius: 10px; padding: 10px 14px; font-size: 14px; font-weight: 800; background: var(--pri); color: #fff; cursor: pointer; } .btn.sec { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .page { width: 210mm; max-width: 100%; margin: 14px auto; background: #fff; padding: 14mm 14mm 12mm; box-shadow: 0 2px 14px rgba(20,20,60,.12); }
+  h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; } .sub { color: var(--mut); font-size: 13px; margin-top: 2px; }
+  .head { border-bottom: 4px solid var(--pri); padding-bottom: 10px; margin-bottom: 14px; }
+  h2 { font-size: 16px; margin: 18px 0 8px; padding-left: 9px; border-left: 5px solid var(--pri); }
+  .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; } @media (max-width: 560px) { .kpi { grid-template-columns: 1fr 1fr; } }
+  .kpi div { border: 1px solid var(--line); border-radius: 10px; padding: 10px 8px; text-align: center; } .kpi b { display: block; font-size: 22px; color: var(--pri); font-variant-numeric: tabular-nums; } .kpi span { font-size: 11.5px; color: var(--mut); }
+  .row { display: grid; grid-template-columns: 7.5em 1fr 5.5em; gap: 8px; align-items: center; font-size: 13px; margin: 4px 0; } .row .t { height: 14px; background: #eceef8; border-radius: 99px; overflow: hidden; } .row .t i { display: block; height: 100%; background: linear-gradient(90deg, var(--pri), var(--pri2)); border-radius: 99px; } .row .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .row .l { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; } @media (max-width: 560px) { .two { grid-template-columns: 1fr; } }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; } th, td { border-bottom: 1px solid var(--line); padding: 5px 6px; text-align: left; } th { background: #f4f5fb; font-size: 12px; } td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .aw { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .aw > div { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; } .aw .tt { font-weight: 800; font-size: 14px; } .aw .w { font-size: 16px; font-weight: 900; color: var(--pri); margin-top: 2px; } .aw .d { font-size: 12px; color: var(--mut); }
+  .shots { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; } .shots img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: #222; } @media (max-width: 560px) { .shots { grid-template-columns: 1fr 1fr; } }
+  .note { border: 1px dashed #b9bdd6; border-radius: 10px; padding: 10px 12px; min-height: 34mm; font-size: 14px; white-space: pre-wrap; outline: none; } .note:empty::before { content: '여기를 눌러 총평·건의 사항을 직접 적으세요 (인쇄할 때 함께 나옵니다)'; color: #9a9fb8; }
+  .muted { color: var(--mut); font-size: 12px; } .sec { break-inside: avoid; }
+  #login { max-width: 340px; margin: 18vh auto; text-align: center; padding: 0 16px; } #login input { font: inherit; font-size: 20px; width: 100%; padding: 10px; text-align: center; border: 1px solid var(--line); border-radius: 10px; margin: 12px 0; letter-spacing: 3px; }
+  @page { size: A4; margin: 10mm; }
+  @media print { body { background: #fff; } .bar, #login { display: none !important; } .page { box-shadow: none; margin: 0; width: auto; padding: 0; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<div id="login"><h2>📊 성과 보고서</h2><div class="muted">관리자 비밀번호를 입력하세요</div><input id="pw" type="password" autocomplete="off" onkeydown="if(event.key==='Enter')go()"><button class="btn" onclick="go()">열기</button><div id="err" class="muted" style="color:#d12a4d;margin-top:8px"></div></div>
+<div class="bar" id="bar" hidden><b>📊 문화코인 성과 보고서</b><button class="btn sec" onclick="shots()">🎲 캡처 다시 뽑기</button><button class="btn sec" onclick="load()">🔄 새로 계산</button><button class="btn" onclick="print()">🖨 인쇄 / PDF 저장</button></div>
+<div class="page" id="doc" hidden></div>
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
+var PW = '', R = null, noteTxt = '';
+function $(i) { return document.getElementById(i); }
+function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; }
+function fmt(n) { return Math.round(Number(n) || 0).toLocaleString('ko-KR'); }
+function api(fn, args) {
+  return fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }) })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(function (j) { if (j && j.error) throw new Error(j.error); return j.result; });
+}
+function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch (e) {} return null; }
+function go() { PW = $('pw').value; if (!PW) return; $('err').textContent = '불러오는 중…'; load(true); }
+function load(first) {
+  return api('adminReport', [PW]).then(function (r) {
+    if (!r || !r.ok) { $('err').textContent = (r && r.msg) || '열 수 없어요'; $('login').hidden = false; return; }
+    ss('apw', PW); R = r; var n = $('doc').querySelector('.note'); if (n) noteTxt = n.innerText;
+    $('login').hidden = true; $('bar').hidden = false; $('doc').hidden = false; draw();
+    return api('adminShots', [PW, 6]).then(function (s) { drawShots(s); }).catch(function () { drawShots(null); });
+  }).catch(function () { $('err').textContent = '연결에 실패했어요'; });
+}
+function shots() { api('adminShots', [PW, 6]).then(drawShots).catch(function () { drawShots(null); }); }
+function bars(list, labelFn, valFn, fmtFn) {
+  var box = el('div'), max = 0; list.forEach(function (x) { max = Math.max(max, valFn(x)); });
+  if (!list.length) box.appendChild(el('div', 'muted', '기록이 없습니다.'));
+  list.forEach(function (x) { var r = el('div', 'row'), t = el('div', 't'), i = el('i'); i.style.width = (max ? Math.max(2, valFn(x) / max * 100) : 0) + '%'; t.appendChild(i); r.appendChild(el('div', 'l', labelFn(x))); r.appendChild(t); r.appendChild(el('div', 'v', fmtFn ? fmtFn(x) : fmt(valFn(x)))); box.appendChild(r); });
+  return box;
+}
+function sec(title) { var s = el('div', 'sec'); s.appendChild(el('h2', '', title)); return s; }
+function kpi(items) { var k = el('div', 'kpi'); items.forEach(function (x) { var d = el('div'); d.appendChild(el('b', '', x[1])); d.appendChild(el('span', '', x[0])); k.appendChild(d); }); return k; }
+function draw() {
+  var d = $('doc'), r = R; d.innerHTML = '';
+  var h = el('div', 'head'); h.appendChild(el('h1', '', '🪙 문화코인 운영 성과 보고')); h.appendChild(el('div', 'sub', (r.title || '문화제') + ' · 문화고등학교 학생안전부 · 작성 ' + new Date(r.gen).toLocaleString('ko-KR'))); d.appendChild(h);
+  var pr = r.students ? Math.round(r.participants / r.students * 100) : 0;
+  d.appendChild(kpi([['참여 학생 / 전체', fmt(r.participants) + ' / ' + fmt(r.students) + '명 (' + pr + '%)'], ['총 거래 기록', fmt(r.txCount) + '건'], ['학생이 번 코인', fmt(r.earn) + 'C'], ['학생이 쓴 코인', fmt(r.spend) + 'C']]));
+  var s1 = sec('1. 일자별 이용 현황 (거래 건수)'); s1.appendChild(bars(r.days, function (x) { return x.d; }, function (x) { return x.n; }, function (x) { return fmt(x.n) + '건'; })); d.appendChild(s1);
+  var ks = Object.keys(r.kinds).map(function (k) { return { k: k, n: r.kinds[k].n, sum: r.kinds[k].sum }; }).sort(function (a, b) { return b.n - a.n; });
+  var s2 = sec('2. 코인이 쓰인 곳 · 벌린 곳'); s2.appendChild(bars(ks, function (x) { return x.k; }, function (x) { return x.n; }, function (x) { return fmt(x.n) + '건'; })); d.appendChild(s2);
+  var s3 = sec('3. 학술제 발표 참여'); var t = el('table'); t.innerHTML = '<tr><th>발표</th><th>입장 기록</th><th>완료(지급)</th><th>시간 부족</th></tr>';
+  r.sessions.forEach(function (x) { var tr = el('tr'); [x.name, fmt(x.all), fmt(x.done), fmt(x.short)].forEach(function (v, i) { tr.appendChild(el('td', i ? 'n' : '', v)); }); t.appendChild(tr); });
+  if (!r.sessions.length) { var er = el('tr'); er.appendChild(el('td', '', '기록 없음')); t.appendChild(er); } s3.appendChild(t); d.appendChild(s3);
+  var two = el('div', 'two'), a = el('div', 'sec'), b = el('div', 'sec');
+  a.appendChild(el('h2', '', '4. 작품 좋아요 TOP')); a.appendChild(bars(r.likesTop.slice(0, 8), function (x) { return x.no + '번 ' + x.name; }, function (x) { return x.n; }, function (x) { return fmt(x.n) + '회'; }));
+  b.appendChild(el('h2', '', '5. 학급 부스·마켓 매출')); b.appendChild(bars(r.booth.slice(0, 8), function (x) { return x.name; }, function (x) { return x.sum; }, function (x) { return fmt(x.sum) + 'C'; }));
+  two.appendChild(a); two.appendChild(b); d.appendChild(two);
+  var s6 = sec('6. 후원 투표 전광판 (장기자랑)'); s6.appendChild(bars(r.super, function (x) { return x.name; }, function (x) { return x.sum; }, function (x) { return fmt(x.sum) + 'C'; }));
+  s6.appendChild(el('div', 'muted', '후원 총 ' + fmt(r.super.reduce(function (a, x) { return a + x.n; }, 0)) + '건 · 후원 총액 ' + fmt(r.super.reduce(function (a, x) { return a + x.sum; }, 0)) + 'C')); d.appendChild(s6);
+  var s7 = sec('7. 응원 메시지'); s7.appendChild(kpi([['응원 메시지', fmt(r.msgTotal) + '개'], ['보낸 학생', fmt(r.msgSenders) + '명'], ['부적절 차단', fmt(r.msgBlocked) + '건'], ['전교생 잔액 합계', fmt(r.balanceSum) + 'C']])); d.appendChild(s7);
+  var s8 = sec('8. 시상'); var aw = el('div', 'aw');
+  r.awards.forEach(function (x) { var c = el('div'); c.appendChild(el('div', 'tt', x.emoji + ' ' + x.title)); var w = x.list[0]; c.appendChild(el('div', 'w', w ? w.name : '해당자 없음')); c.appendChild(el('div', 'd', w ? w.cls + ' · ' + fmt(w.val) + ' ' + x.unit : x.sub)); aw.appendChild(c); }); s8.appendChild(aw); d.appendChild(s8);
+  var s9 = sec('9. 현장 화면 (무작위 캡처)'); s9.id = 'shotSec'; s9.appendChild(el('div', 'muted', '불러오는 중…')); d.appendChild(s9);
+  var s10 = sec('10. 총평 및 건의'); var n = el('div', 'note'); n.contentEditable = 'true'; n.textContent = noteTxt || ''; s10.appendChild(n); d.appendChild(s10);
+  d.appendChild(el('div', 'muted', '※ 이 보고서는 [거래내역]·[출결]·[응원메시지] 시트의 기록으로 자동 계산한 값입니다. 취소된 거래는 제외했습니다.'));
+}
+function drawShots(s) {
+  var sc = $('shotSec'); if (!sc) return; sc.innerHTML = ''; sc.appendChild(el('h2', '', '9. 현장 화면 (무작위 캡처)'));
+  if (!s || !s.ok || !s.shots.length) { sc.appendChild(el('div', 'muted', s && s.ok ? '저장된 캡처가 없습니다. (전광판을 켜 두면 자동으로 저장돼요)' : '캡처를 불러오지 못했어요.')); return; }
+  var g = el('div', 'shots'); s.shots.forEach(function (x) { var i = el('img'); i.src = x.data; i.alt = x.name; g.appendChild(i); }); sc.appendChild(g);
+  sc.appendChild(el('div', 'muted', '전체 ' + s.total + '장 중 무작위 ' + s.shots.length + '장'));
+}
+(function () { var p = ss('apw'); if (p) { $('pw').value = p; PW = p; load(true); } })();
+</script>
+</body>
+</html>
