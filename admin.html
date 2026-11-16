@@ -58,6 +58,10 @@
   .tool { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); } .tool:last-child { border-bottom: 0; } .tool .tx { flex: 1; min-width: 0; } .tool .btn { flex: 0 0 auto; padding: 10px 14px; font-size: 14px; }
   .qrg { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; } .qrc { border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; background: #fff; color: #111; } .qrc b { font-size: 15px; } .qrc .d { font-size: 12px; color: #555; min-height: 32px; margin: 2px 0 6px; } .qrc .q { display: flex; justify-content: center; } .qrc .u { font-size: 10px; word-break: break-all; color: #444; margin-top: 6px; text-align: left; }
   input:disabled { opacity: .6; }
+  .kv { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; } .kv:last-child { border-bottom: 0; } .kv b.rd { color: var(--bad); }
+  .big { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; } .big .bx { background: var(--bg); border-radius: 12px; padding: 12px; } .big .n { font-size: 22px; font-weight: 900; } .big .l { font-size: 12px; color: var(--mut); margin-top: 2px; }
+  .dv { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; } .dv:last-child { border-bottom: 0; }
+
   @media print { header, nav, .noprint, .toast, #bar { display: none !important; } body { background: #fff; } main { max-width: none; padding: 0; } section { display: none !important; } section#p-qr { display: block !important; } .card { border: 0; } }
   [hidden] { display: none !important; }
 </style>
@@ -78,7 +82,9 @@
     <nav id="nav"></nav>
   </header>
   <main>
-    <section id="p-sw"></section>
+    <section id="p-dash"></section>
+    <section id="p-awd" hidden></section>
+    <section id="p-sw" hidden></section>
     <section id="p-ses" hidden></section>
     <section id="p-lst" hidden></section>
     <section id="p-msg" hidden></section>
@@ -131,8 +137,8 @@ function api(fn, args) {
 }
 function toast(m, ms) { var t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(function () { t.style.display = 'none'; }, ms || 2600); }
 
-var PW = '', D = null, tab = 'sw';
-var TABS = [['sw', '⚡ 스위치'], ['ses', '🎤 발표'], ['lst', '📋 목록 편집'], ['msg', '💌 응원 메시지'], ['all', '⚙ 설정값'], ['tool', '🛠 시트 도구'], ['qr', '🔗 QR 모음'], ['sec', '🔑 비밀번호']];
+var PW = '', D = null, tab = 'dash';
+var TABS = [['dash', '📡 현황'], ['sw', '⚡ 스위치'], ['ses', '🎤 발표'], ['lst', '📋 목록 편집'], ['msg', '💌 응원 메시지'], ['awd', '🏅 시상·보고'], ['all', '⚙ 설정값'], ['tool', '🛠 시트 도구'], ['qr', '🔗 QR 모음'], ['sec', '🔑 비밀번호']];
 // 열림/닫힘 처럼 두 값 중 하나인 설정은 스위치로 보여줍니다
 var PAIRS = { '열림': ['열림', '닫힘'], '닫힘': ['열림', '닫힘'], '허용': ['허용', '차단'], '차단': ['허용', '차단'] };
 var NICE = { '전체': '비상 스위치 (전체)', '슈퍼챗': '후원 투표 (전광판)', '슈퍼챗폰후원': '폰으로 후원', '응원메시지': '응원 메시지', '근로지급': '근로 장학금 지급', '코인마켓': '코인 마켓', '발표장': '발표장 (입장·퇴장)', '부스': '학급 부스', '학술제응원': '작품 좋아요' };
@@ -157,7 +163,7 @@ function build() {
 }
 function draw() {
   TABS.forEach(function (t) { $('p-' + t[0]).hidden = t[0] !== tab; });
-  ({ sw: drawSw, ses: drawSes, lst: drawLst, msg: drawMsg, all: drawAll, tool: drawTool, qr: drawQr, sec: drawSec })[tab]();
+  clearInterval(window._dt); ({ dash: drawDash, awd: drawAwd, sw: drawSw, ses: drawSes, lst: drawLst, msg: drawMsg, all: drawAll, tool: drawTool, qr: drawQr, sec: drawSec })[tab]();
 }
 function save(k, v) { return api('adminSet', [PW, k, v]).then(function (r) { if (!r.ok) { toast(r.msg || '저장하지 못했어요'); fb(false); return false; } toast('저장했어요 ✓', 1500); fb(true); return true; }).catch(function () { toast('연결에 실패했어요'); fb(false); return false; }); }
 function find(k) { for (var i = 0; i < D.settings.length; i++) if (D.settings[i].k === k) return D.settings[i]; return null; }
@@ -485,6 +491,66 @@ function drawSec() {
     run(sv, function () { return api('adminSetPw', [PW, a.value]).then(function (x) { if (!x.ok) { toast(x.msg || '변경하지 못했어요'); return false; } PW = a.value; ss('apw', PW); a.value = b2.value = ''; toast('비밀번호를 바꿨어요 ✓'); return true; }).catch(function () { return false; }); }, '변경 중…');
   };
   lo.onclick = logout; r.appendChild(sv); r.appendChild(lo); c.appendChild(r); p.appendChild(c);
+}
+
+/* ---------- 📡 현황판 (15초마다 자동 새로고침) ---------- */
+var DASH = null;
+function ago(sec) { if (sec < 90) return sec + '초 전'; if (sec < 5400) return Math.round(sec / 60) + '분 전'; return Math.round(sec / 3600) + '시간 전'; }
+function kv(a, b, cls) { var d = el('div', 'kv'); d.appendChild(el('span', '', a)); var x = el('b', cls || '', b); d.appendChild(x); return d; }
+function drawDash() {
+  var p = $('p-dash'); if (!DASH) { p.innerHTML = ''; p.appendChild(el('div', 'card', '불러오는 중…')); }
+  function paint() {
+    var d = DASH; if (!d || tab !== 'dash') return; p.innerHTML = '';
+    var top = el('div', 'card'); top.appendChild(el('h3', '', '지금 이 순간'));
+    var g = el('div', 'big'); [['최근 10분 거래', d.last10 + '건'], ['최근 1시간', d.last60 + '건'], ['전교생 잔액 합계', d.balanceSum.toLocaleString() + 'C'], ['응원 메시지(1시간)', d.msg1h + '건']].forEach(function (x) { var b = el('div', 'bx'); b.appendChild(el('div', 'n', x[1])); b.appendChild(el('div', 'l', x[0])); g.appendChild(b); });
+    top.appendChild(g);
+    var sinceTx = d.lastTx ? Math.round((d.now - d.lastTx) / 1000) : null;
+    top.appendChild(el('div', 'desc', '마지막 거래: ' + (sinceTx === null ? '아직 없음' : ago(sinceTx)) + ' · 총 거래 ' + d.txTotal + '건 · 학생 ' + d.students + '명 · ' + new Date(d.now).toLocaleTimeString('ko-KR') + ' 기준'));
+    p.appendChild(top);
+    var fl = el('div', 'card'); fl.appendChild(el('h3', '', '스위치 상태'));
+    var row = el('div', 'row'); Object.keys(d.flags).forEach(function (k) { var v = d.flags[k]; if (!v) return; row.appendChild(el('span', 'chip ' + (v === '열림' ? 'in' : 'out'), (NICE[k] || k) + ' · ' + v)); });
+    fl.appendChild(row); p.appendChild(fl);
+    var dv = el('div', 'card'); dv.appendChild(el('h3', '', '기기 상태')); dv.appendChild(el('div', 'desc', '태블릿·전광판이 2분마다 보내는 신호예요. 6분 넘게 소식이 없으면 빨간색으로 표시돼요.'));
+    if (!d.devices.length) dv.appendChild(el('div', 'desc', '아직 신호를 보낸 기기가 없어요.'));
+    d.devices.forEach(function (x) { var bad = x.ago > 360; var r = el('div', 'dv'); r.appendChild(el('span', 'chip ' + (bad ? 'bad' : 'in'), bad ? '끊김?' : '정상')); r.appendChild(el('b', '', x.name)); r.appendChild(el('span', 'desc', ago(x.ago))); dv.appendChild(r); });
+    p.appendChild(dv);
+    var ss_ = el('div', 'card'); ss_.appendChild(el('h3', '', '발표 현황'));
+    d.sessions.forEach(function (s) { var c = s.counts || {}, tot = 0, line = []; Object.keys(c).forEach(function (k) { tot += c[k]; line.push(k + ' ' + c[k]); }); var r = el('div', 'dv'); r.appendChild(el('span', 'chip ' + (s.open ? 'in' : ''), s.open ? '진행' : '대기')); r.appendChild(el('b', '', s.name)); r.appendChild(el('span', 'desc', (tot ? '기록 ' + tot + '명 (' + line.join(' · ') + ')' : '기록 없음'))); ss_.appendChild(r); });
+    if (!d.sessions.length) ss_.appendChild(el('div', 'desc', '등록된 발표가 없어요.'));
+    p.appendChild(ss_);
+    var kd = el('div', 'card'); kd.appendChild(el('h3', '', '최근 1시간 종류별 거래'));
+    var ks = Object.keys(d.kinds); if (!ks.length) kd.appendChild(el('div', 'desc', '없음')); ks.forEach(function (k) { kd.appendChild(kv(k, d.kinds[k] + '건')); }); p.appendChild(kd);
+    var wn = el('div', 'card'); wn.appendChild(el('h3', '', '확인할 것'));
+    var any = false;
+    if (d.syncFail) { any = true; wn.appendChild(kv('⚠ 동기화 실패 기록', d.syncFail + '건 (시트 [동기화실패])', 'rd')); d.syncRecent.forEach(function (x) { wn.appendChild(el('div', 'desc', '· ' + x.mode + ' — ' + x.why)); }); }
+    if (d.msgBad) { any = true; wn.appendChild(kv('🚫 차단된 응원 메시지(최근)', d.msgBad + '건', 'rd')); }
+    if (!any) wn.appendChild(el('div', 'desc', '지금은 문제가 없어요 ✓'));
+    p.appendChild(wn);
+  }
+  function load() { if (tab !== 'dash') return; api('adminDash', [PW]).then(function (r) { if (r && r.ok) { DASH = r; paint(); } else if (r) toast(r.msg || '불러오지 못했어요'); }).catch(function () { }); }
+  paint(); load(); window._dt = setInterval(load, 15000);
+}
+
+/* ---------- 🏅 시상 · 보고 ---------- */
+function drawAwd() {
+  var p = $('p-awd'); p.innerHTML = '';
+  var h = el('div', 'card'); h.appendChild(el('h3', '', '시상 후보 (관리자용: 실명·학번 전체)'));
+  h.appendChild(el('div', 'desc', '스크루지상: 코인을 벌었는데 가장 적게 쓴 사람 · 플렉스상: 가장 많이 쓴 사람 · 후원왕: 후원 투표에 가장 많이 쓴 사람 · 응원왕: 응원 메시지를 가장 많이 보낸 사람(차단·숨김 제외). 동점이면 잔액이 많은 순이에요. 전광판 시상 화면의 이름 표시는 ⚙ 설정값 [시상이름표시] 에서 정해요.'));
+  var row = el('div', 'row'); var rb = el('button', 'btn', '🔄 다시 계산'); rb.onclick = function () { run(rb, load); }; row.appendChild(rb);
+  var ob = el('button', 'btn sec', '📄 성과 보고서 열기'); ob.onclick = function () { ss('apw', PW); window.open('report.html', '_blank'); }; row.appendChild(ob);
+  h.appendChild(row); p.appendChild(h);
+  var box = el('div'); p.appendChild(box);
+  function paint(a) {
+    box.innerHTML = '';
+    a.forEach(function (x) {
+      var c = el('div', 'card'); c.appendChild(el('h3', '', x.emoji + ' ' + x.title)); c.appendChild(el('div', 'desc', x.sub));
+      if (!x.list.length) c.appendChild(el('div', 'desc', '아직 후보가 없어요.'));
+      x.list.forEach(function (w) { var r = el('div', 'dv'); r.appendChild(el('span', 'chip ' + (w.rank === 1 ? 'in' : ''), w.rank + '위')); r.appendChild(el('b', '', w.name + ' (' + w.no + ')')); r.appendChild(el('span', 'desc', w.cls + ' · ' + w.val.toLocaleString() + x.unit + ' · 잔액 ' + w.bal.toLocaleString() + 'C')); c.appendChild(r); });
+      box.appendChild(c);
+    });
+  }
+  function load() { return api('adminAwards', [PW]).then(function (r) { if (r && r.ok) { paint(r.awards); return true; } toast((r && r.msg) || '불러오지 못했어요'); return false; }).catch(function () { toast('연결에 실패했어요'); return false; }); }
+  box.appendChild(el('div', 'card', '계산 중…')); load();
 }
 </script>
 </body>
