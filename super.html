@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>슈퍼챗 후원</title>
+<title>후원 투표 · 응원 메시지</title>
 <script src="./html5-qrcode.min.js"></script>
 <script>if (typeof Html5Qrcode === 'undefined') { document.write('<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script>'); }</script>
 <style>
@@ -45,12 +45,17 @@
   #done.on { display: flex; animation: fin .3s; } @keyframes fin { from { opacity: 0; transform: scale(.9); } }
   #done .e { font-size: 90px; animation: bounce .8s; } @keyframes bounce { 0% { transform: scale(.2) rotate(-20deg); } 60% { transform: scale(1.2); } 100% { transform: none; } }
   #done .t { font-size: 40px; font-weight: 900; color: var(--gold); margin-top: 8px; } #done .s { font-size: 18px; color: #e8e0ff; margin-top: 8px; line-height: 1.5; }
+  .mbox { width: 100%; font-size: 19px; padding: 12px 14px; border-radius: 14px; border: 2px solid #3b3270; background: #0f0b22; color: #fff; margin-top: 10px; font-family: inherit; resize: none; }
+  .mbox:focus { outline: none; border-color: var(--hot); }
+  .mcnt { text-align: right; color: var(--mut); font-size: 13px; margin-top: 4px; }
+  .mnote { color: var(--mut); font-size: 12.5px; line-height: 1.5; margin-top: 10px; text-align: left; }
+  .big.alt { background: linear-gradient(90deg, #ff2d6f, #ff8a3d); box-shadow: 0 8px 24px rgba(255,138,61,.3); }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <main>
-  <h1>🎤 슈퍼챗 후원</h1>
+  <h1>🎤 후원 투표 · 응원</h1>
 
   <div class="card" id="stageCard">
     <div class="lab">NOW PERFORMING</div>
@@ -83,6 +88,16 @@
       <button class="link" onclick="refresh()">🔄 새로고침</button>
       <button class="link" onclick="forget()">다른 카드로 바꾸기</button>
     </div>
+  </div>
+  <!-- 응원 메시지 (코인 없이, 전광판에 하트와 함께 날아가요) -->
+  <div class="card" id="vMsg" hidden>
+    <div style="font-size:19px;font-weight:800">💌 응원 메시지 보내기</div>
+    <div style="color:var(--mut);font-size:14px;margin-top:4px">코인은 들지 않아요. 전광판에 하트와 함께 날아가요!</div>
+    <textarea class="mbox" id="mtxt" rows="2" placeholder="응원의 한마디를 적어 주세요" oninput="mCount()"></textarea>
+    <div class="mcnt" id="mcnt">0 / 30</div>
+    <button class="big alt" id="btnMsg" onclick="sendMsg()" disabled>💖 응원 보내기</button>
+    <div class="msg" id="mmsg"></div>
+    <div class="mnote">※ 모든 메시지는 학번·이름과 함께 저장됩니다. 친구를 놀리거나 욕설·비방이 담긴 글은 학생안전부에서 확인해 조치해요. 서로 기분 좋은 응원만 보내요 😊</div>
   </div>
   <div class="card" id="vKey" hidden><div style="font-size:18px;font-weight:800">전광판의 QR 코드를 카메라로 찍어서 들어와 주세요</div><div style="color:var(--mut);margin-top:8px;font-size:14px">이 주소는 강당에서만 쓸 수 있어요.</div></div>
 </main>
@@ -130,10 +145,10 @@ function show() {
   $('team').innerText = st.stage ? st.stage.name : '공연 준비 중';
   var p = $('pill'); p.className = 'pill ' + (st.open ? 'on' : 'off');
   p.innerText = !st.open ? '후원이 닫혀 있어요' : (st.stage ? '● 후원 가능' : '● 후원 가능 · 공연 대기 중');
-  $('vId').hidden = !!myId; $('vMain').hidden = !myId;
+  $('vId').hidden = !!myId; $('vMain').hidden = !myId; $('vMsg').hidden = !(myId && st.msgOpen); mCount();
   if (myId && me && me.name !== undefined) {
     $('myName').innerText = me.name + ' 님'; $('myBal').innerHTML = fmt(me.balance) + '<i>C</i>';
-    $('myCap').innerText = me.cap ? ('슈퍼챗 사용 ' + fmt(me.used) + ' / 한도 ' + fmt(me.cap) + 'C') : '';
+    $('myCap').innerText = me.cap ? ('후원 사용 ' + fmt(me.used) + ' / 한도 ' + fmt(me.cap) + 'C') : '';
     drawTeams();
     var q = $('quick'); q.innerHTML = '';
     (st.options || []).forEach(function (a) { var b = document.createElement('button'); b.innerText = fmt(a); b.onclick = function () { $('amt').value = a; checkAmt(); }; q.appendChild(b); });
@@ -186,7 +201,7 @@ function ask() {
   if (a < st.min) msg = '최소 ' + fmt(st.min) + 'C부터 후원할 수 있어요.';
   else if (st.max && a > st.max) msg = '한 번에 최대 ' + fmt(st.max) + 'C까지 가능해요.';
   else if (me && a > me.balance) msg = '잔액이 부족해요. (잔액 ' + fmt(me.balance) + 'C)';
-  else if (me && me.cap && me.used + a > me.cap) msg = '슈퍼챗 한도를 넘어요. (남은 한도 ' + fmt(Math.max(0, me.cap - me.used)) + 'C)';
+  else if (me && me.cap && me.used + a > me.cap) msg = '후원 한도를 넘어요. (남은 한도 ' + fmt(Math.max(0, me.cap - me.used)) + 'C)';
   if (msg) { $('msg').className = 'msg warn'; $('msg').innerText = msg; return; }
   pending = { team: pick, name: teamName(pick), amount: a, qid: newQid() };
   $('mq').innerHTML = '<span style="color:#ff8aa8">' + esc(pending.name) + '</span> 에<b>' + fmt(a) + 'C</b>후원할까요?';
@@ -219,6 +234,34 @@ function finish(r, p) {
   if (r.stage) st.stage = r.stage;
   if (r.code === 'closed') st.open = false;
   show(); checkAmt();
+}
+/* ---------- 응원 메시지 ---------- */
+var mBusy = false, mUntil = 0, mTick = null;
+function mCount() {
+  var t = $('mtxt'), max = (st && st.msgMax) || 30, n = Array.from(t.value).length;
+  if (n > max) { t.value = Array.from(t.value).slice(0, max).join(''); n = max; }
+  $('mcnt').innerText = n + ' / ' + max;
+  var wait = Math.ceil((mUntil - Date.now()) / 1000), b = $('btnMsg');
+  b.disabled = !(n > 0) || mBusy || wait > 0;
+  b.innerText = wait > 0 ? ('⏳ ' + wait + '초 뒤에 또 보낼 수 있어요') : '💖 응원 보내기';
+}
+function mCool(sec) { mUntil = Date.now() + sec * 1000; clearInterval(mTick); mTick = setInterval(function () { mCount(); if (Date.now() >= mUntil) clearInterval(mTick); }, 500); mCount(); }
+function sendMsg() {
+  var txt = $('mtxt').value.trim(); if (!txt || mBusy) return;
+  mBusy = true; mCount(); $('mmsg').className = 'msg'; $('mmsg').innerText = '⏳ 보내는 중...';
+  doMsg({ text: txt, qid: newQid() }, 0);
+}
+function doMsg(p, n) {
+  api('superMsg', [key, myId, p.text, p.qid]).then(function (r) {
+    if (r.retry && n < 4) { return setTimeout(function () { doMsg(p, n + 1); }, 2000); }
+    mBusy = false;
+    if (r.ok) { $('mtxt').value = ''; $('mmsg').className = 'msg ok'; $('mmsg').innerText = '💖 ' + (r.msg || '보냈어요!'); mCool(r.gap || (st && st.msgGap) || 20); try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} }
+    else { $('mmsg').className = 'msg ' + (r.level === 'err' ? 'err' : 'warn'); $('mmsg').innerText = r.msg || '보내지 못했어요.'; if (r.wait) mCool(r.wait); if (r.code === 'closed' && st) { st.msgOpen = false; show(); } }
+    mCount();
+  }).catch(function () {
+    if (n < 3) return setTimeout(function () { doMsg(p, n + 1); }, 2000);
+    mBusy = false; $('mmsg').className = 'msg err'; $('mmsg').innerText = '연결에 실패했어요. 잠시 뒤 다시 보내 주세요.'; mCount();
+  });
 }
 function newQid() { var s = 'P'; for (var i = 0; i < 11; i++) s += 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'.charAt(Math.random() * 32 | 0); return s; }
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
