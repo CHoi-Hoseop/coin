@@ -367,9 +367,9 @@ function renderCfg() {
     if (target.amount) c1.classList.add('sel');
     if (!target.amount && lastAmt) addChip(box, fmt(lastAmt) + 'C', '직전 금액 다시 쓰기', function () { target.amount = lastAmt; renderCfg(); });
   } else if (mode === 'wage') {
-    cfg.innerText = '업무를 고른 뒤, 일을 마친 학생의 QR을 스캔하세요';
+    cfg.innerText = '업무를 고른 뒤 학생 QR을 스캔하세요 (⏱ 시간제는 시작·종료 때 두 번)';
     boot.tasks.forEach(function (t) {
-      var c = addChip(box, t.name, '+' + fmt(t.pay) + 'C', function () { target.task = t.name; renderCfg(); });
+      var c = addChip(box, t.name, t.clock ? '분당 ' + fmt(t.pay) + 'C · 찍어서 시작/종료' : '+' + fmt(t.pay) + 'C', function () { target.task = t.name; renderCfg(); });
       if (target.task === t.name) c.classList.add('sel');
     });
     if (!boot.tasks.length) box.innerHTML = '<div class="small">등록된 업무가 없습니다. (시트 [근로] 확인)</div>';
@@ -595,7 +595,9 @@ function showResult(r, id, m) {
   var L = String(r.msg || '').split('\n').filter(Boolean), d = (typeof r.delta === 'number') ? r.delta : null;
   var o = { lv: r.level === 'ok' ? 'ok' : (r.level === 'warn' ? 'warn' : 'err'), name: r.name || nameOf(id), ms: r.level === 'ok' ? 2200 : 3200 };
   if (r.level === 'ok') {
-    if (r.hall === 'in') { o.lv = 'info'; o.ic = '🚪'; o.title = '입장 완료'; o.ms = 1500; }
+    if (r.clock === 'in') { o.lv = 'info'; o.ic = '⏱'; o.title = '근로 시작'; o.note = (L[1] || '').replace(/ · .*/, '') + '\n끝나면 다시 한 번 찍어 주세요'; o.ms = 2400; }
+    else if (r.clock === 'out') { o.ic = '💼'; o.title = '근로 완료 ' + r.mins + '분'; o.amt = d; o.bal = r.balance; o.note = ctxLabel(); o.ms = 3000; }
+    else if (r.hall === 'in') { o.lv = 'info'; o.ic = '🚪'; o.title = '입장 완료'; o.ms = 1500; }
     else if (r.hall === 'back') { o.lv = 'info'; o.ic = '🔁'; o.title = '다시 입장했어요'; o.note = ((L[0] || '').match(/\(([^)]*)\)/) || [])[1] || ''; o.ms = 1800; }
     else if (r.hall === 'pause') { o.lv = 'info'; o.ic = '🚻'; o.title = '잠시 외출'; o.note = r.limit + '분 안에 돌아와\n다시 한 번 찍어 주세요'; o.ms = 3000; }
     else if (r.hall === 'out') { o.ic = '🎉'; o.title = '발표 참여 완료'; o.amt = d; o.bal = r.balance; o.note = '끝까지 들어줘서 고마워요'; o.ms = 6500; if (r.likeOffer) o.likeOffer = { code: r.likeOffer, id: id }; }
