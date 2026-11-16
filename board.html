@@ -99,6 +99,7 @@
   #wCrown { font-size: clamp(50px, 16vh, 220px); line-height: 1; opacity: 0; } #wCrown.on { animation: crown 1s forwards; } @keyframes crown { 0% { transform: translateY(-30vh) rotate(-20deg); opacity: 0; } 60% { transform: translateY(1vh) rotate(6deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
   #wTotal { font-size: clamp(28px, 8vh, 110px); font-weight: 900; color: var(--gold); font-variant-numeric: tabular-nums; min-height: 1.2em; }
   #wRest { font-size: clamp(16px, 3.2vh, 44px); color: #cfc6ee; margin-top: 2vh; }
+  body[data-mode=award] #hint { color: #fff; text-shadow: 0 0 8px #000, 0 0 16px #000; }
   #hint { position: fixed; left: 0; right: 0; bottom: 2.4vh; text-align: center; z-index: 22; font-size: clamp(14px, 2.4vh, 28px); color: #b9aedb; animation: blink 1.6s infinite; display: none; }
 
   /* ----- 후원 접속 QR ----- */
@@ -130,6 +131,34 @@
   @keyframes beat { 50% { transform: scale(1.3); } }
   .fh { position: absolute; bottom: -6vh; font-size: clamp(18px, 4vh, 48px); pointer-events: none; animation: heartUp var(--dur, 7s) ease-out forwards; will-change: transform, opacity; }
   @keyframes heartUp { 0% { transform: translateY(0) scale(.4); opacity: 0; } 12% { opacity: .95; } 100% { transform: translateY(-110vh) translateX(var(--sw, 2vw)) scale(1.2); opacity: 0; } }
+
+
+  /* ----- 하트 폭발 단계 / 응원 배너 ----- */
+  .fm.lv1 { font-size: clamp(18px, 3.6vh, 46px); } .fm.lv2 { font-size: clamp(20px, 4.4vh, 56px); box-shadow: 0 0 5vh rgba(255,45,111,.85), 0 1vh 3vh rgba(0,0,0,.35); }
+  .fm.lv3 { font-size: clamp(24px, 5.4vh, 70px); background: linear-gradient(90deg, #ff2d6f, #ff9a3c, #ffd54a); color: #2b0a1a; box-shadow: 0 0 8vh rgba(255,213,74,.9); }
+  .fh { font-size: calc(clamp(18px, 4vh, 48px) * var(--hs, 1)); }
+  #cheerBanner { position: fixed; left: 0; right: 0; top: 11vh; z-index: 17; text-align: center; pointer-events: none; display: none; }
+  #cheerBanner.on { display: block; animation: banr 3.4s forwards; } @keyframes banr { 0% { transform: scale(.3); opacity: 0; } 10% { transform: scale(1.12); opacity: 1; } 18% { transform: scale(1); } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(-4vh); } }
+  #cheerBanner b { display: inline-block; font-size: clamp(28px, 9vh, 120px); font-weight: 900; padding: 1vh 4vw; border-radius: 99px; background: linear-gradient(90deg, #ff2d6f, #ff9a3c); box-shadow: 0 0 6vh rgba(255,45,111,.8); }
+  #cheerBanner small { display: block; margin-top: 1vh; font-size: clamp(14px, 3vh, 36px); color: #ffd1e0; font-weight: 800; }
+  body:not([data-mode=stage]):not([data-mode=all]) #cheerBanner { display: none !important; }
+
+  /* ----- 시상식 (단상 · 특별상) ----- */
+  #awd { position: fixed; inset: 0; z-index: 15; padding-bottom: 7vh; display: none; flex-direction: column; align-items: center; background: radial-gradient(1200px 700px at 50% -10%, #3a1360 0%, var(--bg) 62%); cursor: pointer; }
+  body[data-mode=award] #awd { display: flex; }
+  #awd .ttl { margin-top: 3.5vh; font-size: clamp(24px, 7vh, 90px); font-weight: 900; letter-spacing: .1em; background: linear-gradient(90deg, #fff, var(--gold) 55%, var(--hot)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #awd .sub2 { font-size: clamp(14px, 3vh, 36px); color: #cfc6ee; margin-top: 1vh; }
+  #pod { flex: 1; width: 92vw; max-width: 1600px; display: flex; align-items: flex-end; justify-content: center; gap: 1.2vw; padding-bottom: 7vh; min-height: 0; }
+  .pc { flex: 1; max-width: 32%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+  .pc .who { text-align: center; opacity: 0; transform: translateY(-8vh) scale(.6); transition: all .8s cubic-bezier(.2,1.2,.3,1); margin-bottom: 1.4vh; max-width: 100%; }
+  .pc .md { font-size: clamp(44px, 12vh, 160px); line-height: 1; } .pc .nm { font-size: clamp(22px, 6.4vh, 90px); font-weight: 900; line-height: 1.15; word-break: keep-all; overflow-wrap: anywhere; } .pc .sc { font-size: clamp(16px, 4.2vh, 60px); font-weight: 900; color: var(--gold); font-variant-numeric: tabular-nums; margin-top: .4vh; }
+  .pc .blk { width: 100%; border-radius: 1.6vh 1.6vh 0 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 1vh; font-weight: 900; font-size: clamp(44px, 15vh, 210px); line-height: 1; background: rgba(255,255,255,.07); color: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.12); transition: background .8s, color .8s, box-shadow .8s; }
+  .pc.on .who { opacity: 1; transform: none; } .pc.on .blk { color: rgba(255,255,255,.95); box-shadow: 0 0 6vh rgba(255,213,74,.35); }
+  .pc.k1.on .blk { background: linear-gradient(180deg, #ffe58a, #e0a100); color: #3b2600; box-shadow: 0 0 9vh rgba(255,213,74,.8); } .pc.k2.on .blk { background: linear-gradient(180deg, #f1f4fa, #98a2b8); color: #2b3040; } .pc.k3.on .blk { background: linear-gradient(180deg, #f0b583, #a8672f); color: #3a1c06; }
+  #spBox { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
+  .sp { text-align: center; max-width: 92vw; } .sp .e { font-size: clamp(50px, 14vh, 190px); line-height: 1; } .sp .t { font-size: clamp(32px, 11vh, 150px); font-weight: 900; color: var(--gold); text-shadow: 0 0 40px rgba(255,213,74,.5); } .sp .s { font-size: clamp(16px, 3.6vh, 44px); color: #cfc6ee; margin-bottom: 2vh; }
+  .sp .n { font-size: clamp(50px, 16vh, 230px); font-weight: 900; line-height: 1.1; min-height: 1.1em; } .sp .n.q { animation: qp .6s infinite; color: #fff; } .sp .n.rev { background: linear-gradient(90deg, #fff6c8, #ffd54a 40%, #ff9a3c); -webkit-background-clip: text; background-clip: text; color: transparent; animation: reveal .9s; }
+  .sp .v { font-size: clamp(20px, 5.4vh, 70px); font-weight: 900; color: #fff; min-height: 1.2em; } .sp .o { font-size: clamp(14px, 3vh, 38px); color: #b9aedb; margin-top: 2vh; min-height: 1.2em; }
 
   /* ----- 로그인 / 조작판 ----- */
   #login { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
@@ -180,6 +209,8 @@
 <div id="flash"></div>
 <canvas id="fx"></canvas>
 <div id="msgFly"></div>
+<div id="cheerBanner"><b>💖 응원 폭발! 💖</b><small id="cheerN"></small></div>
+<div id="awd" onclick="awNext()"></div>
 <div id="pop"></div>
 <div id="conn"></div>
 <div id="toast"></div>
@@ -192,10 +223,12 @@
     <div class="r"><select id="cdSec" style="flex:0 0 auto"><option>5</option><option selected>10</option><option>15</option><option>20</option></select><span style="color:#cfc6ee">초</span><button class="go" onclick="startCountdown()">⏱ 마감 카운트다운</button></div>
     <div class="r"><label><input type="checkbox" id="autoClose" checked> 0초가 되면 슈퍼챗 자동 마감</label></div>
     <div class="r"><button onclick="toTally()">🏁 결과 집계</button><button onclick="toWinner()">🏆 우승 공개</button><button onclick="reopen()">🔓 후원 열기</button><button onclick="closeSuper()">🔒 후원 닫기</button></div>
+    <div class="r"><button class="go" onclick="startPodium()">🥇 순위 시상 · 단상 (P)</button><button class="go" onclick="startSpecial()">🎖 특별상 (B)</button></div>
+    <div class="r"><button onclick="snap('manual',true)">📸 지금 캡처</button><button id="btnShot" onclick="toggleShot()">📸 자동 캡처 켜짐</button></div>
     <div class="r"><button onclick="showQr(0)">📱 후원 QR 크게 (Q)</button><button onclick="newKey()">🔑 QR 재발급</button></div>
   </div>
   <div class="r"><button id="btnSnd" onclick="toggleSound()">🔊 효과음 끄기</button><button id="btnLive" onclick="toggleLive()">🔕 공연 중 소리 꺼짐</button><button id="btnMsg" onclick="toggleMsg()">💌 응원 메시지 켜짐</button><button onclick="clearMsgs()">🧹 화면 메시지 지우기</button><button onclick="toggleFull()">⛶ 전체화면</button><button onclick="testFx()">✨ 팝업 시험</button></div>
-  <div class="k" id="ctlKeys">단축키 · ←/→ 팀 바꾸기 · Q 후원 QR · 1 팀 집중 · 2 전체 순위 · <b>스페이스 = 마감 카운트다운 시작</b>(이후 집계 → 우승 → 전체 결과는 자동) · Esc 처음으로 · S 소리 · H 조작판 닫기/열기 · F 전체화면<br>🔕 공연 중에는 소리가 나지 않고, 마감 카운트다운부터 결과 발표까지만 소리가 납니다.</div>
+  <div class="k" id="ctlKeys">단축키 · ←/→ 팀 바꾸기 · Q 후원 QR · 1 팀 집중 · 2 전체 순위 · <b>스페이스 = 마감 카운트다운 시작</b>(이후 집계 → 우승 → 전체 결과는 자동) · P 순위 시상(단상) · B 특별상 · Esc 처음으로 · S 소리 · H 조작판 닫기/열기 · F 전체화면<br>🔕 공연 중에는 소리가 나지 않고, 마감 카운트다운부터 결과 발표까지만 소리가 납니다.</div>
 </div>
 
 <script>
@@ -232,7 +265,7 @@ function start() {
     try { sessionStorage.setItem('boardPin', pin); } catch (e) {}
     $('login').hidden = true;
     if (VIEW === 'work') $('ctlSuper').hidden = true, $('ctlKeys').hidden = true;
-    apply(r); pollT = setInterval(poll, POLL_MS); showCtl(7000);
+    apply(r); pollT = setInterval(poll, POLL_MS); showCtl(7000); startBeat();
     if (VIEW !== 'work') initJoin();
   }).catch(function (e) { $('msg').innerText = '서버 연결 실패: ' + e.message; });
 }
@@ -263,13 +296,14 @@ function apply(r) {
   runQueue();
 }
 /* ================= 응원 메시지 ================= */
-var msgSeen = {}, msgFirst = true, msgQ = [], msgBusy = false, msgOn = true, msgLive = 0;
+var msgSeen = {}, msgFirst = true, msgQ = [], msgBusy = false, msgOn = true, msgLive = 0, msgHeat = [], bannerAt = 0, HEAT = [3, 6, 12];   // 15초 안에 응원이 3·6·12개 이상 몰리면 하트가 커져요
+function heatLevel() { var n = Date.now() - 15000; msgHeat = msgHeat.filter(function (t) { return t > n; }); var c = msgHeat.length; return c >= HEAT[2] ? 3 : c >= HEAT[1] ? 2 : c >= HEAT[0] ? 1 : 0; }
 function handleMsgs(list) {
   list.forEach(function (m) {
     if (msgSeen[m.id]) return; msgSeen[m.id] = 1;
     if (msgFirst) return;                       // 처음 접속할 때 이미 있던 글은 날리지 않음
     if (m.ts && data && data.serverTime && data.serverTime - m.ts > 60000) return;
-    msgQ.push(m);
+    msgQ.push(m); msgHeat.push(Date.now());
   });
   msgFirst = false;
   if (msgQ.length > 14) msgQ = msgQ.slice(-14);
@@ -283,8 +317,8 @@ function pumpMsgs() {
   setTimeout(function () { msgBusy = false; pumpMsgs(); }, msgQ.length > 4 ? 450 : 1100);
 }
 function flyMsg(m) {
-  var box = $('msgFly'), el = document.createElement('div'), dur = 9 + Math.random() * 2.5;
-  el.className = 'fm'; el.style.left = (4 + Math.random() * 42) + 'vw'; el.style.setProperty('--dur', dur + 's'); el.style.setProperty('--sw', (Math.random() < .5 ? -1 : 1) * (1.5 + Math.random() * 3) + 'vw');
+  var box = $('msgFly'), el = document.createElement('div'), dur = 9 + Math.random() * 2.5, lv = heatLevel();
+  el.className = 'fm' + (lv ? ' lv' + lv : ''); el.style.left = (4 + Math.random() * 42) + 'vw'; el.style.setProperty('--dur', dur + 's'); el.style.setProperty('--sw', (Math.random() < .5 ? -1 : 1) * (1.5 + Math.random() * 3) + 'vw');
   el.title = '클릭하면 이 메시지를 숨깁니다';
   var h = document.createElement('span'); h.className = 'h'; h.textContent = '💖';
   var t = document.createElement('span'); t.className = 't'; t.textContent = m.text;
@@ -293,11 +327,18 @@ function flyMsg(m) {
   el.onclick = function () { if (el.parentNode) el.parentNode.removeChild(el); msgLive = Math.max(0, msgLive - 1); api('msgHide', [pin, m.id]).then(function () { toast('메시지를 숨겼습니다 (시트에 기록은 남아요)'); }).catch(function () {}); };
   box.appendChild(el); msgLive++;
   setTimeout(function () { if (el.parentNode) { el.parentNode.removeChild(el); msgLive = Math.max(0, msgLive - 1); } }, dur * 1000 + 300);
-  for (var i = 0; i < 3; i++) (function (i) { setTimeout(function () {
+  var nh = [3, 7, 14, 22][lv], gap = [260, 180, 110, 80][lv], hs = [1, 1.25, 1.7, 2.3][lv];
+  for (var i = 0; i < nh; i++) (function (i) { setTimeout(function () {
     var hh = document.createElement('div'); hh.className = 'fh'; hh.textContent = ['💗', '💖', '💕', '❤️'][Math.random() * 4 | 0];
-    hh.style.left = (parseFloat(el.style.left) + Math.random() * 20) + 'vw'; hh.style.setProperty('--dur', (6 + Math.random() * 3) + 's'); hh.style.setProperty('--sw', (Math.random() * 6 - 3) + 'vw');
+    hh.style.left = (parseFloat(el.style.left) + Math.random() * 20) + 'vw'; hh.style.setProperty('--dur', (6 + Math.random() * 3) + 's'); hh.style.setProperty('--sw', (Math.random() * 6 - 3) + 'vw'); hh.style.setProperty('--hs', hs * (.8 + Math.random() * .5));
     box.appendChild(hh); setTimeout(function () { if (hh.parentNode) hh.parentNode.removeChild(hh); }, 9500);
-  }, i * 260); })(i);
+  }, i * gap); })(i);
+  if (lv >= 2) {       // 응원이 몰릴 때: 하트가 크게 터집니다
+    var bx = parseFloat(el.style.left) / 100 * innerWidth + 120, by = innerHeight * .8;
+    setTimeout(function () { fxHearts(lv === 3 ? 70 : 40, bx, by, lv === 3 ? 1.7 : 1.2); tone(1568, 0, .25, 'triangle', .2); }, 500);
+    if (lv === 3 && Date.now() - bannerAt > 20000) { bannerAt = Date.now(); var b = $('cheerBanner'); $('cheerN').innerText = '지금 15초 동안 ' + msgHeat.length + '개의 응원이 도착했어요!'; b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); fxHearts(100, innerWidth / 2, innerHeight * .55, 2); snapLater('cheer', 1000); }
+    else if (lv === 2) snapLater('cheer', 1000);
+  }
 }
 function toggleMsg() { msgOn = !msgOn; $('btnMsg').innerText = msgOn ? '💌 응원 메시지 켜짐' : '💌 응원 메시지 꺼짐'; if (!msgOn) clearMsgs(); else pumpMsgs(); }
 function clearMsgs() { $('msgFly').innerHTML = ''; msgLive = 0; msgQ = []; }
@@ -393,7 +434,7 @@ function tween(el, from, to, f, dur) {
 /* ================= 모드 전환 / 조작 ================= */
 function setMode(m) {
   if (m === 'stage' && VIEW === 'work') return;
-  clearTimers(); finale = 0; document.body.classList.remove('hidevals'); $('cd').classList.remove('on'); $('win').classList.remove('on'); $('hint').style.display = 'none';
+  clearTimers(); aw = null; finale = 0; document.body.classList.remove('hidevals'); $('cd').classList.remove('on'); $('win').classList.remove('on'); $('hint').style.display = 'none';
   mode = m; document.body.dataset.mode = m;
   $('mStage').classList.toggle('on', m === 'stage'); $('mAll').classList.toggle('on', m === 'all');
   queue = []; showing = false; $('pop').innerHTML = '';
@@ -516,6 +557,7 @@ function toWinner() {
       if (n % 3 === 0) fxBurst('spark', 50, innerWidth * (.15 + Math.random() * .7), innerHeight * (.15 + Math.random() * .35), 1);
       if (++n > 14) clearInterval(iv);
     }, 600); timers.push(iv);
+    snapLater('winner', 2500);
     later(showFull, 11000);
   }, 3600);
 }
@@ -541,7 +583,7 @@ function runQueue() {
   if (tr === 2) { fxBurst('coin', 40, cx, cy, 1); fxBurst('spark', 20, cx, cy, 1); }
   if (tr === 3) { fxBurst('coin', 70, cx, cy, 1.2); fxBurst('confetti', 70, cx, cy, 1.2); flash(); shake(); fxRain(1.8); }
   if (tr === 4) { fxBurst('confetti', 140, cx, cy, 1.6); fxBurst('coin', 90, cx, cy, 1.4); fxBurst('spark', 60, cx, cy, 1.4); flash(); shake(); fxRain(3.2); }
-  donSound(tr);
+  donSound(tr); if (tr >= 3) snapLater('big', 900);
   // 팀 합계는 팝업과 함께 올라감
   if (mode === 'stage') { var from = stageShown; stageShown += d.amt; tween($('sTotal'), from, stageShown, tf, 800); var s = $('sTotal'); s.classList.remove('hit'); void s.offsetWidth; s.classList.add('hit'); }
   syncFeed();
@@ -568,6 +610,11 @@ function fxBurst(kind, n, x, y, power) {
   }
   loop();
 }
+function fxHearts(n, x, y, power) {
+  var K = cv.width / innerWidth, E = ['💗', '💖', '💕', '❤️', '💘'];
+  for (var i = 0; i < n; i++) { var a = Math.random() * Math.PI * 2, sp = (2 + Math.random() * 9) * power * K; parts.push({ k: 'heart', x: x * K, y: y * K, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 4 * K * power, g: .1 * K, life: 0, max: 70 + Math.random() * 50, s: (22 + Math.random() * 26) * K, r: 0, vr: 0, c: E[(Math.random() * E.length) | 0] }); }
+  loop();
+}
 function fxRain(sec) { // 위에서 동전이 쏟아짐
   var K = cv.width / innerWidth, end = performance.now() + sec * 1000;
   (function drop() { for (var i = 0; i < 3; i++) parts.push({ k: 'coin', x: Math.random() * cv.width, y: -20 * K, vx: (Math.random() - .5) * 2 * K, vy: (3 + Math.random() * 4) * K, g: .12 * K, life: 0, max: 200, s: (16 + Math.random() * 14) * K, r: Math.random() * 6, vr: (Math.random() - .5) * .3, c: '#ffd54a' }); if (performance.now() < end) setTimeout(drop, 40); })(); loop();
@@ -582,6 +629,7 @@ function loop() {
       var al = Math.min(1, (p.max - p.life) / 25);
       cx2.save(); cx2.globalAlpha = Math.max(0, al); cx2.translate(p.x, p.y);
       if (p.k === 'coin') { cx2.scale(Math.abs(Math.cos(p.r)) * .8 + .2, 1); cx2.beginPath(); cx2.arc(0, 0, p.s / 2, 0, 7); cx2.fillStyle = '#ffc400'; cx2.fill(); cx2.lineWidth = p.s / 9; cx2.strokeStyle = '#b57a00'; cx2.stroke(); cx2.fillStyle = '#b57a00'; cx2.font = 'bold ' + (p.s * .6) + 'px sans-serif'; cx2.textAlign = 'center'; cx2.textBaseline = 'middle'; cx2.fillText('C', 0, 1); }
+      else if (p.k === 'heart') { cx2.font = p.s + 'px serif'; cx2.textAlign = 'center'; cx2.textBaseline = 'middle'; cx2.fillText(p.c, 0, 0); }
       else if (p.k === 'spark') { cx2.fillStyle = '#fff6c8'; cx2.shadowColor = '#ffd54a'; cx2.shadowBlur = 12; cx2.beginPath(); cx2.arc(0, 0, p.s, 0, 7); cx2.fill(); }
       else { cx2.rotate(p.r); cx2.fillStyle = p.c; cx2.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); }
       cx2.restore();
@@ -638,6 +686,7 @@ addEventListener('keydown', function (e) {
   else if (VIEW === 'work') return;
   else if (k === 'q' || k === 'Q') { if ($('qrBig').classList.contains('on')) hideQr(); else showQr(0); }
   else if (k === 'ArrowRight') stepTeam(1); else if (k === 'ArrowLeft') stepTeam(-1);
+  else if (k === 'p' || k === 'P') startPodium(); else if (k === 'b' || k === 'B') startSpecial();
   else if (k === '1') setMode('stage'); else if (k === '2') setMode('all');
   else if (k === 'Escape') { hideQr(); setMode('stage'); }
   else if (k === ' ' || k === 'Enter') { e.preventDefault(); next(); }
@@ -648,7 +697,108 @@ function next() { // 스페이스: 공연 중 → 카운트다운 → (자동) �
   if (mode === 'stage' || mode === 'all') startCountdown();
   else if (mode === 'tally') { if (finale === 4) showFull(); }   // 우승 발표 중 스페이스: 바로 전체 결과로
   else if (mode === 'count') { /* 카운트다운 진행 중 */ }
+  else if (mode === 'award') awNext();
 }
+
+
+/* ================= 시상식: 순위 시상(단상) · 특별상 ================= */
+var aw = null, awLast = 0;
+function awEnter(kind) {
+  if (VIEW === 'work' || !data) return false;
+  hideQr(); clearTimers(); queue = []; showing = false; $('pop').innerHTML = ''; $('cd').classList.remove('on'); $('win').classList.remove('on'); clearMsgs();
+  mode = 'award'; finale = 6; document.body.dataset.mode = 'award'; document.body.classList.remove('hidevals');
+  $('mStage').classList.remove('on'); $('mAll').classList.remove('on'); hint('');
+  aw = { kind: kind, step: 0, busy: false }; awLast = 0; return true;
+}
+function awExit() { var k = aw && aw.kind; $('awd').innerHTML = ''; setMode(k === 'pod' ? 'all' : 'stage'); }
+function awNext() { if (!aw || aw.busy || Date.now() - awLast < 600) return; awLast = Date.now(); if (aw.kind === 'pod') podNext(); else spNext(); }
+var MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
+function startPodium() {
+  if (!awEnter('pod')) return;
+  var l = teamsByTotal().filter(function (t) { return t.total > 0; }).slice(0, 3), prev = null, rk = 0, box = $('awd'); box.innerHTML = '';
+  aw.list = l.map(function (t, i) { if (prev === null || t.total !== prev) rk = i + 1; prev = t.total; return { t: t, rk: rk }; });
+  var ttl = document.createElement('div'); ttl.className = 'ttl'; ttl.innerText = aw.list.length ? '🏆 ' + (data.title || '') + ' 시상식' : '후원이 없었습니다'; box.appendChild(ttl);
+  var pod = document.createElement('div'); pod.id = 'pod'; box.appendChild(pod); aw.cols = [];
+  var order = aw.list.length >= 3 ? [1, 0, 2] : aw.list.length === 2 ? [1, 0] : [0], hs = [46, 34, 24];
+  order.forEach(function (i) {
+    var e = aw.list[i], c = document.createElement('div'); c.className = 'pc k' + Math.min(3, e.rk);
+    c.innerHTML = '<div class="who"><div class="md"></div><div class="nm"></div><div class="sc"></div></div><div class="blk"></div>';
+    c.querySelector('.md').innerText = MEDAL[e.rk] || ''; c.querySelector('.nm').innerText = e.t.name; c.querySelector('.sc').innerHTML = tf(e.t.total);
+    var b = c.querySelector('.blk'); b.innerText = e.rk; b.style.height = hs[i] + 'vh'; pod.appendChild(c); aw.cols[i] = c;
+  });
+  aw.steps = aw.list.map(function (_, i) { return i; }).reverse();
+  hint(aw.list.length ? '스페이스(또는 화면 클릭): ' + aw.list[aw.steps[0]].rk + '위 발표' : '스페이스: 돌아가기'); fanfareMini();
+}
+function podNext() {
+  if (!aw.list.length || aw.step >= aw.steps.length) return awExit();
+  var i = aw.steps[aw.step++], last = i === 0, col = aw.cols[i], dr = last ? 3.4 : 1.8;
+  aw.busy = true; hint(''); drumroll(dr);
+  later(function () {
+    col.classList.add('on'); var r = col.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height * .3;
+    if (last) {
+      flash(); shake(); cymbal(); winFanfare(); fxBurst('confetti', 160, innerWidth / 2, innerHeight * .4, 1.6); fxRain(2.5);
+      var n = 0, iv = setInterval(function () { fxBurst(n % 2 ? 'coin' : 'confetti', 40, innerWidth * (.15 + Math.random() * .7), innerHeight * (.2 + Math.random() * .4), 1); if (++n > 10) clearInterval(iv); }, 600); timers.push(iv);
+      snapLater('podium', 2500);
+    } else { fanfareMini(); fxBurst('confetti', 70, x, y, 1.2); fxBurst('coin', 25, x, y, 1); }
+    aw.busy = false;
+    hint(aw.step < aw.steps.length ? '스페이스(또는 화면 클릭): ' + aw.list[aw.steps[aw.step]].rk + '위 발표' : '스페이스: 마치고 전체 순위로 (🎖 특별상은 B)');
+  }, dr * 1000 + 200);
+}
+function startSpecial() {
+  if (!awEnter('sp')) return; aw.busy = true;
+  $('awd').innerHTML = '<div class="ttl">🎖 특별상</div><div class="sub2">불러오는 중…</div>';
+  api('boardAwards', [pin]).then(function (r) {
+    if (!aw || aw.kind !== 'sp') return;
+    if (!r || !r.ok) { toast((r && r.msg) || '시상 자료를 불러오지 못했어요'); awExit(); return; }
+    aw.list = r.awards || []; aw.busy = false;
+    $('awd').innerHTML = '<div class="ttl">🎖 특별상</div><div class="sub2">' + aw.list.map(function (a) { return a.emoji + ' ' + a.title; }).join('  ·  ') + '</div><div id="spBox"></div>';
+    hint('스페이스(또는 화면 클릭): ' + (aw.list[0] ? aw.list[0].title : '') + ' 발표'); fanfareMini();
+  }).catch(function () { toast('연결 실패'); awExit(); });
+}
+function spNext() {
+  if (!aw.list || aw.step >= aw.list.length) return awExit();
+  var a = aw.list[aw.step++], box = $('spBox'); box.innerHTML = '';
+  var d = document.createElement('div'); d.className = 'sp'; d.innerHTML = '<div class="e"></div><div class="t"></div><div class="s"></div><div class="n q">?</div><div class="v"></div><div class="o"></div>';
+  d.querySelector('.e').innerText = a.emoji; d.querySelector('.t').innerText = a.title; d.querySelector('.s').innerText = a.sub; box.appendChild(d);
+  var n = d.querySelector('.n'), v = d.querySelector('.v'), o = d.querySelector('.o'), more = aw.step < aw.list.length;
+  function fin() { aw.busy = false; hint(more ? '스페이스(또는 화면 클릭): ' + aw.list[aw.step].title + ' 발표' : '스페이스: 시상 마치기'); }
+  aw.busy = true; hint('');
+  if (!a.list.length) { n.className = 'n'; n.style.fontSize = '9vh'; n.innerText = '해당자 없음'; return fin(); }
+  drumroll(2.6);
+  later(function () {
+    var w = a.list[0]; n.className = 'n rev'; n.innerText = w.name; v.innerText = (w.cls ? w.cls + ' · ' : '') + fmt(w.val) + ' ' + a.unit.replace(/^C /, 'C ');
+    o.innerText = a.list.slice(1).map(function (x) { return x.rank + '위 ' + x.name + ' (' + fmt(x.val) + ')'; }).join('     ');
+    flash(); cymbal(); winFanfare(); fxBurst('confetti', 130, innerWidth / 2, innerHeight * .4, 1.5); fxBurst('coin', 50, innerWidth / 2, innerHeight * .4, 1.3);
+    if (a.key === 'cheer') fxHearts(80, innerWidth / 2, innerHeight * .5, 1.6);
+    snapLater('award', 2200); later(fin, 600);
+  }, 2800);
+}
+
+/* ================= 화면 캡처 (무작위 · 큰 순간) → 드라이브 [문화코인 캡처] → 성과 보고서에 사용 ================= */
+var shotOn = true, shotLast = 0, h2cP = null;
+function loadH2c() {
+  if (window.html2canvas) return Promise.resolve();
+  if (!h2cP) h2cP = new Promise(function (ok, no) { var sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; sc.onload = ok; sc.onerror = function () { h2cP = null; no(new Error('lib')); }; document.head.appendChild(sc); });
+  return h2cP;
+}
+function snap(tag, manual) {
+  if (VIEW === 'work' || !pin) return;
+  if (!manual && (!shotOn || Date.now() - shotLast < 45000)) return;
+  shotLast = Date.now();
+  loadH2c().then(function () {
+    return html2canvas(document.body, { scale: .5, width: innerWidth, height: innerHeight, windowWidth: innerWidth, windowHeight: innerHeight, x: 0, y: 0, backgroundColor: '#07060d', logging: false, useCORS: true,
+      ignoreElements: function (e) { return e.id === 'ctl' || e.id === 'toast' || e.id === 'login' || e.id === 'conn'; } });
+  }).then(function (c) {
+    var q = .6, u = c.toDataURL('image/jpeg', q); while (u.length > 800000 && q > .3) { q -= .1; u = c.toDataURL('image/jpeg', q); }
+    return api('saveShot', [pin, u, tag]);
+  }).then(function (r) { if (manual) toast(r && r.ok ? '📸 캡처를 저장했어요 (드라이브 [문화코인 캡처] 폴더)' : ((r && r.msg) || '캡처 저장 실패')); })
+    .catch(function () { if (manual) toast('⚠ 캡처에 실패했어요 (인터넷 연결 또는 서버 새 버전 배포 확인)'); });
+}
+function snapLater(tag, ms) { setTimeout(function () { snap(tag); }, ms || 900); }
+function toggleShot() { shotOn = !shotOn; $('btnShot').innerText = shotOn ? '📸 자동 캡처 켜짐' : '📸 자동 캡처 꺼짐'; }
+function shotLoop() { setTimeout(function () { if (mode === 'stage' || mode === 'all') snap('random'); shotLoop(); }, 120000 + Math.random() * 120000); }
+/* 2분마다 '살아 있어요' 신호 → 관리자 현황판의 기기 상태 */
+function startBeat() { function b() { api('ping', [VIEW === 'work' ? '작품전광판' : '전광판', mode]).catch(function () {}); } b(); setInterval(b, 120000); if (VIEW !== 'work') shotLoop(); }
 
 document.addEventListener('click', function (e) { if (e.target.tagName === 'BUTTON') e.target.blur(); });
 try { var sp = sessionStorage.getItem('boardPin'); if (sp) { $('pin').value = sp; } } catch (e) {}
