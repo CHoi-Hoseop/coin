@@ -34,12 +34,36 @@
   .chip.in { background: var(--okbg); color: var(--ok); border-color: transparent; } .chip.out { background: var(--warnbg); color: var(--warn); border-color: transparent; } .chip.bad { background: var(--badbg); color: var(--bad); border-color: transparent; }
   .st { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 99px; } .st.정상 { background: var(--okbg); color: var(--ok); } .st.숨김 { background: var(--warnbg); color: var(--warn); } .st.차단 { background: var(--badbg); color: var(--bad); }
   .msg1 { padding: 12px 0; border-bottom: 1px solid var(--line); } .msg1:last-child { border-bottom: 0; } .msg1 .t { font-size: 16px; font-weight: 700; margin: 4px 0; word-break: break-all; } .msg1 .m { color: var(--mut); font-size: 12.5px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  details.grp { background: var(--card); border: 1px solid var(--line); border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
+  details.grp > summary { list-style: none; cursor: pointer; padding: 14px 16px; font-size: 16px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+  details.grp > summary::-webkit-details-marker { display: none; } details.grp > summary::after { content: '▾'; color: var(--mut); transition: transform .2s; } details.grp[open] > summary::after { transform: rotate(180deg); }
+  details.grp .body { padding: 0 16px 8px; }
+  .set { padding: 12px 0; border-top: 1px solid var(--line); } .set .nm { font-weight: 800; font-size: 15px; } .set .in { display: flex; gap: 8px; align-items: center; margin-top: 8px; } .set .in input, .set .in select { flex: 1; } .set .unit { color: var(--mut); font-weight: 700; flex: 0 0 auto; }
+  .seg { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; } .seg button { flex: 1 0 auto; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-size: 14px; font-weight: 800; } .seg button.on { background: var(--pri); color: #fff; border-color: transparent; }
+  .rc { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; } .rc.dirty { border-color: var(--pri); box-shadow: 0 0 0 2px rgba(75,61,242,.15); } .rc.off { opacity: .6; }
+  .rc .fl { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; } .rc .fl label { margin: 0 0 3px; }
+  .rc .hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: 800; font-size: 14px; color: var(--mut); }
   .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #161a2b; color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; z-index: 50; display: none; max-width: 90vw; text-align: center; white-space: pre-wrap; }
   #login { max-width: 360px; margin: 14vh auto 0; text-align: center; padding: 0 20px; } #login h2 { font-size: 22px; margin-bottom: 6px; } #login input { text-align: center; font-size: 22px; letter-spacing: 4px; margin: 14px 0; } #login .err { color: var(--bad); min-height: 1.4em; white-space: pre-wrap; font-size: 14px; }
+  /* 누르는 맛: 눌림 · 처리 중 · 완료 · 실패 */
+  button { transition: transform .08s ease, filter .08s ease, box-shadow .15s ease, background .15s ease; touch-action: manipulation; }
+  button:active:not(:disabled) { transform: scale(.94); filter: brightness(.88); }
+  .btn.busy { position: relative; pointer-events: none; opacity: .85; animation: pulse .9s ease-in-out infinite; }
+  .btn.done { background: var(--ok) !important; color: #fff !important; opacity: 1; animation: none; } .btn.shake { background: var(--bad) !important; color: #fff !important; animation: shake .35s; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(75,61,242,.28); } } @keyframes shake { 20%,60% { transform: translateX(-5px); } 40%,80% { transform: translateX(5px); } }
+  .tg button.pend { animation: pulse .9s ease-in-out infinite; outline: 2px solid var(--pri); outline-offset: -3px; }
+  .tg.flash { animation: flashok .7s ease; } @keyframes flashok { 0% { box-shadow: 0 0 0 0 rgba(18,144,90,.7); } 100% { box-shadow: 0 0 0 14px rgba(18,144,90,0); } }
+  #bar { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: #ffd54a; z-index: 60; transition: width .3s; } #bar.on { width: 85%; transition: width 6s cubic-bezier(.1,.7,.3,1); }
+  .hdbtn { background: rgba(255,255,255,.2); border: 0; color: #fff; padding: 6px 10px; border-radius: 99px; font-size: 14px; font-weight: 700; margin-left: 6px; } .hdbtn.off { opacity: .45; }
+  .tool { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); } .tool:last-child { border-bottom: 0; } .tool .tx { flex: 1; min-width: 0; } .tool .btn { flex: 0 0 auto; padding: 10px 14px; font-size: 14px; }
+  .qrg { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; } .qrc { border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; background: #fff; color: #111; } .qrc b { font-size: 15px; } .qrc .d { font-size: 12px; color: #555; min-height: 32px; margin: 2px 0 6px; } .qrc .q { display: flex; justify-content: center; } .qrc .u { font-size: 10px; word-break: break-all; color: #444; margin-top: 6px; text-align: left; }
+  input:disabled { opacity: .6; }
+  @media print { header, nav, .noprint, .toast, #bar { display: none !important; } body { background: #fff; } main { max-width: none; padding: 0; } section { display: none !important; } section#p-qr { display: block !important; } .card { border: 0; } }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
+<div id="bar"></div>
 <div id="login">
   <h2>🔐 문화코인 관리자</h2>
   <div class="desc">관리자 비밀번호를 입력하세요.<br>운영 PIN(태블릿용)과는 다른 번호예요.</div>
@@ -50,14 +74,17 @@
 
 <div id="app" hidden>
   <header>
-    <h1><span>🪙 문화코인 관리자</span><button onclick="reload(true)">🔄 새로고침</button></h1>
+    <h1><span>🪙 문화코인 관리자</span><span><button class="hdbtn" id="bSnd" onclick="togSnd()">🔊</button><button class="hdbtn" id="bVib" onclick="togVib()">📳</button><button class="hdbtn" onclick="reload(true)">🔄</button></span></h1>
     <nav id="nav"></nav>
   </header>
   <main>
     <section id="p-sw"></section>
     <section id="p-ses" hidden></section>
+    <section id="p-lst" hidden></section>
     <section id="p-msg" hidden></section>
     <section id="p-all" hidden></section>
+    <section id="p-tool" hidden></section>
+    <section id="p-qr" hidden></section>
     <section id="p-sec" hidden></section>
   </main>
 </div>
@@ -69,15 +96,43 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiR
 function $(id) { return document.getElementById(id); }
 function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
 function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} return null; }
+var _inflight = 0;
+function barOn() { var b = $('bar'); if (!_inflight++) { b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); } }
+function barOff() { if (--_inflight <= 0) { _inflight = 0; var b = $('bar'); b.style.width = '100%'; setTimeout(function () { b.classList.remove('on'); b.style.width = ''; }, 250); } }
+/* 누르는 즉시 느낌: 진동 · 소리 · 눌림 효과. 소리/진동은 위쪽 🔊 📳 로 끌 수 있어요 */
+var FB = { snd: lsGet('fbSnd') !== '0', vib: lsGet('fbVib') !== '0' }, _ac = null;
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function acx() { try { _ac = _ac || new (window.AudioContext || window.webkitAudioContext)(); if (_ac.state === 'suspended') _ac.resume(); } catch (e) {} return _ac; }
+function tone(f, d, v) { if (!FB.snd) return; var a = acx(); if (!a) return; try { var o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.value = f; g.gain.value = v || 0.12; o.connect(g); g.connect(a.destination); var t = a.currentTime; g.gain.setValueAtTime(v || 0.12, t); g.gain.exponentialRampToValueAtTime(0.001, t + d); o.start(t); o.stop(t + d + 0.02); } catch (e) {} }
+function vib(p) { if (FB.vib && navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+function tap() { vib(12); tone(660, .05, .06); }
+function fb(ok) { if (ok) { vib(35); tone(880, .09); setTimeout(function () { tone(1320, .12); }, 90); } else { vib([70, 50, 70]); tone(220, .25, .15); } }
+function paintFb() { $('bSnd').textContent = FB.snd ? '🔊' : '🔇'; $('bSnd').classList.toggle('off', !FB.snd); $('bVib').textContent = FB.vib ? '📳' : '📴'; $('bVib').classList.toggle('off', !FB.vib); }
+function togSnd() { FB.snd = !FB.snd; lsSet('fbSnd', FB.snd ? '1' : '0'); paintFb(); if (FB.snd) { tone(880, .1); } toast(FB.snd ? '소리 켬' : '소리 끔', 1200); }
+function togVib() { FB.vib = !FB.vib; lsSet('fbVib', FB.vib ? '1' : '0'); paintFb(); if (FB.vib) vib(40); toast(!navigator.vibrate ? '이 기기는 웹에서 진동을 지원하지 않아요 (아이폰 등)' : (FB.vib ? '진동 켬' : '진동 끔'), 2200); }
+// 버튼 하나를 '누름 → 처리 중 → 완료/실패' 로 보여 줍니다. fn 은 true/false 로 끝나는 Promise 를 돌려줘야 해요.
+function run(btn, fn, busyTxt) {
+  var old = btn.textContent; btn.disabled = true; btn.classList.add('busy'); btn.textContent = busyTxt || '처리 중…'; tap();
+  return fn().then(function (ok) {
+    btn.classList.remove('busy'); if (ok === false) { btn.textContent = '⚠ 안 됐어요'; btn.classList.add('shake'); fb(false); } else { btn.textContent = '✓ 완료'; btn.classList.add('done'); fb(true); }
+    setTimeout(function () { if (!btn.isConnected) return; btn.textContent = old; btn.classList.remove('done', 'shake'); btn.disabled = false; }, 1100); return ok;
+  });
+}
+function flash(g) { g.classList.remove('flash'); void g.offsetWidth; g.classList.add('flash'); }
+document.addEventListener('pointerdown', function (e) { if (e.target.closest && e.target.closest('button') && !e.target.closest('button').disabled) { acx(); } }, true);
+
 function api(fn, args) {
+  barOn();
   return fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }) })
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function (j) { if (j && j.error) throw new Error(j.error); return j.result; });
+    .then(function (j) { if (j && j.error) throw new Error(j.error); return j.result; })
+    .then(function (r) { barOff(); return r; }, function (e) { barOff(); throw e; });
 }
 function toast(m, ms) { var t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(function () { t.style.display = 'none'; }, ms || 2600); }
 
 var PW = '', D = null, tab = 'sw';
-var TABS = [['sw', '⚡ 스위치'], ['ses', '🎤 발표'], ['msg', '💌 응원 메시지'], ['all', '⚙ 전체 설정'], ['sec', '🔑 비밀번호']];
+var TABS = [['sw', '⚡ 스위치'], ['ses', '🎤 발표'], ['lst', '📋 목록 편집'], ['msg', '💌 응원 메시지'], ['all', '⚙ 설정값'], ['tool', '🛠 시트 도구'], ['qr', '🔗 QR 모음'], ['sec', '🔑 비밀번호']];
 // 열림/닫힘 처럼 두 값 중 하나인 설정은 스위치로 보여줍니다
 var PAIRS = { '열림': ['열림', '닫힘'], '닫힘': ['열림', '닫힘'], '허용': ['허용', '차단'], '차단': ['허용', '차단'] };
 var NICE = { '전체': '비상 스위치 (전체)', '슈퍼챗': '후원 투표 (전광판)', '슈퍼챗폰후원': '폰으로 후원', '응원메시지': '응원 메시지', '근로지급': '근로 장학금 지급', '코인마켓': '코인 마켓', '발표장': '발표장 (입장·퇴장)', '부스': '학급 부스', '학술제응원': '작품 좋아요' };
@@ -87,7 +142,7 @@ function login() {
   $('lerr').textContent = '확인 중...';
   api('adminLoad', [PW]).then(function (r) {
     if (!r.ok) { $('lerr').textContent = r.msg || '들어갈 수 없어요.'; return; }
-    ss('apw', PW); $('login').hidden = true; $('app').hidden = false; D = r; build(); draw();
+    ss('apw', PW); $('login').hidden = true; $('app').hidden = false; D = r; paintFb(); build(); draw();
   }).catch(function () { $('lerr').textContent = '연결에 실패했어요. 인터넷을 확인해 주세요.'; });
 }
 function logout() { ss('apw', null); PW = ''; location.reload(); }
@@ -102,20 +157,26 @@ function build() {
 }
 function draw() {
   TABS.forEach(function (t) { $('p-' + t[0]).hidden = t[0] !== tab; });
-  ({ sw: drawSw, ses: drawSes, msg: drawMsg, all: drawAll, sec: drawSec })[tab]();
+  ({ sw: drawSw, ses: drawSes, lst: drawLst, msg: drawMsg, all: drawAll, tool: drawTool, qr: drawQr, sec: drawSec })[tab]();
 }
-function save(k, v) { return api('adminSet', [PW, k, v]).then(function (r) { if (!r.ok) { toast(r.msg || '저장하지 못했어요'); return false; } toast('저장했어요 ✓'); return true; }).catch(function () { toast('연결에 실패했어요'); return false; }); }
+function save(k, v) { return api('adminSet', [PW, k, v]).then(function (r) { if (!r.ok) { toast(r.msg || '저장하지 못했어요'); fb(false); return false; } toast('저장했어요 ✓', 1500); fb(true); return true; }).catch(function () { toast('연결에 실패했어요'); fb(false); return false; }); }
 function find(k) { for (var i = 0; i < D.settings.length; i++) if (D.settings[i].k === k) return D.settings[i]; return null; }
 
 /* ---------- 스위치 ---------- */
 function toggle(s, onSave) {
-  var pair = PAIRS[s.v], g = el('div', 'tg');
-  pair.forEach(function (opt, i) {
-    var b = el('button', (s.v === opt ? 'on ' : '') + (i === 0 ? 'pos' : 'neg'), opt);
-    b.onclick = function () { if (s.v === opt) return; save(s.k, opt).then(function (ok) { if (ok) { s.v = opt; if (onSave) onSave(); else draw(); } }); };
-    g.appendChild(b);
-  });
-  return g;
+  var pair = PAIRS[s.v] || ['열림', '닫힘'], g = el('div', 'tg'), busy = false;
+  function paint(cur, pend) {
+    g.innerHTML = '';
+    pair.forEach(function (opt, i) {
+      var b = el('button', (cur === opt ? 'on ' : '') + (i === 0 ? 'pos' : 'neg') + (pend === opt ? ' pend' : ''), opt);
+      b.onclick = function () {
+        if (busy || cur === opt) return; tap(); busy = true; var prev = cur; paint(opt, opt);          // 누르는 즉시 표시가 옮겨가요 (저장 중에는 깜빡임)
+        save(s.k, opt).then(function (ok) { busy = false; if (ok) { s.v = opt; paint(opt); flash(g); if (onSave) onSave(); } else paint(prev); });
+      };
+      g.appendChild(b);
+    });
+  }
+  paint(s.v); return g;
 }
 function drawSw() {
   var p = $('p-sw'); p.innerHTML = '';
@@ -160,9 +221,8 @@ function sesCard(s, isNew) {
   var btns = el('div', 'row'), sv = el('button', 'btn', '💾 저장');
   sv.onclick = function () {
     var o = { code: isNew ? f['발표 코드 (영문·숫자, 예: W1)'].value.trim() : s.code, name: f['발표 이름'].value.trim(), reward: Number(f['지급 코인'].value) || 0, start: f['시작 시각'].value, end: f['종료 시각'].value, open: op.v, mins: s.mins };
-    if (!o.name) { toast('발표 이름을 입력해 주세요'); return; }
-    sv.disabled = true;
-    api('adminSession', [PW, o]).then(function (r) { sv.disabled = false; if (!r.ok) { toast(r.msg || '저장하지 못했어요', 4000); return; } toast('저장했어요 ✓'); reload(); }).catch(function () { sv.disabled = false; toast('연결에 실패했어요'); });
+    if (!o.name) { toast('발표 이름을 입력해 주세요'); fb(false); return; }
+    run(sv, function () { return api('adminSession', [PW, o]).then(function (r) { if (!r.ok) { toast(r.msg || '저장하지 못했어요', 4000); return false; } setTimeout(reload, 900); return true; }).catch(function () { toast('연결에 실패했어요'); return false; }); }, '저장 중…');
   };
   btns.appendChild(sv);
   if (!isNew) {
@@ -171,8 +231,7 @@ function sesCard(s, isNew) {
       var k = s.counts || {}, n = (k['입장중'] || 0) + (k['외출중'] || 0);
       if (!n) { toast('아직 입장중인 학생이 없어요'); return; }
       if (!confirm('[' + s.name + '] 종료 처리를 할까요?\n\n입장중 ' + (k['입장중'] || 0) + '명 · 외출중 ' + (k['외출중'] || 0) + '명을 지금 정산합니다.\n(인정 시간이 충분한 학생에게 ' + s.reward + 'C 지급, 되돌리려면 거래를 하나씩 취소해야 해요)')) return;
-      en.disabled = true; en.textContent = '처리 중...';
-      api('adminEnd', [PW, s.code]).then(function (r) { en.disabled = false; en.textContent = '🏁 종료 처리'; if (!r.ok) { toast(r.msg || '처리하지 못했어요', 5000); return; } toast('완료 ' + r.paid + '명 지급 (' + r.coins + 'C) · 시간부족 ' + r.short + '명', 5000); reload(); }).catch(function () { en.disabled = false; en.textContent = '🏁 종료 처리'; toast('연결이 끊겼어요. 새로고침해서 처리 결과를 확인해 주세요', 5000); });
+      run(en, function () { return api('adminEnd', [PW, s.code]).then(function (r) { if (!r.ok) { toast(r.msg || '처리하지 못했어요', 5000); return false; } toast('완료 ' + r.paid + '명 지급 (' + r.coins + 'C) · 시간부족 ' + r.short + '명', 6000); setTimeout(reload, 1200); return true; }).catch(function () { toast('연결이 끊겼어요. 새로고침해서 처리 결과를 확인해 주세요', 5000); return false; }); }, '정산 중…');
     };
     btns.appendChild(en);
   }
@@ -193,7 +252,7 @@ function drawMsg() {
     b.appendChild(mt); b.appendChild(el('div', 't', m.text));
     if (m.st !== '차단') {
       var btn = el('button', 'btn sec', m.st === '정상' ? '🙈 숨김' : '↩ 다시 보이기'); btn.style.padding = '7px 12px'; btn.style.fontSize = '13px';
-      btn.onclick = function () { api('adminMsg', [PW, m.id, m.st === '정상' ? '숨김' : '정상']).then(function (r) { if (!r.ok) { toast(r.msg); return; } m.st = m.st === '정상' ? '숨김' : '정상'; draw(); }); };
+      btn.onclick = function () { run(btn, function () { return api('adminMsg', [PW, m.id, m.st === '정상' ? '숨김' : '정상']).then(function (r) { if (!r.ok) { toast(r.msg); return false; } m.st = m.st === '정상' ? '숨김' : '정상'; setTimeout(draw, 700); return true; }).catch(function () { return false; }); }); };
       b.appendChild(btn);
     }
     c.appendChild(b);
@@ -201,31 +260,216 @@ function drawMsg() {
   p.appendChild(c);
 }
 
-/* ---------- 전체 설정 ---------- */
+/* ---------- 설정값 (묶음별 · 한글 이름) ---------- */
+// n 이름 · u 단위 · t: num 숫자 / sel 선택 / pin 숫자(비밀번호) / long 긴 글 · o 선택지
+var GROUPS = [
+  { t: '🎤 발표 입장·퇴장', open: 1, k: {
+    '화장실최대분': { n: '화장실 최대 시간', u: '분', t: 'num' }, '퇴장허용오차분': { n: '퇴장 허용 오차 (종료 몇 분 전부터 퇴장 인정)', u: '분', t: 'num' },
+    '지각허용분': { n: '지각 허용 시간', u: '분', t: 'num' }, '연속스캔무시초': { n: '같은 학생 연속 스캔을 한 번으로 보는 시간', u: '초', t: 'num' } } },
+  { t: '❤ 작품·발표 좋아요', k: {
+    '좋아요코인': { n: '좋아요 1회당 받는 코인', u: 'C', t: 'num' }, '좋아요하루한도': { n: '하루에 좋아요로 받는 코인 한도 (0=제한 없음)', u: 'C', t: 'num' },
+    '좋아요총한도': { n: '행사 전체 좋아요 코인 한도 (0=제한 없음)', u: 'C', t: 'num' }, '작품당좋아요횟수': { n: '같은 작품에 누를 수 있는 횟수 (0=제한 없음)', u: '회', t: 'num' } } },
+  { t: '🎁 후원 투표 · 응원 메시지', k: {
+    '슈퍼챗최소금액': { n: '후원 1회 최소 금액', u: 'C', t: 'num' }, '슈퍼챗최대금액': { n: '후원 1회 최대 금액', u: 'C', t: 'num' }, '슈퍼챗학생당총한도': { n: '학생 1명 후원 총한도 (0=제한 없음)', u: 'C', t: 'num' },
+    '슈퍼챗금액옵션': { n: '후원 금액 버튼', u: '띄어쓰기로 구분' }, '슈퍼챗연출기준': { n: '전광판 팝업 4단계 기준 금액', u: '띄어쓰기로 구분' },
+    '응원메시지간격초': { n: '응원 메시지 보내기 간격', u: '초', t: 'num' }, '응원메시지글자수': { n: '응원 메시지 최대 글자 수', u: '자', t: 'num' }, '응원메시지금칙어': { n: '응원 메시지 금칙어 (띄어쓰기로 구분)', t: 'long' } } },
+  { t: '🛍 코인 마켓 · 근로 장학금', k: {
+    '코인마켓최대금액': { n: '코인 마켓 1회 최대 금액 (0=제한 없음)', u: 'C', t: 'num' }, '근로지급학생당총한도': { n: '학생 1명 근로 장학금 총한도 (0=제한 없음)', u: 'C', t: 'num' } } },
+  { t: '🏅 상점 → 코인 환산', k: {
+    '상점구간1끝점수': { n: '구간1 끝 점수', u: '점', t: 'num' }, '상점구간1점당': { n: '구간1 상점 1점당 코인', u: 'C', t: 'num' },
+    '상점구간2끝점수': { n: '구간2 끝 점수 (이 점수가 상한)', u: '점', t: 'num' }, '상점구간2점당': { n: '구간2 상점 1점당 코인', u: 'C', t: 'num' } } },
+  { t: '📺 화면 표시', k: {
+    '전광판제목': { n: '전광판 맨 위 제목' }, '작품전광판제목': { n: '작품 순위 전광판 제목' },
+    '전광판이름': { n: '전광판에 보이는 이름', t: 'sel', o: ['마스킹', '전체', '익명'] }, '잔액화면이름': { n: '잔액 확인 화면에 보이는 이름', t: 'sel', o: ['마스킹', '전체'] } } },
+  { t: '🔒 보안 · 연결 (조심해서 바꾸세요)', k: {
+    '운영PIN': { n: '운영 PIN (태블릿 시작 번호)', t: 'pin' }, '접속주소': { n: '서버 접속 주소 (…/exec)', t: 'long' }, '화면주소': { n: '화면 파일 웹 주소', t: 'long' },
+    '테스트허용': { n: '부하테스트 허용 (실제 시트는 반드시 아니오)', t: 'sel', o: ['아니오', '예'] } } }
+];
 function drawAll() {
   var p = $('p-all'); p.innerHTML = '';
-  var top = el('div', 'card'), q = document.createElement('input'); q.placeholder = '🔍 설정 이름·설명 검색 (예: 좋아요, 전광판)'; top.appendChild(q);
-  top.appendChild(el('div', 'desc', '값을 바꾸고 [저장]을 누르면 바로 반영돼요. 운영 PIN도 여기서 바꿀 수 있어요.'));
+  var top = el('div', 'card'), q = document.createElement('input'); q.placeholder = '🔍 설정 검색 (예: 좋아요, 전광판, 한도)'; top.appendChild(q);
+  top.appendChild(el('div', 'desc', '값을 바꾸면 [저장]이 켜져요. 저장하면 바로 반영됩니다. 열림/닫힘 스위치는 [⚡ 스위치] 탭에 있어요.'));
   p.appendChild(top);
-  var list = el('div'); p.appendChild(list);
+  var box = el('div'); p.appendChild(box);
+  var known = {}; GROUPS.forEach(function (g) { Object.keys(g.k).forEach(function (k) { known[k] = 1; }); });
+  function fieldFor(s, meta) {
+    var row = el('div', 'set'); row.appendChild(el('div', 'nm', meta.n || s.k));
+    if (s.d) row.appendChild(el('div', 'desc', s.d));
+    var inn = el('div', 'in'), i;
+    if (meta.t === 'sel') { i = document.createElement('select'); (meta.o || []).forEach(function (o) { var op = document.createElement('option'); op.value = o; op.textContent = o; i.appendChild(op); }); if ((meta.o || []).indexOf(s.v) < 0) { var x = document.createElement('option'); x.value = s.v; x.textContent = s.v; i.appendChild(x); } i.value = s.v; }
+    else { i = document.createElement('input'); i.value = s.v; if (meta.t === 'num') { i.type = 'text'; i.inputMode = 'numeric'; } if (meta.t === 'pin') i.inputMode = 'numeric'; }
+    var b = el('button', 'btn', '저장'); b.disabled = true;
+    var chg = function () { b.disabled = i.value.trim() === s.v; };
+    i.oninput = chg; i.onchange = chg;
+    b.onclick = function () {
+      var v = i.value.trim();
+      if (meta.t === 'num' && (v === '' || !isFinite(Number(v)) || Number(v) < 0)) { toast('0 이상의 숫자로 입력해 주세요'); return; }
+      if (meta.t === 'pin' && !/^\d{4,}$/.test(v)) { toast('운영 PIN은 숫자 4자리 이상으로 입력해 주세요'); return; }
+      if (s.k === '운영PIN' && !confirm('운영 PIN을 바꾸면 이미 열려 있는 태블릿은 새 PIN을 다시 입력해야 해요. 바꿀까요?')) return;
+      run(b, function () { return save(s.k, v).then(function (ok) { if (ok) s.v = v; return ok; }); }, '저장 중…').then(function (ok) { if (ok === false) b.disabled = false; else b.disabled = true; });
+    };
+    inn.appendChild(i); if (meta.u) inn.appendChild(el('span', 'unit', meta.u)); inn.appendChild(b); row.appendChild(inn); return row;
+  }
   function render() {
-    list.innerHTML = ''; var w = q.value.trim();
-    D.settings.forEach(function (s) {
-      if (w && (s.k + ' ' + s.d).indexOf(w) < 0) return;
-      var c = el('div', 'card'); c.appendChild(el('div', '', '')); var nm = el('div', 'nm', s.k); nm.style.fontWeight = '800'; c.appendChild(nm);
-      c.appendChild(el('div', 'desc', s.d));
-      if (PAIRS[s.v]) { var r = el('div', 'row'); r.appendChild(toggle(s, render)); c.appendChild(r); }
-      else {
-        var r2 = el('div', 'row'), i = document.createElement('input'); i.value = s.v; i.style.flex = '1'; var b = el('button', 'btn', '저장'); b.disabled = true;
-        i.oninput = function () { b.disabled = i.value.trim() === s.v; };
-        b.onclick = function () { b.disabled = true; save(s.k, i.value).then(function (ok) { if (ok) { s.v = i.value.trim(); } else b.disabled = false; }); };
-        r2.appendChild(i); r2.appendChild(b); c.appendChild(r2);
-      }
-      list.appendChild(c);
+    box.innerHTML = ''; var w = q.value.trim(), groups = GROUPS.map(function (g) { return { t: g.t, open: g.open, items: Object.keys(g.k).map(function (k) { return [find(k), g.k[k]]; }).filter(function (x) { return x[0]; }) }; });
+    var rest = D.settings.filter(function (s) { return !known[s.k] && !PAIRS[s.v]; });
+    if (rest.length) groups.push({ t: '🧩 그 밖의 설정', items: rest.map(function (s) { return [s, {}]; }) });
+    groups.forEach(function (g) {
+      var items = g.items.filter(function (x) { return !w || (x[0].k + ' ' + (x[1].n || '') + ' ' + x[0].d).indexOf(w) >= 0; });
+      if (!items.length) return;
+      var d = el('details', 'grp'); if (g.open || w) d.open = true; d.appendChild(el('summary', '', g.t));
+      var body = el('div', 'body'); items.forEach(function (x) { body.appendChild(fieldFor(x[0], x[1])); }); d.appendChild(body); box.appendChild(d);
     });
-    if (!list.children.length) list.appendChild(el('div', 'desc', '검색 결과가 없어요.'));
+    if (!box.children.length) box.appendChild(el('div', 'desc', '검색 결과가 없어요.'));
   }
   q.oninput = render; render();
+}
+
+/* ---------- 목록 편집 (부스 · 작품 · 공연 · 근로) ---------- */
+var LST = { key: '부스', data: null, q: '', shown: 40 };
+var LNAMES = [['부스', '🎪 부스'], ['작품', '🖼 작품'], ['공연', '🎤 공연 팀'], ['근로', '🧹 근로'], ['학생', '🎓 학생']];
+function drawLst() {
+  var p = $('p-lst'); p.innerHTML = '';
+  var seg = el('div', 'seg'); LNAMES.forEach(function (n) { var b = el('button', n[0] === LST.key ? 'on' : '', n[1]); b.onclick = function () { LST.key = n[0]; LST.data = null; LST.q = ''; LST.shown = 40; drawLst(); }; seg.appendChild(b); }); p.appendChild(seg);
+  var body = el('div'); p.appendChild(body); body.appendChild(el('div', 'desc', '불러오는 중...'));
+  api('adminTable', [PW, LST.key]).then(function (r) { if (!r.ok) { body.innerHTML = ''; body.appendChild(el('div', 'desc', r.msg || '불러오지 못했어요')); return; } LST.data = r; drawRows(body); }).catch(function () { body.innerHTML = ''; body.appendChild(el('div', 'desc', '연결에 실패했어요. 새로고침해 주세요.')); });
+}
+var LHELP = { '부스': '부스별 프로그램과 가격이에요. [사용]을 끄면 태블릿 목록에서 빠집니다.', '작품': '학술제 작품 목록이에요. 금액을 비워 두면 기본 금액을 써요.', '공연': '장기자랑 팀이에요. [후원 받기]를 닫힘으로 하면 폰 후원 목록에서 빠집니다.', '근로': '고정 금액 근로 업무예요. (분당 코인으로 계산하는 ⏱ 시간제 근로는 [⚙ 설정값]의 근로분당코인에서 정해요)', '학생': '학생 이름·잔액·초기코인·상점을 고칠 수 있어요. 잔액을 바꾸면 거래내역에 [관리자조정]으로 기록돼요. 학번·임의ID는 시트에서만 바꿀 수 있어요.' };
+function drawRows(body) {
+  body.innerHTML = ''; var d = LST.data, cols = d.cols;
+  var top = el('div', 'card'), q = document.createElement('input'); q.placeholder = '🔍 검색'; q.value = LST.q; top.appendChild(q); top.appendChild(el('div', 'desc', LHELP[LST.key] + ' (' + d.rows.length + '개)'));
+  var add = el('button', 'btn', '+ 새로 추가'); add.style.marginTop = '10px'; add.style.width = '100%'; if (!d.noAdd) top.appendChild(add); body.appendChild(top);
+  var newBox = el('div'); body.appendChild(newBox); var list = el('div'); body.appendChild(list);
+  add.onclick = function () { newBox.innerHTML = ''; newBox.appendChild(rowCard(null, cols, function () { newBox.innerHTML = ''; })); };
+  function render() {
+    list.innerHTML = ''; var w = LST.q.trim(), n = 0, more = 0;
+    d.rows.forEach(function (r) {
+      if (w && r.v.join(' ').indexOf(w) < 0) return;
+      if (n >= LST.shown) { more++; return; } n++; list.appendChild(rowCard(r, cols, null, d));
+    });
+    if (more) { var m = el('button', 'btn sec', '더 보기 (' + more + '개 남음)'); m.style.width = '100%'; m.onclick = function () { LST.shown += 40; render(); }; list.appendChild(m); }
+    if (!list.children.length) list.appendChild(el('div', 'desc', w ? '검색 결과가 없어요.' : '아직 항목이 없어요. [+ 새로 추가]를 눌러 주세요.'));
+  }
+  q.oninput = function () { LST.q = q.value; LST.shown = 40; render(); }; render();
+}
+function rowCard(r, cols, onCancel, tbl) {
+  var isNew = !r, v0 = isNew ? cols.map(function (c) { return c.t === 'oo' ? 'O' : ''; }) : r.v.slice(), cur = v0.slice();
+  var c = el('div', 'rc' + (isNew ? ' dirty' : '') + (!isNew && cols.some(function (x, i) { return x.t === 'oo' && v0[i] === 'X'; }) ? ' off' : ''));
+  var hd = el('div', 'hd'); hd.appendChild(el('span', '', isNew ? '새 항목' : (LST.key === '학생' ? v0[1] + ' · ' + v0[2] : v0[0] + (v0[1] ? ' · ' + v0[1] : '')))); c.appendChild(hd);
+  var fl = el('div', 'fl'), sv = el('button', 'btn', '💾 저장'); sv.disabled = !isNew;
+  function dirty() { var ch = cur.some(function (x, i) { return String(x).trim() !== String(v0[i]).trim(); }); sv.disabled = !(ch || isNew); c.classList.toggle('dirty', ch || isNew); }
+  cols.forEach(function (col, i) {
+    var w = el('div'); w.appendChild(el('label', '', col.n + (col.u ? ' (' + col.u + ')' : '') + (col.req ? ' *' : '')));
+    var inp;
+    if (col.t === 'oo') { inp = el('div', 'tg'); var paint = function () { inp.innerHTML = ''; [['O', '사용'], ['X', '중지']].forEach(function (o, k) { var b = el('button', (cur[i] === o[0] ? 'on ' : '') + (k === 0 ? 'pos' : 'neg'), o[1]); b.type = 'button'; b.onclick = function () { cur[i] = o[0]; paint(); dirty(); }; inp.appendChild(b); }); }; paint(); inp.style.display = 'inline-flex'; }
+    else if (col.t === 'sel') { inp = document.createElement('select'); col.opts.forEach(function (o) { var op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; inp.appendChild(op); }); inp.value = cur[i]; inp.onchange = function () { cur[i] = inp.value; dirty(); }; }
+    else { inp = document.createElement('input'); inp.value = cur[i]; if (col.t === 'num') inp.inputMode = 'decimal'; if (col.hint) inp.placeholder = col.hint; inp.oninput = function () { cur[i] = inp.value; dirty(); }; if (col.ro) inp.disabled = true; }
+    w.appendChild(inp); fl.appendChild(w);
+  });
+  c.appendChild(fl);
+  var row = el('div', 'row'); row.appendChild(sv);
+  sv.onclick = function () {
+    run(sv, function () { return api('adminRowSave', [PW, LST.key, isNew ? 0 : r.r, cur, isNew ? '' : v0[0]]).then(function (x) { if (!x.ok) { toast(x.msg || '저장하지 못했어요', 4000); return false; } setTimeout(drawLst, 800); return true; }).catch(function () { toast('연결에 실패했어요'); return false; }); }, '저장 중…');
+  };
+  if (isNew) { var cn = el('button', 'btn sec', '취소'); cn.onclick = onCancel; row.appendChild(cn); }
+  else {
+    var del = el('button', 'btn sec', '🗑 삭제'); del.style.color = 'var(--bad)'; if (tbl && tbl.noDel) del.hidden = true;
+    del.onclick = function () {
+      if (!confirm('[' + v0[0] + (v0[1] ? ' · ' + v0[1] : '') + '] 을(를) 삭제할까요?\n(이미 기록된 거래내역은 그대로 남아요)')) return;
+      run(del, function () { return api('adminRowDel', [PW, LST.key, r.r, v0[0]]).then(function (x) { if (!x.ok) { toast(x.msg || '삭제하지 못했어요', 4000); return false; } setTimeout(drawLst, 800); return true; }).catch(function () { toast('연결에 실패했어요'); return false; }); }, '삭제 중…');
+    };
+    row.appendChild(del);
+  }
+  c.appendChild(row); return c;
+}
+
+/* ---------- 시트 도구 (스프레드시트 메뉴를 휴대폰에서) ---------- */
+var TOOLS = [
+  ['🔧 자주 쓰는 정비', [
+    ['updateKeys', '새 설정 항목 추가', '업데이트한 뒤 한 번 실행. 새 설정·시트·열을 자동으로 만들어요. (스프레드시트 메뉴 5번)'],
+    ['clearCache', '설정 즉시 반영', '시트에서 직접 바꾼 값을 바로 적용해요. (메뉴 4번)'],
+    ['fixSummary', '집계 시트 수식 고치기', '[집계]의 오류(예: 전교생 잔액 합계)를 수식을 다시 만들어 고쳐요.']]],
+  ['🎓 학생 · 코인', [
+    ['issueIds', '학생 임의ID 발급', '[학생지갑]에 새로 넣은 학생에게 QR용 ID를 만들어요. 기존 ID는 그대로예요. (메뉴 2번)'],
+    ['calcInitial', '상점 → 초기코인 계산·지급', '행사 전에 한 번. 거래 기록이 있으면 실행되지 않아요. 먼저 결과를 보여 드리고 확인 후 적용해요. (메뉴 6번)']]],
+  ['📊 결산 · 점검', [
+    ['settlement', '결산·시상 후보 시트 만들기', '학생별 수입/지출과 시상 후보를 계산해요. (메뉴 7번)'],
+    ['status', '행사 현황표 만들기', '부스 매출·작품 순위·후원 순위 표예요. (메뉴 13번)'],
+    ['suspicious', '의심 거래 점검', '짧은 시간에 여러 장소에서 쓰인 거래를 찾아요. (메뉴 12번)']]],
+  ['💾 백업', [
+    ['backupNow', '지금 바로 백업', '드라이브에 시트 사본을 저장해요. (메뉴 10번)'],
+    ['backupOn', '자동 백업 켜기 (1시간마다)', '(메뉴 9번)'], ['backupOff', '자동 백업 끄기', '(메뉴 11번)']]]
+];
+function toolCall(btn, name, opt, out) {
+  return run(btn, function () {
+    return api('adminTool', [PW, name, opt || {}]).then(function (r) { out.textContent = r.msg || (r.ok ? '실행했어요.' : '실패했어요.'); out.hidden = false; return !!r.ok; }).catch(function () { out.textContent = '연결에 실패했어요.'; out.hidden = false; return false; });
+  }, '실행 중…');
+}
+function drawTool() {
+  var p = $('p-tool'); p.innerHTML = '';
+  var out = el('div', 'card'); out.style.whiteSpace = 'pre-wrap'; out.style.fontSize = '14px'; out.hidden = true;
+  var top = el('div', 'card'); top.appendChild(el('h3', '', '스프레드시트 버튼을 여기서')); top.appendChild(el('div', 'desc', '노트북 없이 휴대폰·태블릿에서 스프레드시트 메뉴와 같은 기능을 실행해요. 실행 결과는 맨 아래 상자에 나와요.')); p.appendChild(top);
+  TOOLS.forEach(function (g) {
+    var c = el('div', 'card'); c.appendChild(el('h3', '', g[0]));
+    g[1].forEach(function (t) {
+      var row = el('div', 'tool'), tx = el('div', 'tx'); tx.appendChild(el('div', 'nm', t[1])); tx.style.fontWeight = '800'; tx.appendChild(el('div', 'desc', t[2])); row.appendChild(tx);
+      var b = el('button', 'btn', '실행');
+      b.onclick = function () {
+        if (t[0] === 'calcInitial') {
+          toolCall(b, 'calcInitial', { apply: false }, out).then(function (ok) { if (ok && out.textContent.indexOf('계속할까요') >= 0 && confirm(out.textContent)) { b.disabled = false; toolCall(b, 'calcInitial', { apply: true }, out); } });
+          return;
+        }
+        toolCall(b, t[0], {}, out);
+      };
+      row.appendChild(b); c.appendChild(row);
+    });
+    p.appendChild(c);
+  });
+  // 설정 시트 정리
+  var cs = el('div', 'card'); cs.appendChild(el('h3', '', '🧹 설정 시트 정리'));
+  cs.appendChild(el('div', 'desc', '지금 쓰지 않는 옛 설정 행(예: 없어진 음성 안내)과 빈 행을 찾아 지워요. 먼저 목록을 보여 드리고, 확인한 뒤에만 지워요.'));
+  var cb = el('button', 'btn', '찾아보기'); cb.style.marginTop = '10px';
+  cb.onclick = function () {
+    run(cb, function () {
+      return api('adminCleanSettings', [PW, false]).then(function (r) {
+        if (!r.ok) { toast(r.msg || '실패했어요'); return false; }
+        if (!r.stale.length && !r.blank) { out.textContent = '정리할 행이 없어요. 깔끔해요 ✨'; out.hidden = false; return true; }
+        var list = r.stale.map(function (x) { return '· ' + x.k + (x.v ? ' = ' + x.v.slice(0, 24) : ''); }).join('\n');
+        var msg = '쓰지 않는 설정 ' + r.stale.length + '개와 빈 행 ' + r.blank + '개를 지웁니다.\n\n' + list + '\n\n지울까요?';
+        if (!confirm(msg)) { out.textContent = '취소했어요. (아무것도 지우지 않았어요)'; out.hidden = false; return true; }
+        return api('adminCleanSettings', [PW, true]).then(function (x) { out.textContent = x.ok ? '정리했어요: 설정 ' + x.removed + '개, 빈 행 ' + x.blank + '개 삭제' : (x.msg || '실패했어요'); out.hidden = false; if (x.ok) api('adminLoad', [PW]).then(function (r) { if (r.ok) D = r; }); return !!x.ok; });
+      }).catch(function () { toast('연결에 실패했어요'); return false; });
+    }, '확인 중…');
+  };
+  cs.appendChild(cb); p.appendChild(cs);
+  // 위험 기능
+  var rs = el('div', 'card'); rs.appendChild(el('h3', '', '⚠ 연습 기록 지우기')); var d = el('div', 'desc'); d.textContent = '리허설 기록(거래·출결)을 모두 지우고 잔액을 초기코인으로 되돌려요. 실제 행사 기록이 있으면 절대 누르지 마세요. 되돌릴 수 없어요. (메뉴 8번)'; rs.appendChild(d);
+  var rb = el('button', 'btn red', '초기화…'); rb.style.marginTop = '10px';
+  rb.onclick = function () { var t = prompt('정말 연습 기록을 모두 지울까요?\n계속하려면 초기화 라고 입력하세요.'); if (t === null) return; toolCall(rb, 'reset', { confirm: t }, out); };
+  rs.appendChild(rb); p.appendChild(rs);
+  p.appendChild(out);
+}
+
+/* ---------- QR 모음 (잊어버려도 찍어서 들어가기 · 인쇄 가능) ---------- */
+function loadQrLib(cb) {
+  if (window.QRCode) return cb();
+  var sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; sc.onload = cb; sc.onerror = function () { toast('QR 라이브러리를 불러오지 못했어요. 인터넷을 확인해 주세요', 3500); }; document.head.appendChild(sc);
+}
+function drawQr() {
+  var p = $('p-qr'); p.innerHTML = '';
+  var base = location.href.replace(/[?#].*$/, '').replace(/[^\/]*$/, '');
+  var items = [
+    ['📱 태블릿 접속', '태블릿 카메라로 찍어 Chrome에서 열기', base + 'index.html'],
+    ['📺 전광판 (노트북)', '강당 노트북에서 열 주소 · 운영 PIN으로 시작', base + 'board.html'],
+    ['🎁 후원·응원 접속', '학생 폰용. 전광판의 [QR 재발급]을 누르면 이 QR은 못 써요', base + 'super.html?k=' + (D.superKey || '')],
+    ['🔐 관리자 화면', '지금 이 화면 · 관리자 비밀번호가 있어야 들어가요', base + 'admin.html'],
+    ['🪪 학생 QR카드 인쇄', '찍으면 학생 카드 인쇄 페이지가 열려요', API_URL + '?page=qr']
+  ];
+  var top = el('div', 'card noprint'); top.appendChild(el('h3', '', '접속 QR 모음')); top.appendChild(el('div', 'desc', '주소를 잊어버렸을 때 찍어서 들어갈 수 있게 인쇄해 두세요. 관리자 QR이 있어도 비밀번호는 따로 필요해요. 학생 QR 카드는 맨 아래 QR로 열리는 인쇄 페이지에서 그대로 인쇄해요.'));
+  var pb = el('button', 'btn', '🖨 인쇄'); pb.style.marginTop = '10px'; pb.onclick = function () { tap(); window.print(); }; top.appendChild(pb); p.appendChild(top);
+  var g = el('div', 'qrg'); p.appendChild(g);
+  items.forEach(function (it) { var c = el('div', 'qrc'); c.appendChild(el('b', '', it[0])); c.appendChild(el('div', 'd', it[1])); var q = el('div', 'q'); c.appendChild(q); c.appendChild(el('div', 'u', it[2])); g.appendChild(c); it.push(q); });
+  loadQrLib(function () { items.forEach(function (it) { try { new QRCode(it[3], { text: it[2], width: 170, height: 170, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} }); });
 }
 
 /* ---------- 비밀번호 ---------- */
@@ -238,7 +482,7 @@ function drawSec() {
   var r = el('div', 'row'), sv = el('button', 'btn', '변경'), lo = el('button', 'btn sec', '로그아웃');
   sv.onclick = function () {
     if (a.value.length < 4) { toast('4자 이상으로 입력해 주세요'); return; } if (a.value !== b2.value) { toast('두 번 입력한 값이 달라요'); return; }
-    api('adminSetPw', [PW, a.value]).then(function (x) { if (!x.ok) { toast(x.msg || '변경하지 못했어요'); return; } PW = a.value; ss('apw', PW); a.value = b2.value = ''; toast('비밀번호를 바꿨어요 ✓'); });
+    run(sv, function () { return api('adminSetPw', [PW, a.value]).then(function (x) { if (!x.ok) { toast(x.msg || '변경하지 못했어요'); return false; } PW = a.value; ss('apw', PW); a.value = b2.value = ''; toast('비밀번호를 바꿨어요 ✓'); return true; }).catch(function () { return false; }); }, '변경 중…');
   };
   lo.onclick = logout; r.appendChild(sv); r.appendChild(lo); c.appendChild(r); p.appendChild(c);
 }
