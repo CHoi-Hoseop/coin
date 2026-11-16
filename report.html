@@ -82,7 +82,7 @@ function draw() {
   s6.appendChild(el('div', 'muted', '후원 총 ' + fmt(r.super.reduce(function (a, x) { return a + x.n; }, 0)) + '건 · 후원 총액 ' + fmt(r.super.reduce(function (a, x) { return a + x.sum; }, 0)) + 'C')); d.appendChild(s6);
   var s7 = sec('7. 응원 메시지'); s7.appendChild(kpi([['응원 메시지', fmt(r.msgTotal) + '개'], ['보낸 학생', fmt(r.msgSenders) + '명'], ['부적절 차단', fmt(r.msgBlocked) + '건'], ['전교생 잔액 합계', fmt(r.balanceSum) + 'C']])); d.appendChild(s7);
   var s8 = sec('8. 시상'); var aw = el('div', 'aw');
-  r.awards.forEach(function (x) { var c = el('div'); c.appendChild(el('div', 'tt', x.emoji + ' ' + x.title)); var w = x.list[0]; c.appendChild(el('div', 'w', w ? w.name : '해당자 없음')); c.appendChild(el('div', 'd', w ? w.cls + ' · ' + fmt(w.val) + ' ' + x.unit : x.sub)); aw.appendChild(c); }); s8.appendChild(aw); d.appendChild(s8);
+  r.awards.forEach(function (x) { var c = el('div'); c.appendChild(el('div', 'tt', x.emoji + ' ' + x.title)); var w = x.list[0]; c.appendChild(el('div', 'w', w ? w.name : '해당자 없음')); c.appendChild(el('div', 'd', w ? (w.cls ? w.cls + ' · ' : '') + fmt(w.val) + ' ' + x.unit : x.sub)); aw.appendChild(c); }); s8.appendChild(aw); d.appendChild(s8);
   var s9 = sec('9. 현장 화면 (무작위 캡처)'); s9.id = 'shotSec'; s9.appendChild(el('div', 'muted', '불러오는 중…')); d.appendChild(s9);
   var s10 = sec('10. 총평 및 건의'); var n = el('div', 'note'); n.contentEditable = 'true'; n.textContent = noteTxt || ''; s10.appendChild(n); d.appendChild(s10);
   d.appendChild(el('div', 'muted', '※ 이 보고서는 [거래내역]·[출결]·[응원메시지] 시트의 기록으로 자동 계산한 값입니다. 취소된 거래는 제외했습니다.'));
