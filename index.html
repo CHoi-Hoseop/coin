@@ -502,7 +502,7 @@ function gateOk() {
   else { $('gmsg').innerText = 'PIN이 달라요'; $('gpin').value = ''; }
 }
 
-/* ---------- 오프라인 임시저장 대기열 (발표장 전용) ---------- */
+/* ---------- 오프라인 임시저장 대기열 (발표장 · 시간제 근로) ---------- */
 var Q_KEY = 'coinQ', Q = [], flushing = false;
 try { Q = JSON.parse(localStorage.getItem(Q_KEY) || '[]') || []; } catch (e) { Q = []; }
 function newQid() { var r = ''; for (var i = 0; i < 5; i++) r += Math.floor(Math.random() * 36).toString(36); return ('Q' + Date.now().toString(36) + r).toUpperCase(); }
@@ -625,7 +625,7 @@ function hallLike() {
 
 /* ---------- 제출 ---------- */
 function submit(id) {
-  if (mode === 'hall') { submitPipe(id); return; }
+  if (mode === 'hall' || (mode === 'wage' && target.task === CLOCK_NAME)) { submitPipe(id); return; }   // 발표장·시간제 근로는 오프라인 임시저장 가능
   busy = true; hideUndo(); waitPop(id);
   var my = ++seq, done = false, label = devLabel(), m = mode;
   var timer = setTimeout(function () { if (!done) { done = true; busy = false; feedback(false); popup({ lv: 'warn', ic: '⏱', title: '응답이 늦어요', note: '처리 여부를 [거래내역]에서 확인하고\n필요하면 다시 스캔하세요', ms: 5000 }); } }, 25000);
@@ -635,8 +635,9 @@ function submit(id) {
     .processScan({ pin: pin, mode: mode, studentId: id, target: payload(), device: label });
 }
 // 발표장: 결과를 기다리지 않고 다음 학생을 바로 찍을 수 있게 처리. 연결이 끊기면 기기에 임시 저장했다가 나중에 자동 전송
+var CLOCK_NAME = '⏱ 시간제 근로';
 function submitPipe(id) {
-  var qid = newQid(), req = { mode: 'hall', studentId: id, target: payload(), device: devLabel(), qid: qid, ts: Date.now() };
+  var qid = newQid(), m = mode, req = { mode: m, studentId: id, target: payload(), device: devLabel(), qid: qid, ts: Date.now() };
   lastHallId = id; waitPop(id);
   var done = false;
   function toQueue(why) {
@@ -647,7 +648,8 @@ function submitPipe(id) {
   var timer = setTimeout(function () { toQueue('응답 지연'); }, 10000);
   if (navigator.onLine === false) { toQueue('오프라인'); return; }
   google.script.run
-    .withSuccessHandler(function (r) { clearTimeout(timer); qRemove(qid); if (done) return; done = true; feedback(r.level === 'ok'); showResult(r, id, 'hall'); })
+    .withSuccessHandler(function (r) { clearTimeout(timer); qRemove(qid); if (done) return; done = true; feedback(r.level === 'ok'); showResult(r, id, m);
+      if (r.level === 'ok' && r.undo && r.txId) { undoTx = r.txId; $('btnUndo').hidden = false; clearTimeout(undoTimer); undoTimer = setTimeout(hideUndo, 20000); } })
     .withFailureHandler(function () { toQueue('통신 끊김'); })
     .processScan({ pin: pin, mode: req.mode, studentId: id, target: req.target, device: req.device, qid: qid, ts: req.ts });
 }
