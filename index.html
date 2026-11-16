@@ -4,6 +4,10 @@
 <base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#1e1550">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <script src="./html5-qrcode.min.js"></script>
 <script>if(typeof Html5Qrcode==='undefined'){document.write('<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script>');}</script>
 <style>
@@ -57,6 +61,13 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; b
 .mode .tag { position: absolute; right: 14px; top: 12px; font-size: 12px; font-weight: 800; color: #fff; background: #94a3b8; padding: 3px 9px; border-radius: 999px; font-style: normal; }
 .mode[disabled] { background: #f1f3f9; box-shadow: none; opacity: .75; } .mode[disabled] .ic { background: #cbd2e1; box-shadow: none; filter: grayscale(1); }
 .m-work { --c: #ec4899; } .m-hall { --c: #0ea5e9; } .m-booth { --c: #f97316; } .m-market { --c: #eab308; } .m-super { --c: #8b5cf6; } .m-wage { --c: #10b981; } .m-bal { --c: #4f46e5; } .m-test { --c: #64748b; }
+
+
+/* ===== 전체화면 고정 ===== */
+html, body { overscroll-behavior: none; -webkit-touch-callout: none; }
+#fsBar { position: fixed; inset: 0; z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; color: #fff; padding: 24px;
+  background: radial-gradient(800px 500px at 50% 0%, #5b3fd1, transparent 70%), linear-gradient(160deg, #1e1550, #3b2a9c 70%); }
+#fsBar .f1 { font-size: 30px; font-weight: 900; } #fsBar .f2 { font-size: 17px; opacity: .85; } #fsBar .fb { margin-top: 6px; padding: 18px 40px; border: 0; border-radius: 999px; font-size: 24px; font-weight: 900; color: #3b2a9c; background: #ffd54a; box-shadow: 0 10px 26px rgba(0,0,0,.35); }
 
 /* 선택 칩/카드 */
 .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
@@ -187,6 +198,7 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; b
   <div id="stage"><div id="reader"></div></div>
   <div id="result"></div>
   <div id="tools">
+    <button class="tb" onclick="enterFs()">⛶ 전체화면</button>
     <button class="tb" onclick="flipCam()">📷 카메라 전환</button>
     <button class="tb" onclick="toggleMirror()">↔ 좌우반전</button>
     <button class="tb" onclick="$('camFile').click()">📸 사진으로 스캔</button>
@@ -223,11 +235,12 @@ input.pin:focus { outline: none; border-color: var(--brand); background: #fff; b
 </section>
 
 <div id="gate" hidden><div class="gbox">
-  <div class="gt">🔒 선생님 확인</div><div class="gs">처음 화면으로 돌아가려면 운영 PIN을 입력하세요</div>
+  <div class="gt">🔒 선생님 확인</div><div class="gs">운영 PIN을 입력하세요<br>[처음 화면] = 모드 선택 · [전체화면 해제] = 전체화면 끝내고 처음 화면</div>
   <input id="gpin" class="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')gateOk()">
   <div id="gmsg"></div>
-  <div class="gb"><button onclick="closeGate()" style="background:#8a93a6">취소</button><button onclick="gateOk()" style="background:linear-gradient(135deg,#4f46e5,#7c3aed)">처음 화면으로</button></div>
+  <div class="gb"><button onclick="closeGate()" style="background:#8a93a6">취소</button><button onclick="gateOk()" style="background:linear-gradient(135deg,#4f46e5,#7c3aed)">처음 화면</button><button onclick="gateOk(true)" style="background:#0f766e">전체화면 해제</button></div>
 </div></div>
+<div id="fsBar" hidden onclick="enterFs()"><div style="font-size:64px">⛶</div><div class="f1">전체화면이 풀렸어요</div><div class="f2">아래 버튼(또는 화면)을 터치하면 다시 전체화면으로 돌아갑니다</div><button class="fb" onclick="event.stopPropagation();enterFs()">전체화면으로 돌아가기</button></div>
 <div id="bal" hidden onclick="hideBal()"></div>
 <div id="pop" hidden onclick="hidePop()"></div>
 <div id="toasts"></div>
@@ -269,6 +282,7 @@ function fmt(n) { return String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3}
 
 /* ---------- PIN ---------- */
 function unlock() {
+  if ($('pin').value.trim()) enterFs();   // 전체화면은 사용자가 누른 순간에만 켤 수 있어요
   try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
   pin = $('pin').value.trim();
   if (!pin) return;
@@ -295,6 +309,7 @@ function goHome() { hideBal(); hidePop(); stopCam(); clearTimeout(kpTimer); $('k
 
 /* ---------- 모드 선택 ---------- */
 function pickMode(m) {
+  if (kiosk) enterFs();
   mode = m; target = {}; busy = false;
   if (m === 'test') { show('vTest'); $('modeLabel').innerText = '부하테스트'; return; }
   if (m === 'work') {
@@ -489,6 +504,25 @@ function showBal(id) {
 }
 function hideBal() { clearTimeout(balTimer); $('bal').hidden = true; }
 // [처음] 버튼은 없습니다(학생이 누르는 것 방지). 선생님은 상단 제목줄을 5번 연속 터치 → PIN 입력 → 처음 화면으로.
+
+/* ---------- 전체화면 고정 (학생이 장난으로 닫아도 터치 한 번에 복귀) ---------- */
+// 브라우저 규칙상 웹 화면이 전체화면을 '완전히' 막을 수는 없어요. 풀리면 바로 알림 화면을 덮어 두고, 터치하면 다시 전체화면으로 돌아갑니다.
+// 선생님이 일부러 끝낼 때: 상단 제목줄 5번 터치 → PIN → [전체화면 해제].
+var kiosk = false;
+function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement; }
+function fsOk() { return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled); }
+function enterFs() {
+  var e = document.documentElement, f = e.requestFullscreen || e.webkitRequestFullscreen; if (!f || fsEl()) return;
+  try { var p = f.call(e, { navigationUI: 'hide' }); if (p && p.catch) p.catch(function () {}); } catch (x) {}
+  try { if (navigator.keyboard && navigator.keyboard.lock) navigator.keyboard.lock(['Escape']).catch(function () {}); } catch (x) {}
+}
+function exitFs() { kiosk = false; $('fsBar').hidden = true; var d = document, f = d.exitFullscreen || d.webkitExitFullscreen; try { if (fsEl() && f) f.call(d); } catch (x) {} }
+function onFsChange() { if (fsEl()) { kiosk = true; $('fsBar').hidden = true; } else if (kiosk && fsOk()) { $('fsBar').hidden = false; } }
+document.addEventListener('fullscreenchange', onFsChange); document.addEventListener('webkitfullscreenchange', onFsChange);
+document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+try { history.pushState({ k: 1 }, '', location.href); addEventListener('popstate', function () { history.pushState({ k: 1 }, '', location.href); }); } catch (e) {}
+addEventListener('beforeunload', function (e) { if (pin && kiosk) { e.preventDefault(); e.returnValue = ''; } });
+
 var hdrTaps = 0, hdrT = null, gateT = null;
 document.querySelector('header').addEventListener('click', function () {
   if (!pin || !$('vPin').hidden) return;
@@ -497,8 +531,8 @@ document.querySelector('header').addEventListener('click', function () {
 });
 function openGate() { $('gate').hidden = false; $('gpin').value = ''; $('gmsg').innerText = ''; setTimeout(function () { $('gpin').focus(); }, 50); clearTimeout(gateT); gateT = setTimeout(closeGate, 25000); }
 function closeGate() { clearTimeout(gateT); $('gate').hidden = true; $('gpin').value = ''; }
-function gateOk() {
-  if ($('gpin').value.trim() === pin) { closeGate(); goHome(); }
+function gateOk(leaveFs) {
+  if ($('gpin').value.trim() === pin) { closeGate(); if (leaveFs === true) exitFs(); goHome(); }
   else { $('gmsg').innerText = 'PIN이 달라요'; $('gpin').value = ''; }
 }
 
