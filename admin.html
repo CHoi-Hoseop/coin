@@ -500,7 +500,8 @@ function drawQr() {
   };
   // 💹 코인 설계 마법사
   var ec = el('div', 'card noprint'); ec.appendChild(el('h3', '', '💹 코인 설계 마법사')); ec.appendChild(el('div', 'desc', '부스·발표·작품이 모두 모인 뒤, 상점 환산·발표 지급·좋아요·근로·부스 가격·후원 금액을 한 번에 맞추고 점검해요. 설계표는 인쇄도 돼요.'));
-  var eb = el('button', 'btn', '마법사 열기'); eb.style.marginTop = '10px'; eb.onclick = function () { tap(); ss('apw', PW); window.open('econ.html', '_blank'); }; ec.appendChild(eb); p.insertBefore(ec, g);
+  var eb = el('button', 'btn', '마법사 열기'); eb.style.marginTop = '10px'; eb.onclick = function () { tap(); ss('apw', PW); window.open('econ.html', '_blank'); }; ec.appendChild(eb);
+  var gb = el('button', 'btn', '📄 학생 사용설명서 열기·인쇄'); gb.style.cssText = 'margin-top:10px;margin-left:8px'; gb.onclick = function () { tap(); window.open('guide.html', '_blank'); }; ec.appendChild(gb); p.insertBefore(ec, g);
   loadQrLib(function () { items.forEach(function (it) { try { new QRCode(it[3], { text: it[2], width: 170, height: 170, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} }); });
 }
 
