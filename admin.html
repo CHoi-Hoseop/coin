@@ -63,6 +63,7 @@
   .dv { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; } .dv:last-child { border-bottom: 0; }
 
   @media print { header, nav, .noprint, .toast, #bar { display: none !important; } body { background: #fff; } main { max-width: none; padding: 0; } section { display: none !important; } section#p-qr { display: block !important; } .card { border: 0; } }
+  body.pcard .qrg { display: none !important; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -475,6 +476,31 @@ function drawQr() {
   var pb = el('button', 'btn', '🖨 인쇄'); pb.style.marginTop = '10px'; pb.onclick = function () { tap(); window.print(); }; top.appendChild(pb); p.appendChild(top);
   var g = el('div', 'qrg'); p.appendChild(g);
   items.forEach(function (it) { var c = el('div', 'qrc'); c.appendChild(el('b', '', it[0])); c.appendChild(el('div', 'd', it[1])); var q = el('div', 'q'); c.appendChild(q); c.appendChild(el('div', 'u', it[2])); g.appendChild(c); it.push(q); });
+  // 🪪 분실 카드 재발급: 옛 QR은 바로 사용 불가, 잔액은 그대로
+  var rc = el('div', 'card noprint'); rc.appendChild(el('h3', '', '🪪 분실 카드 재발급'));
+  rc.appendChild(el('div', 'desc', '카드를 잃어버린 학생의 학번을 입력하면 새 QR이 만들어져요. 옛 QR은 그 즉시 쓸 수 없고(찍으면 "분실 처리된 카드" 안내 + 시트에 기록), 잔액은 그대로 새 카드로 이어져요. 아래에 나오는 카드를 인쇄해서 전달하세요.'));
+  var ri = document.createElement('input'); ri.placeholder = '학번 (예: 10101)'; ri.inputMode = 'numeric'; ri.style.marginTop = '10px'; rc.appendChild(ri);
+  var rb = el('button', 'btn', '새 카드 발급'); rb.style.marginTop = '8px'; rc.appendChild(rb); p.insertBefore(rc, g);
+  var rr = el('div'); p.insertBefore(rr, g);
+  rb.onclick = function () {
+    var no = ri.value.trim(); if (!no) { toast('학번을 입력해 주세요'); return; }
+    run(rb, function () { return api('adminReissue', [PW, no, '분실']).then(function (x) {
+      if (!x || !x.ok) { toast((x && x.msg) || '발급하지 못했어요', 3500); return false; }
+      rr.innerHTML = ''; var cd = el('div', 'card'); cd.style.textAlign = 'center';
+      cd.appendChild(el('div', '', '🪙 문화코인 학생 QR 카드')); var nm = el('div', '', x.name); nm.style.cssText = 'font-size:26px;font-weight:900;margin:4px 0'; cd.appendChild(nm);
+      cd.appendChild(el('div', 'desc', x.cls + ' · 학번 ' + x.no)); var q = el('div'); q.style.cssText = 'display:flex;justify-content:center;margin:10px 0'; cd.appendChild(q);
+      var idl = el('div', '', x.id); idl.style.cssText = 'font-size:20px;letter-spacing:4px;font-weight:800'; cd.appendChild(idl);
+      cd.appendChild(el('div', 'desc', '※ 재발급 카드 · 옛 카드는 사용할 수 없어요 · 현재 잔액 ' + x.balance.toLocaleString() + 'C'));
+      var pb2 = el('button', 'btn noprint', '🖨 이 카드 인쇄'); pb2.style.marginTop = '10px';
+      pb2.onclick = function () { tap(); document.body.classList.add('pcard'); window.print(); setTimeout(function () { document.body.classList.remove('pcard'); }, 800); }; cd.appendChild(pb2);
+      rr.appendChild(cd); ri.value = '';
+      loadQrLib(function () { try { new QRCode(q, { text: x.id, width: 190, height: 190, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} });
+      toast('새 카드를 발급했어요 (옛 QR은 사용 불가)', 3500); return true;
+    }); });
+  };
+  // 💹 코인 설계 마법사
+  var ec = el('div', 'card noprint'); ec.appendChild(el('h3', '', '💹 코인 설계 마법사')); ec.appendChild(el('div', 'desc', '부스·발표·작품이 모두 모인 뒤, 상점 환산·발표 지급·좋아요·근로·부스 가격·후원 금액을 한 번에 맞추고 점검해요. 설계표는 인쇄도 돼요.'));
+  var eb = el('button', 'btn', '마법사 열기'); eb.style.marginTop = '10px'; eb.onclick = function () { tap(); ss('apw', PW); window.open('econ.html', '_blank'); }; ec.appendChild(eb); p.insertBefore(ec, g);
   loadQrLib(function () { items.forEach(function (it) { try { new QRCode(it[3], { text: it[2], width: 170, height: 170, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} }); });
 }
 
