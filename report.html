@@ -89,8 +89,10 @@ function draw() {
 }
 function drawShots(s) {
   var sc = $('shotSec'); if (!sc) return; sc.innerHTML = ''; sc.appendChild(el('h2', '', '9. 현장 화면 (무작위 캡처)'));
-  if (!s || !s.ok || !s.shots.length) { sc.appendChild(el('div', 'muted', s && s.ok ? '저장된 캡처가 없습니다. (전광판을 켜 두면 자동으로 저장돼요)' : '캡처를 불러오지 못했어요.')); return; }
-  var g = el('div', 'shots'); s.shots.forEach(function (x) { var i = el('img'); i.src = x.data; i.alt = x.name; g.appendChild(i); }); sc.appendChild(g);
+  if (!s || !s.ok || !s.shots.length) { sc.appendChild(el('div', 'muted', s && s.ok ? '저장된 캡처가 없습니다. (전광판을 켜 두거나 설정의 현장사진확률을 올리면 저장돼요)' : '캡처를 불러오지 못했어요.')); return; }
+  var g = el('div', 'shots'); s.shots.forEach(function (x) { var f = el('figure'); f.style.margin = '0'; var i = el('img'); i.src = x.data; i.alt = x.name; f.appendChild(i);
+    var t = String(x.name || '').replace(/\.jpg$/i, '').split('_')[2] || ''; var cap = ({ random: '전광판', stage: '전광판', manual: '전광판' })[t] || t; var d = String(x.name || '').slice(0, 4), tm = String(x.name || '').slice(5, 9);
+    var c = el('div', 'muted', (cap || '현장') + (d.length === 4 ? ' · ' + parseInt(d.slice(0, 2), 10) + '/' + parseInt(d.slice(2), 10) + ' ' + tm.slice(0, 2) + ':' + tm.slice(2) : '')); c.style.cssText = 'text-align:center;font-size:11px;margin-top:2px'; f.appendChild(c); g.appendChild(f); }); sc.appendChild(g);
   sc.appendChild(el('div', 'muted', '전체 ' + s.total + '장 중 무작위 ' + s.shots.length + '장'));
 }
 (function () { var p = ss('apw'); if (p) { $('pw').value = p; PW = p; load(true); } })();
