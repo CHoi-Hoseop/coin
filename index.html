@@ -579,8 +579,22 @@ window.addEventListener('offline', qBadge);
 window.addEventListener('beforeunload', function (e) { if (Q.length) { e.preventDefault(); e.returnValue = ''; } });
 setInterval(flushQ, 15000);
 // 서버가 식어서 느려지는 것을 막기 위해 4분마다 가볍게 깨워 둡니다
-function beat() { if (pin && navigator.onLine !== false) { try { google.script.run.withSuccessHandler(function () {}).withFailureHandler(function () {}).ping(devLabel(), mode); } catch (e) {} } }
-setInterval(beat, 120000); setTimeout(beat, 4000);
+var shotPct = 0, shotAt = 0;
+function beat() { if (pin && navigator.onLine !== false) { try { google.script.run.withSuccessHandler(function (r) { if (r && typeof r.shot === 'number') shotPct = r.shot; }).withFailureHandler(function () {}).ping(devLabel(), mode); } catch (e) {} } }
+setInterval(beat, 40000); setTimeout(beat, 4000);
+// 현장 사진: 설정한 확률로 처리 성공 순간의 카메라 화면을 저장(보고서용). 이름·학번은 저장하지 않음
+function fieldShot(r, m) {
+  try {
+    if (!shotPct || !r || r.level !== 'ok' || m === 'balance' || Math.random() * 100 >= shotPct || Date.now() - shotAt < 20000) return;
+    var v = $('reader').querySelector('video'); if (!v || !v.videoWidth) return;
+    shotAt = Date.now();
+    var w = 640, h = Math.round(w * v.videoHeight / v.videoWidth), c = document.createElement('canvas'); c.width = w; c.height = h;
+    var g = c.getContext('2d'); if ($('reader').classList.contains('mirror')) { g.translate(w, 0); g.scale(-1, 1); } g.drawImage(v, 0, 0, w, h);
+    var tag = ({ hall: r.hall === 'out' ? '발표퇴장' : '발표입장', work: '작품좋아요', booth: '부스결제', market: '코인마켓', wage: '근로', super: '후원' })[m] || '현장';
+    var q = .6, u = c.toDataURL('image/jpeg', q); while (u.length > 400000 && q > .3) { q -= .1; u = c.toDataURL('image/jpeg', q); }
+    google.script.run.withSuccessHandler(function () {}).withFailureHandler(function () {}).saveShot(pin, u, tag);
+  } catch (e) {}
+}
 qBadge();
 var toastSeq = 0;
 function toast(level, msg) {
@@ -627,6 +641,7 @@ function ctxLabel() {
 }
 // 서버 결과 → 팝업 구성
 function showResult(r, id, m) {
+  fieldShot(r, m);
   var L = String(r.msg || '').split('\n').filter(Boolean), d = (typeof r.delta === 'number') ? r.delta : null;
   var o = { lv: r.level === 'ok' ? 'ok' : (r.level === 'warn' ? 'warn' : 'err'), name: r.name || nameOf(id), ms: r.level === 'ok' ? 2200 : 3200 };
   if (r.level === 'ok') {
