@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>코인 설계 마법사</title>
+<style>
+  :root { --ink: #131a2e; --mut: #6b7390; --line: #e2e6f2; --bg: #f2f4fb; --pri: #4f46e5; --ok: #12a363; --warn: #d97706; --bad: #dc2626; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; font-size: 14px; line-height: 1.5; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 14px; }
+  h1 { font-size: 20px; margin: 4px 0 2px; } .sub { color: var(--mut); font-size: 13px; margin-bottom: 12px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
+  .card h2 { font-size: 15px; margin: 0 0 8px; } .card h2 span { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; background: var(--pri); color: #fff; font-size: 12px; margin-right: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; } @media (max-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }
+  label { display: block; font-size: 12px; color: var(--mut); font-weight: 700; margin-bottom: 3px; }
+  input[type=number], input[type=text], input[type=password] { width: 100%; font: inherit; font-size: 15px; padding: 8px 9px; border: 1px solid #cfd4e6; border-radius: 9px; background: #fff; font-variant-numeric: tabular-nums; }
+  input:focus { outline: 2px solid #c7c3ff; border-color: var(--pri); }
+  .hint { font-size: 12px; color: var(--mut); margin-top: 3px; }
+  table { width: 100%; border-collapse: collapse; } th, td { padding: 6px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; } th { font-size: 12px; color: var(--mut); background: #f7f8fd; }
+  td.cur { color: var(--mut); width: 22%; font-variant-numeric: tabular-nums; } td.nw { width: 34%; } td.ds { font-size: 12px; color: var(--mut); }
+  tr.sep td { background: #f0f1ff; font-weight: 800; font-size: 12px; color: var(--pri); }
+  .btn { border: 0; border-radius: 11px; padding: 11px 16px; font-size: 15px; font-weight: 800; background: var(--pri); color: #fff; cursor: pointer; } .btn.sec { background: #fff; color: var(--ink); border: 1px solid #cfd4e6; } .btn.go { background: var(--ok); } .btn:disabled { opacity: .5; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+  .chk { display: flex; gap: 6px; align-items: center; font-size: 13px; margin: 4px 0; } .chk input { width: 18px; height: 18px; }
+  .ck { padding: 7px 0; border-bottom: 1px solid var(--line); display: flex; gap: 8px; } .ck:last-child { border: 0; } .ck b { flex: 0 0 22px; }
+  .ok { color: var(--ok); } .warn { color: var(--warn); } .bad { color: var(--bad); }
+  .verdict { font-size: 16px; font-weight: 900; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; } .verdict.ok { background: #e9f9f1; } .verdict.warn { background: #fff6e5; } .verdict.bad { background: #fff0f0; }
+  #msg { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: #eef0ff; white-space: pre-wrap; display: none; }
+  #login { max-width: 340px; margin: 12vh auto; text-align: center; } details { margin-top: 8px; } summary { cursor: pointer; font-weight: 700; color: var(--pri); }
+  .pt { display: none; }
+  @media print { body { background: #fff; } .noprint, .btn, details summary { display: none !important; } .pt { display: block; } .card { break-inside: avoid; border-color: #bbb; } .wrap { max-width: none; padding: 0; } input { border: 0 !important; padding: 0 !important; font-weight: 800; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<div id="login" hidden><h1>💹 코인 설계</h1><div class="sub">관리자 비밀번호를 입력하세요</div><input id="pw" type="password" onkeydown="if(event.key==='Enter')webGo()"><div class="row" style="justify-content:center"><button class="btn" onclick="webGo()">열기</button></div><div id="lerr" class="hint bad"></div></div>
+<div class="wrap" id="app" hidden>
+  <h1>💹 코인 설계 마법사</h1>
+  <div class="sub">부스·발표·작품 수를 모은 뒤, 코인 금액을 한 번에 맞춰요. 숫자를 바꾸면 점검 결과가 바로 달라지고, 마음에 들면 시트에 적용합니다.</div>
+  <div class="pt"><b>문화코인 설계표</b> · <span id="ptd"></span></div>
+
+  <div class="card"><h2><span>1</span>현황 <small style="font-weight:400;color:var(--mut)">(시트에서 읽었어요. 아직 입력 전이면 예상 숫자를 직접 적으세요)</small></h2>
+    <div class="grid">
+      <div><label>학생 수</label><input type="number" id="N" min="1"></div>
+      <div><label>발표(탐구발표) 수</label><input type="number" id="P" min="0"></div>
+      <div><label>작품 수</label><input type="number" id="W" min="0"></div>
+      <div><label>부스 프로그램 수</label><input type="number" id="B" min="0"></div>
+    </div>
+    <div class="hint" id="facts"></div>
+  </div>
+
+  <div class="card"><h2><span>2</span>목표 <small style="font-weight:400;color:var(--mut)">(학생 1명이 평균적으로 어떻게 지내길 바라나요?)</small></h2>
+    <div class="grid">
+      <div><label>1인당 평균 사용 코인 (목표)</label><input type="number" id="T" min="100" step="100"><div class="hint">행사 전체에서 쓰게 하고 싶은 양</div></div>
+      <div><label>평균 듣는 발표 수</label><input type="number" id="a" min="0" step="1"><div class="hint">발표 수를 넘을 수 없어요</div></div>
+      <div><label>평균 누르는 좋아요 수</label><input type="number" id="l" min="0" step="1"></div>
+      <div><label>평균 이용하는 부스 수</label><input type="number" id="v" min="1" step="1"></div>
+    </div>
+    <details><summary>고급: 코인이 들어오고 나가는 비율</summary>
+      <div class="grid" style="margin-top:8px">
+        <div><label>상점 환산(처음 코인) %</label><input type="number" id="shI" min="0" max="100"></div>
+        <div><label>발표 지급 %</label><input type="number" id="shP" min="0" max="100"></div>
+        <div><label>좋아요 %</label><input type="number" id="shL" min="0" max="100"></div>
+        <div><label>부스 사용 %</label><input type="number" id="shB" min="0" max="100"></div>
+        <div><label>후원 사용 %</label><input type="number" id="shS" min="0" max="100"></div>
+      </div>
+      <div class="hint">들어오는 코인(상점+발표+좋아요) 합과, 나가는 코인(부스+후원) 합이 각각 100% 안팎이면 균형이 맞아요. 나머지는 여유예요.</div>
+    </details>
+    <div class="row noprint"><button class="btn" onclick="recommend()">🧮 권장값 계산</button><span class="hint">이 버튼은 아래 ‘적용할 값’을 새로 채워요. 직접 고친 값은 덮어써집니다.</span></div>
+  </div>
+
+  <div class="card"><h2><span>3</span>코인 금액 <small style="font-weight:400;color:var(--mut)">(적용할 값은 직접 고쳐도 돼요)</small></h2>
+    <table id="tb"></table>
+  </div>
+
+  <div class="card"><h2><span>4</span>점검</h2><div id="chk"></div></div>
+
+  <div class="card noprint"><h2><span>5</span>적용</h2>
+    <label class="chk"><input type="checkbox" id="cR" checked> 모든 발표의 ‘지급 코인’을 위 값으로 맞춤</label>
+    <label class="chk"><input type="checkbox" id="cB"> 부스 프로그램 가격에 위 배율을 곱함</label>
+    <label class="chk"><input type="checkbox" id="cI"> 상점 → 초기코인을 새 환산율로 다시 계산 (거래 기록이 없을 때만 가능)</label>
+    <div class="row"><button class="btn sec" onclick="window.print()">🖨 설계표 인쇄</button><button class="btn go" id="apb" onclick="applyAll()">✅ 시트에 적용</button></div>
+    <div class="hint">바뀐 이전 값은 시트의 [코인설계기록]에 남아요. 적용 뒤에는 설정 캐시가 자동으로 비워집니다.</div>
+    <div id="msg"></div>
+  </div>
+</div>
+<script>
+var GAS = !!(window.google && google.script && google.script.run);
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
+var PW = '', F = null;
+function $(i) { return document.getElementById(i); }
+function fmt(n) { return Math.round(Number(n) || 0).toLocaleString('ko-KR'); }
+function rnd(v, st) { return Math.round(v / st) * st; }
+function nv(id) { var v = parseFloat($(id).value); return isNaN(v) ? 0 : v; }
+function roundPrice(v) { var st = v >= 300 ? 50 : 10; return Math.max(10, Math.round(v / st) * st); }   // 서버와 같은 규칙
+
+/* ---------- 통신 (시트 팝업이면 google.script.run, 웹이면 관리자 비밀번호) ---------- */
+function call(gasFn, webFn, args) {
+  return new Promise(function (ok, no) {
+    if (GAS) google.script.run.withSuccessHandler(ok).withFailureHandler(function (e) { no(e); })[gasFn].apply(null, args);
+    else fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: webFn, args: [PW].concat(args) }) })
+      .then(function (r) { return r.json(); }).then(function (j) { if (j && j.error) throw new Error(j.error); ok(j.result); }).catch(no);
+  });
+}
+function webGo() { PW = $('pw').value; if (!PW) return; $('lerr').textContent = '확인 중…'; load(); }
+function load() {
+  call('econInfo', 'adminEcon', []).then(function (r) {
+    if (!r || !r.ok) { $('lerr').textContent = (r && r.msg) || '열 수 없어요'; $('login').hidden = GAS; if (GAS) { document.body.innerHTML = '<div style="padding:30px">' + ((r && r.msg) || '불러오지 못했어요') + '<br><br>(시트 소유자 계정으로 열어야 해요. 안 되면 관리자 화면의 💹 탭에서 비밀번호로 여세요.)</div>'; } return; }
+    try { sessionStorage.setItem('apw', PW); } catch (e) {}
+    F = r; $('login').hidden = true; $('app').hidden = false; init();
+  }).catch(function (e) { $('lerr').textContent = '연결에 실패했어요'; });
+}
+
+/* ---------- 초기값 ---------- */
+var CUR = {};
+function init() {
+  var S = F.set; $('ptd').textContent = new Date().toLocaleDateString('ko-KR');
+  $('N').value = F.students || 550; $('P').value = F.sessions.length || ''; $('W').value = F.works || ''; $('B').value = F.booths.length || '';
+  $('T').value = 2000; $('a').value = Math.min(F.sessions.length || 3, 3); $('l').value = 10; $('v').value = 5;
+  $('shI').value = 30; $('shP').value = 45; $('shL').value = 10; $('shB').value = 55; $('shS').value = 30;
+  var avgM = F.merit.length ? F.merit.reduce(function (s, x) { return s + x; }, 0) / F.merit.length : 0, act = F.booths.filter(function (b) { return b.on; });
+  var ap = act.length ? act.reduce(function (s, b) { return s + b.price; }, 0) / act.length : 0;
+  $('facts').innerHTML = '시트 기준: 학생 ' + fmt(F.students) + '명 (상점 평균 ' + (Math.round(avgM * 10) / 10) + '점) · 발표 ' + F.sessions.length + '개 · 작품 ' + F.works + '개 · 부스 프로그램 ' + F.booths.length + '개' + (act.length ? ' (평균 가격 ' + fmt(ap) + 'C)' : '') + (F.hasRecords ? ' · <b class="warn">이미 거래/출결 기록이 있어요</b>' : '');
+  CUR = { x1: S['상점구간1점당'], x2: S['상점구간2점당'], reward: F.sessions.length ? F.sessions[0].reward : '', lc: S['좋아요코인'], ld: S['좋아요하루한도'], lt: S['좋아요총한도'], wm: S['근로분당코인'], wt: S['근로지급학생당총한도'], opts: S['슈퍼챗금액옵션'], smin: S['슈퍼챗최소금액'], smax: S['슈퍼챗최대금액'], tiers: S['슈퍼챗연출기준'], stot: S['슈퍼챗학생당총한도'], mkt: S['코인마켓최대금액'], bfac: act.length ? '현재 평균 ' + fmt(ap) + 'C' : '(등록된 부스 없음)' };
+  var rows = [
+    ['sep', '처음 받는 코인 (상점 → 코인)'], ['x1', '상점 1점당 (구간1)', '1~' + S['상점구간1끝점수'] + '점', 'n'], ['x2', '상점 1점당 (구간2)', S['상점구간1끝점수'] + '~' + S['상점구간2끝점수'] + '점', 'n'],
+    ['sep', '코인을 버는 방법'], ['reward', '발표 1회 지급 코인', '모든 발표 동일', 'n'], ['lc', '작품 좋아요 1회', '', 'n'], ['ld', '좋아요 하루 한도', '', 'n'], ['lt', '좋아요 총 한도', '', 'n'], ['wm', '근로 1분당', '', 'n'], ['wt', '근로 학생당 총한도', '', 'n'],
+    ['sep', '코인을 쓰는 곳'], ['bfac', '부스 가격 배율', '현재 가격 × 이 값', 'f'], ['mkt', '코인마켓 1회 최대', '0 = 제한 없음', 'n'],
+    ['sep', '후원 투표'], ['opts', '후원 금액 버튼', '띄어쓰기로 구분', 't'], ['smin', '후원 1회 최소', '', 'n'], ['smax', '후원 1회 최대', '버튼 최댓값 이상으로', 'n'], ['tiers', '전광판 연출 4단계 기준', '버튼 금액과 같게 두면 편해요', 't'], ['stot', '후원 학생당 총한도', '0 = 제한 없음', 'n']
+  ];
+  var h = '<tr><th>항목</th><th>지금 값</th><th>적용할 값</th><th>메모</th></tr>';
+  rows.forEach(function (r) {
+    if (r[0] === 'sep') { h += '<tr class="sep"><td colspan="4">' + r[1] + '</td></tr>'; return; }
+    h += '<tr><td><b>' + r[1] + '</b></td><td class="cur">' + (CUR[r[0]] === '' ? '-' : CUR[r[0]]) + '</td><td class="nw"><input id="n_' + r[0] + '" type="' + (r[3] === 't' ? 'text' : 'number') + '" step="' + (r[3] === 'f' ? '0.01' : '1') + '"></td><td class="ds">' + r[2] + '</td></tr>';
+  });
+  $('tb').innerHTML = h;
+  recommend();
+  document.querySelectorAll('input').forEach(function (e) { e.addEventListener('input', check); });
+}
+
+/* ---------- 권장값 계산 ---------- */
+function coinsOf(m, x1, x2) { var e1 = +F.set['상점구간1끝점수'] || 30, e2 = +F.set['상점구간2끝점수'] || 50; m = Math.min(Math.max(0, m), e2); return Math.round(Math.min(m, e1) * x1 + Math.max(0, m - e1) * x2); }
+function meritList() { return F.merit.length ? F.merit : [20]; }
+function recommend() {
+  var T = nv('T'), P = nv('P'), a = nv('a'), l = nv('l'), v = Math.max(1, nv('v'));
+  if (P > 0 && a > P) { a = P; $('a').value = P; }
+  var shI = nv('shI') / 100, shP = nv('shP') / 100, shL = nv('shL') / 100, shB = nv('shB') / 100;
+  // 상점 환산: 평균 초기코인이 목표 비율이 되도록 (구간2 비율은 지금 비율 유지)
+  var cx1 = +CUR.x1 || 10, cx2 = +CUR.x2 || 5, r = cx1 ? cx2 / cx1 : .5, e1 = +F.set['상점구간1끝점수'] || 30, e2 = +F.set['상점구간2끝점수'] || 50, ml = meritList();
+  var u = ml.reduce(function (s, m) { m = Math.min(Math.max(0, m), e2); return s + Math.min(m, e1) + r * Math.max(0, m - e1); }, 0) / ml.length;
+  var x1 = u > 0 ? Math.max(1, Math.round(T * shI / u)) : cx1, x2 = Math.max(0.5, rnd(x1 * r, 0.5));
+  $('n_x1').value = x1; $('n_x2').value = x2;
+  $('n_reward').value = a > 0 ? Math.max(10, rnd(T * shP / a, 10)) : 0;
+  var lc = l > 0 ? Math.max(1, rnd(T * shL / l, 5) || 5) : 0, lt = rnd(lc * l * 1.5, 10);
+  $('n_lc').value = lc; $('n_lt').value = lt; $('n_ld').value = rnd(lt * 0.6, 10);
+  $('n_wm').value = Math.max(1, Math.round(T * 0.15 / 60)); $('n_wt').value = rnd(T * 0.75, 100);
+  var o = [rnd(T * .05, 50), rnd(T * .15, 50), rnd(T * .25, 50), rnd(T * .5, 100)].map(function (x) { return Math.max(50, x); }), seen = {}, ou = [];
+  o.forEach(function (x) { if (!seen[x]) { seen[x] = 1; ou.push(x); } });
+  $('n_opts').value = ou.join(' '); $('n_tiers').value = ou.join(' '); $('n_smax').value = ou[ou.length - 1]; $('n_smin').value = 10; $('n_stot').value = rnd(T, 100); $('n_mkt').value = rnd(T * .5, 100);
+  var act = F.booths.filter(function (b) { return b.on; }), cp = act.length ? act.reduce(function (s, b) { return s + b.price; }, 0) / act.length : 0, pb = T * shB / v;
+  if (cp > 0) { var f = Math.round(pb / cp * 100) / 100; $('n_bfac').value = f; $('cB').checked = Math.abs(f - 1) > 0.1; } else { $('n_bfac').value = ''; $('cB').checked = false; }
+  $('cR').checked = true; $('cI').checked = !F.hasRecords;
+  check();
+}
+
+/* ---------- 점검 ---------- */
+function check() {
+  if (!F) return;
+  var T = nv('T'), N = nv('N') || F.students || 1, P = nv('P'), a = Math.min(nv('a'), P > 0 ? P : 99), l = nv('l'), v = Math.max(1, nv('v')), shS = nv('shS') / 100, shB = nv('shB') / 100;
+  var x1 = nv('n_x1'), x2 = nv('n_x2'), rw = nv('n_reward'), lc = nv('n_lc'), ld = nv('n_ld'), lt = nv('n_lt'), wt = nv('n_wt'), smax = nv('n_smax'), smin = nv('n_smin'), stot = nv('n_stot'), bf = parseFloat($('n_bfac').value);
+  var ml = meritList(), init = ml.reduce(function (s, m) { return s + coinsOf(m, x1, x2); }, 0) / ml.length, initMax = coinsOf(Math.max.apply(null, ml), x1, x2);
+  var likes = Math.min(l * lc, lt || 1e9, ld ? ld * 2 : 1e9), earn = a * rw, supply = init + earn + likes;
+  var act = F.booths.filter(function (b) { return b.on; }), prices = act.map(function (b) { return (isNaN(bf) || !$('cB').checked) ? b.price : roundPrice(b.price * bf); });
+  var avgP = prices.length ? prices.reduce(function (s, x) { return s + x; }, 0) / prices.length : T * shB / v, minP = prices.length ? Math.min.apply(null, prices) : avgP * 0.5, maxP = prices.length ? Math.max.apply(null, prices) : avgP * 2;
+  var plan = v * avgP + T * shS, ratio = plan ? supply / plan : 0, h = '';
+  var vc = ratio < 0.85 ? 'bad' : ratio > 1.3 ? 'warn' : 'ok', vt = ratio < 0.85 ? '코인이 부족해요' : ratio > 1.3 ? '코인이 남아돌 수 있어요' : '균형이 맞아요';
+  h += '<div class="verdict ' + vc + '">' + (vc === 'ok' ? '✅ ' : '⚠ ') + vt + ' — 평균 학생이 ' + fmt(supply) + 'C를 얻고, 쓰려는 건 약 ' + fmt(plan) + 'C (공급/사용 ' + (Math.round(ratio * 100) / 100) + ')</div>';
+  function ck(cls, tx) { h += '<div class="ck"><b class="' + cls + '">' + (cls === 'ok' ? '✔' : cls === 'warn' ? '▲' : '✖') + '</b><div>' + tx + '</div></div>'; }
+  ck('ok', '평균 학생: 처음 ' + fmt(init) + 'C + 발표 ' + a + '회 ' + fmt(earn) + 'C + 좋아요 ' + fmt(likes) + 'C = <b>' + fmt(supply) + 'C</b>');
+  var low = rw;
+  ck(low >= minP ? 'ok' : 'warn', '상점이 0점인 학생도 발표를 1번만 들으면 ' + fmt(low) + 'C → 가장 싼 부스(' + fmt(minP) + 'C)를 ' + Math.floor(low / Math.max(1, minP)) + '번 이용' + (low >= smin ? ', 후원 최소 금액 가능' : ', 후원은 불가'));
+  var mx = initMax + (P > 0 ? P : a) * rw + (lt || 0) + (wt || 0);
+  ck('ok', '최대로 모은 학생: 약 ' + fmt(mx) + 'C (평균의 ' + (supply ? Math.round(mx / supply * 10) / 10 : 0) + '배) — 후원 총한도 ' + (stot ? fmt(stot) + 'C' : '없음'));
+  ck(smax <= supply * 0.7 ? 'ok' : 'warn', '후원 1회 최대 ' + fmt(smax) + 'C = 평균 학생 코인의 ' + (supply ? Math.round(smax / supply * 100) : 0) + '%' + (smax > supply * 0.7 ? ' (너무 크면 몇 명만 크게 후원해 순위가 쏠려요)' : ''));
+  ck(maxP <= supply * 0.5 ? 'ok' : 'warn', '가장 비싼 부스 ' + fmt(maxP) + 'C = 평균 학생 코인의 ' + (supply ? Math.round(maxP / supply * 100) : 0) + '%' + (prices.length ? '' : ' (등록된 부스가 없어 가정값)'));
+  var tot = a * rw * N + likes * N + init * N;
+  ck('ok', '전교 코인 총량(추정) 약 ' + fmt(tot) + 'C (발표 지급 ' + fmt(a * rw * N) + 'C · 좋아요 ' + fmt(likes * N) + 'C · 처음 코인 ' + fmt(init * N) + 'C)');
+  var cpAll = act.length ? act.reduce(function (s, x) { return s + x.price; }, 0) / act.length : 0;
+  if (cpAll > 0 && shB > 0) { var tKeep = rnd(cpAll * v / shB, 100); if (Math.abs(tKeep / T - 1) > 0.25) ck('warn', '지금 부스 가격(평균 ' + fmt(cpAll) + 'C)을 그대로 두려면 1인당 목표를 약 <b>' + fmt(tKeep) + 'C</b>로 잡으세요. 지금 목표(' + fmt(T) + 'C) 그대로면 부스 가격을 ×' + (isNaN(bf) ? '?' : bf) + '로 조정해야 균형이 맞아요.'); }
+  if (P > 0 && P < a) ck('warn', '발표가 ' + P + '개뿐인데 평균 ' + a + '개를 듣는다고 가정했어요.');
+  if (F.hasRecords) ck('warn', '이미 거래·출결 기록이 있어요. 연습 기록이라면 지운 뒤(메뉴 8번) 처음 코인을 다시 계산하세요.');
+  if (!F.booths.length) ck('warn', '부스가 아직 등록되지 않았어요. 부스를 다 받은 뒤 이 마법사를 한 번 더 열어 가격 배율을 적용하세요.');
+  $('chk').innerHTML = h;
+}
+
+/* ---------- 적용 ---------- */
+var armed = 0;
+function applyAll() {
+  var b = $('apb');
+  if (!armed) { armed = 1; b.textContent = '한 번 더 누르면 적용돼요 (5초 안에)'; setTimeout(function () { armed = 0; b.textContent = '✅ 시트에 적용'; }, 5000); return; }
+  armed = 0; b.disabled = true; b.textContent = '적용 중…';
+  var g = function (id) { return $('n_' + id).value; };
+  var inp = { set: { '상점구간1점당': g('x1'), '상점구간2점당': g('x2'), '좋아요코인': g('lc'), '좋아요하루한도': g('ld'), '좋아요총한도': g('lt'), '근로분당코인': g('wm'), '근로지급학생당총한도': g('wt'), '슈퍼챗금액옵션': g('opts').trim().replace(/[,\s]+/g, ' '), '슈퍼챗최소금액': g('smin'), '슈퍼챗최대금액': g('smax'), '슈퍼챗연출기준': g('tiers').trim().replace(/[,\s]+/g, ' '), '슈퍼챗학생당총한도': g('stot'), '코인마켓최대금액': g('mkt') },
+    reward: $('cR').checked ? g('reward') : null, boothFactor: ($('cB').checked && g('bfac')) ? g('bfac') : null, recalcInitial: $('cI').checked };
+  call('econApply', 'adminEconApply', [inp]).then(function (r) {
+    var m = $('msg'); m.style.display = 'block'; m.textContent = (r && r.msg) || '완료'; m.style.background = r && r.ok ? '#e9f9f1' : '#fff0f0';
+    b.disabled = false; b.textContent = '✅ 시트에 적용';
+  }).catch(function () { var m = $('msg'); m.style.display = 'block'; m.textContent = '적용하지 못했어요. 인터넷과 권한을 확인해 주세요.'; b.disabled = false; b.textContent = '✅ 시트에 적용'; });
+}
+
+(function () {
+  if (GAS) { $('login').hidden = true; load(); return; }
+  var p = null; try { p = sessionStorage.getItem('apw'); } catch (e) {}
+  if (p) { PW = p; load(); } else $('login').hidden = false;
+})();
+</script>
+</body>
+</html>
