@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문화제 학급 안내 자료</title>
+<style>
+  :root { --ink: #1a1d2e; --mut: #555a75; --line: #cfd3ea; --pri: #4b3df2; --soft: #eef0ff; --gold: #fff6dc; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9ebf5; color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; font-size: 14px; line-height: 1.55; }
+  .bar { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .bar b { flex: 1 1 220px; } .bar button { border: 0; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 800; background: var(--pri); color: #fff; cursor: pointer; }
+  .page { width: 210mm; max-width: 100%; margin: 12px auto; background: #fff; padding: 12mm 15mm; box-shadow: 0 2px 14px rgba(20,20,60,.12); }
+  .hero { background: linear-gradient(135deg, #4b3df2, #7a3cff); color: #fff; border-radius: 14px; text-align: center; padding: 14px 10px; margin-bottom: 6px; }
+  .hero h1 { margin: 0; font-size: 26px; } .hero div { font-size: 12.5px; opacity: .92; margin-top: 3px; }
+  h2 { font-size: 15.5px; margin: 13px 0 5px; } h2::before { content: '▌'; color: var(--pri); margin-right: 5px; }
+  ul { margin: 3px 0; padding-left: 18px; } li { margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 4px 0 6px; } th, td { border: 1px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top; } th { background: var(--soft); font-size: 12.5px; } td:first-child { font-weight: 800; background: #f7f7fd; white-space: nowrap; }
+  .box { border: 1.5px solid var(--pri); background: var(--soft); border-radius: 10px; padding: 8px 12px; margin: 8px 0; } .box.gold { border-color: #f2a900; background: var(--gold); }
+  .muted { color: var(--mut); font-size: 12px; } .pb { break-before: page; }
+  .row { display: flex; gap: 14px; align-items: flex-start; } .row > div { flex: 1; }
+  #qr { width: 120px; height: 120px; flex: none; border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--mut); text-align: center; padding: 4px; }
+  .memo td { height: 30px; } .memo td:first-child { width: 28%; }
+  .chk { font-size: 13px; } .chk div { margin: 3px 0; }
+  @page { size: A4; margin: 9mm; }
+  @media print { body { background: #fff; font-size: 12.5px; line-height: 1.45; } .bar { display: none; } .page { box-shadow: none; margin: 0; width: auto; padding: 0; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .pb { break-before: page; } .hero h1 { font-size: 24px; } h2 { margin: 9px 0 4px; } }
+</style>
+</head>
+<body>
+<div class="bar"><b>📄 문화제 학급 안내 자료 <span class="muted">· 11/20(금) 5교시 학급 안내용 (1쪽 설명 + 2쪽 부스 기획 메모지)</span></b><button onclick="print()">🖨 인쇄 / PDF로 저장</button></div>
+
+<div class="page">
+  <div class="hero"><h1>🎪 문화고 문화제 안내</h1><div>학술제 + 축제 · 12월 21일(월) ~ 24일(목) · 학생안전부 / 학생회</div></div>
+
+  <h2>문화제가 뭐예요?</h2>
+  <p style="margin:3px 0">1년 동안 우리가 한 일을 전시하고 발표하고, 학급 부스에서 함께 놀며, 장기자랑으로 마무리하는 우리 학교 연말 행사예요.</p>
+  <table>
+    <tr><th style="width:26%">날짜</th><th>내용</th></tr>
+    <tr><td>12/21(월)~22(화)</td><td>🎓 학술제 — 작품 전시(로비·강당 앞 광장) + 강당 발표</td></tr>
+    <tr><td>12/23(수) 오전</td><td>🏫 학급 부스 — 우리 반이 직접 열고 운영해요</td></tr>
+    <tr><td>12/23(수) 오후</td><td>🎤 강당 장기자랑 — 후원 투표와 응원 메시지</td></tr>
+    <tr><td>12/24(목)</td><td>방학식 (1교시 정리)</td></tr>
+  </table>
+
+  <h2>🎓 학술제 — 내 이야기를 보여줄 수 있어요</h2>
+  <ul>
+    <li><b>전시</b>: 1년 동안 만든 보고서, 작품, 포스터, 실물 결과물</li>
+    <li><b>발표</b>: 탐구·프로젝트 결과를 강당에서 발표</li>
+    <li><b>실패 이야기</b>(새로 생각 중): 실패한 도전과 거기서 배운 점을 솔직하게 나누는 발표</li>
+  </ul>
+  <p class="muted" style="margin:2px 0">학생은 직접 신청하는 게 아니라, <b>교과·동아리·담임선생님이 학생을 추천해 주세요</b>. 하고 싶은 친구는 선생님께 말씀드려요. (마감 11/27 금)</p>
+
+  <h2>🪙 문화코인 — 행사에서 쓰는 가상 화폐</h2>
+  <ul>
+    <li>모두에게 <b>학생 QR 카드</b>가 지급돼요. 카드는 내 지갑이니 잘 간직하고, 잃어버리면 바로 담임선생님께 말하세요.</li>
+    <li>발표를 끝까지 들으면 코인을 벌고, 마음에 드는 작품·발표에 좋아요를 눌러요.</li>
+    <li>코인으로 <b>학급 부스</b>를 이용하고, 장기자랑에서는 <b>후원·응원</b>에도 써요.</li>
+    <li>12/18(금) 카드를 받고 <b>시험 운영</b>을 해 봐요. 이때 기록은 지워지고 행사 때 처음부터 시작해요.</li>
+  </ul>
+
+  <h2>🏫 학급 부스 — 오늘 우리 반이 정할 것</h2>
+  <div class="box">
+    <b>우리 반이 직접 열고, 다른 반 친구들이 코인으로 이용하는 부스예요.</b> 오늘 학급에서 이야기를 시작하고, <b>11/27(금)까지</b> 신청서를 내요.
+    <div class="row" style="margin-top:6px">
+      <div class="chk">
+        <div>① 부스를 할까요? (안 해도 괜찮아요. 안 한다고만 알려 줘요)</div>
+        <div>② 무엇을 할까요? 먹거리 · 게임·체험 · 전시·공연 · 물품 판매</div>
+        <div>③ 프로그램은 몇 개, 이용 가격은 몇 코인?</div>
+        <div>④ 누가 무엇을 맡을까요? (역할 분담)</div>
+        <div>⑤ 돈이 얼마나 필요할까요? (예산 · 위생 · 안전도 함께)</div>
+      </div>
+      <div id="qr">신청 QR은 선생님이 [수합안내] 시트의 학급 안내 링크로 열면 나와요</div>
+    </div>
+    <div class="muted" style="margin-top:4px">부스 가격(코인)은 전체 학생의 코인 규모에 맞춰 조정될 수 있어요. 예산은 학생회·학교와 협의해 최종 결정돼요. 먹거리 부스는 위생·안전 확인이 꼭 필요해요.</div>
+  </div>
+  <p class="muted" style="margin:6px 0 0">문의: 학생안전부 · 학생회 · 담임선생님 &nbsp;&nbsp; ※ 일정과 내용은 학교 사정에 따라 바뀔 수 있어요.</p>
+</div>
+
+<div class="page pb">
+  <div class="hero"><h1>✏ 우리 반 부스 기획 메모지</h1><div>학급 회의에서 적어 보고, 이 내용을 신청서에 옮겨 적으면 돼요 · 신청 마감 11/27(금)</div></div>
+  <table class="memo">
+    <tr><td>우리 반</td><td>____학년 ____반 &nbsp;&nbsp; 담임선생님: ____________ &nbsp;&nbsp; 대표 학생: ____________</td></tr>
+    <tr><td>부스를 할까요?</td><td>☐ 운영해요 &nbsp;&nbsp; ☐ 운영하지 않아요</td></tr>
+    <tr><td>부스 이름</td><td></td></tr>
+    <tr><td>종류</td><td>☐ 먹거리 &nbsp; ☐ 게임·체험 &nbsp; ☐ 전시·공연 &nbsp; ☐ 물품 판매 &nbsp; ☐ 기타</td></tr>
+    <tr><td>한두 문장 소개</td><td style="height:48px"></td></tr>
+  </table>
+  <h2>프로그램과 코인 가격</h2>
+  <table class="memo"><tr><th>프로그램 이름</th><th style="width:20%">코인</th><th style="width:30%">1회 시간 / 동시 인원</th></tr>
+    <tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr>
+  </table>
+  <h2>역할 분담</h2>
+  <table class="memo"><tr><th style="width:30%">역할</th><th>맡을 사람</th></tr><tr><td style="width:auto">준비·만들기</td><td></td></tr><tr><td style="width:auto">운영(안내·정리)</td><td></td></tr><tr><td style="width:auto">계산(코인 받기)</td><td></td></tr><tr><td style="width:auto">청소·정리</td><td></td></tr></table>
+  <h2>예산 (필요한 것)</h2>
+  <table class="memo"><tr><th>품목</th><th style="width:16%">수량</th><th style="width:22%">금액(원)</th></tr>
+    <tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"><b>합계</b></td><td></td><td></td></tr></table>
+  <div class="box gold"><b>안전·위생 확인</b> (먹거리 부스는 모두 체크)
+    <div class="chk">☐ 손 씻기·위생장갑·앞치마 착용 &nbsp; ☐ 일회용 용기·수저 사용 &nbsp; ☐ 조리·판매 장소 청결 유지<br>☐ 알레르기 유발 재료 표시 &nbsp; ☐ 불·전열기구는 담임선생님 감독 아래 사용 &nbsp; ☐ 위험한 물건(칼·불·물 등)과 대책을 적었어요</div></div>
+  <p class="muted">필요한 물품·시설: ☐ 책상 ☐ 의자 ☐ 전기(멀티탭) ☐ 물 ☐ 가열 기구 ☐ 빔프로젝터·스피커 ☐ 교실 밖 공간</p>
+</div>
+
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), u = q.get('b');
+  if (!u) return;
+  var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  s.onload = function () { var d = document.getElementById('qr'); d.innerHTML = ''; d.style.border = '0'; try { new QRCode(d, { text: u, width: 120, height: 120, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} var c = document.createElement('div'); c.style.cssText = 'font-size:10px;color:#555a75;text-align:center'; c.textContent = '부스 신청서'; d.parentNode.appendChild(c); };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>
