@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문화제 기획 메모지</title>
+<style>
+  :root { --ink: #1a1d2e; --mut: #555a75; --line: #cfd3ea; --pri: #4b3df2; --soft: #eef0ff; --gold: #fff6dc; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9ebf5; color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; font-size: 14px; line-height: 1.55; }
+  .bar { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .bar b { flex: 1 1 220px; } .bar button { border: 0; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 800; background: var(--pri); color: #fff; cursor: pointer; }
+  .page { width: 210mm; max-width: 100%; margin: 12px auto; background: #fff; padding: 12mm 15mm; box-shadow: 0 2px 14px rgba(20,20,60,.12); }
+  .hero { background: linear-gradient(135deg, #4b3df2, #7a3cff); color: #fff; border-radius: 14px; text-align: center; padding: 14px 10px; margin-bottom: 6px; }
+  .hero h1 { margin: 0; font-size: 26px; } .hero div { font-size: 12.5px; opacity: .92; margin-top: 3px; }
+  h2 { font-size: 15.5px; margin: 13px 0 5px; } h2::before { content: '▌'; color: var(--pri); margin-right: 5px; }
+  ul { margin: 3px 0; padding-left: 18px; } li { margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 4px 0 6px; } th, td { border: 1px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top; } th { background: var(--soft); font-size: 12.5px; } td:first-child { font-weight: 800; background: #f7f7fd; white-space: nowrap; }
+  .box { border: 1.5px solid var(--pri); background: var(--soft); border-radius: 10px; padding: 8px 12px; margin: 8px 0; } .box.gold { border-color: #f2a900; background: var(--gold); }
+  .muted { color: var(--mut); font-size: 12px; } .pb { break-before: page; }
+  .row { display: flex; gap: 14px; align-items: flex-start; } .row > div { flex: 1; }
+  #qr { width: 120px; height: 120px; flex: none; border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--mut); text-align: center; padding: 4px; }
+  .memo td { height: 30px; } .memo td:first-child { width: 28%; }
+  .chk { font-size: 13px; } .chk div { margin: 3px 0; }
+  .page { display: none; } .page.show { display: block; }
+  .page.show ~ .page.show { break-before: page; }
+  .sel { display: flex; gap: 12px; flex-wrap: wrap; font-weight: 700; } .sel label { cursor: pointer; }
+  .ln td { height: 24px; } .lines { border: 1px solid var(--line); border-radius: 6px; min-height: 40px; padding: 4px 8px; margin: 3px 0 6px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @page { size: A4; margin: 9mm; }
+  @media print { body { background: #fff; font-size: 12.5px; line-height: 1.45; } .bar { display: none; } .page { box-shadow: none; margin: 0; width: auto; padding: 0; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .pb { break-before: page; } .hero h1 { font-size: 24px; } h2 { margin: 9px 0 4px; } }
+</style>
+</head>
+<body>
+<div class="bar"><b>📝 문화제 기획 메모지 <span class="muted">· 인쇄할 것을 고르세요 (각 1쪽)</span></b>
+  <label><input type="checkbox" id="c-booth" checked> 🏫 학급 부스</label> <label><input type="checkbox" id="c-exhibit" checked> 🎓 전시·발표</label> <label><input type="checkbox" id="c-talent" checked> 🎤 장기자랑</label>
+  <button onclick="print()">🖨 인쇄 / PDF로 저장</button></div>
+
+<div class="page show" id="p-booth">
+  <div class="hero"><h1>🏫 학급 부스 기획 메모지</h1><div>학급 회의에서 적어 보고, 이 내용을 신청서에 옮겨 적어 주세요 · 담임선생님 제출 · 마감 11/27(금)</div></div>
+  <table class="memo">
+    <tr><td>우리 반</td><td>____학년 ____반 &nbsp;&nbsp; 담임선생님: ____________ &nbsp;&nbsp; 대표 학생: ____________</td></tr>
+    <tr><td>부스를 할까요?</td><td>☐ 운영해요 &nbsp;&nbsp; ☐ 운영하지 않아요</td></tr>
+    <tr><td>부스 이름</td><td></td></tr>
+    <tr><td>종류</td><td>☐ 먹거리 &nbsp; ☐ 게임·체험 &nbsp; ☐ 전시·공연 &nbsp; ☐ 물품 판매 &nbsp; ☐ 기타</td></tr>
+    <tr><td>한두 문장 소개</td><td style="height:48px"></td></tr>
+  </table>
+  <h2>프로그램과 코인 가격</h2>
+  <table class="memo"><tr><th>프로그램 이름</th><th style="width:20%">코인</th><th style="width:30%">1회 시간 / 동시 인원</th></tr>
+    <tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr>
+  </table>
+  <h2>역할 분담</h2>
+  <table class="memo"><tr><th style="width:30%">역할</th><th>맡을 사람</th></tr><tr><td style="width:auto">준비·만들기</td><td></td></tr><tr><td style="width:auto">운영(안내·정리)</td><td></td></tr><tr><td style="width:auto">계산(코인 받기)</td><td></td></tr><tr><td style="width:auto">청소·정리</td><td></td></tr></table>
+  <h2>예산 (필요한 것)</h2>
+  <table class="memo"><tr><th>품목</th><th style="width:16%">수량</th><th style="width:22%">금액(원)</th></tr>
+    <tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"></td><td></td><td></td></tr><tr><td style="width:auto"><b>합계</b></td><td></td><td></td></tr></table>
+  <div class="box gold"><b>안전·위생 확인</b> (먹거리 부스는 모두 체크)
+    <div class="chk">☐ 손 씻기·위생장갑·앞치마 착용 &nbsp; ☐ 일회용 용기·수저 사용 &nbsp; ☐ 조리·판매 장소 청결 유지<br>☐ 알레르기 유발 재료 표시 &nbsp; ☐ 불·전열기구는 담임선생님 감독 아래 사용 &nbsp; ☐ 위험한 물건(칼·불·물 등)과 대책을 적었어요</div></div>
+  <p class="muted">필요한 물품·시설: ☐ 책상 ☐ 의자 ☐ 전기(멀티탭) ☐ 물 ☐ 가열 기구 ☐ 빔프로젝터·스피커 ☐ 교실 밖 공간</p>
+</div>
+
+
+<div class="page show" id="p-exhibit">
+  <div class="hero"><h1>🎓 전시·발표 기획 메모지</h1><div>학술제(12/21~22) · 이 내용을 신청서에 옮겨 적어 주세요 · 교과·동아리·담임선생님 제출 · 마감 11/27(금)</div></div>
+  <table class="memo">
+    <tr><td>소속 / 지도교사</td><td>(교과·동아리·학급) ______________________ &nbsp; 지도교사: ______________</td></tr>
+    <tr><td>신청 구분</td><td>☐ 전시 &nbsp;&nbsp; ☐ 발표 &nbsp;&nbsp; ☐ 실패 이야기 발표 <span class="muted">(복수 가능, 건마다 신청서를 따로 제출)</span></td></tr>
+    <tr><td>제목(가제 가능)</td><td></td></tr>
+    <tr><td>한두 문장 소개</td><td style="height:44px"></td></tr>
+    <tr><td>참여 학생</td><td>대표 학생(학번·이름): ______________ &nbsp; 참여 인원: ______명</td></tr>
+  </table>
+  <div class="two">
+    <div>
+      <h2>전시일 때 (A3 PDF 1장)</h2>
+      <div class="chk"><div>전시 방식: ☐ A3 포스터(PDF)만 &nbsp; ☐ A3 포스터 + 태블릿 체험</div><div>태블릿 체험이면: ☐ 책상 필요 &nbsp; ☐ 전원(콘센트) 필요</div></div>
+      <div class="muted" style="margin-top:4px">포스터에 넣을 것 (체크하며 준비)</div>
+      <div class="chk"><div>☐ 제목 · 만든 사람 · 소속 &nbsp; ☐ 한 줄 요약</div><div>☐ 궁금했던 점(탐구 질문) &nbsp; ☐ 방법과 과정</div><div>☐ 결과(그림·사진·표) &nbsp; ☐ 배운 점·느낀 점</div><div>☐ 출처·저작권 확인 &nbsp; ☐ A3 PDF로 저장</div></div>
+      <div class="muted" style="margin-top:3px">PDF는 [제출처]로 11/27(금)까지 보내 주세요. (파일명: 소속_제목.pdf)</div>
+    </div>
+    <div>
+      <h2>발표일 때</h2>
+      <div class="chk"><div>희망 시간대 (복수 선택)</div><div>☐ 12/21(월) 6~7교시 &nbsp; ☐ 12/22(화) 1~2교시</div><div>☐ 12/22(화) 3~4교시 &nbsp; ☐ 12/22(화) 5~6교시</div><div>필요한 시간: ______분 &nbsp; 장비: ______________</div></div>
+      <div class="muted" style="margin-top:4px">발표 구성 (분 배분)</div>
+      <table class="memo ln"><tr><td style="width:55%">도입(왜 했나요?)</td><td>____분</td></tr><tr><td>본론(어떻게, 무엇을)</td><td>____분</td></tr><tr><td>마무리(배운 점)</td><td>____분</td></tr></table>
+    </div>
+  </div>
+  <h2>실패 이야기일 때 <span class="muted">(실패한 도전과 거기서 배운 점)</span></h2>
+  <table class="memo ln"><tr><td>무엇에 도전했나요?</td><td></td></tr><tr><td>어떻게 실패했나요?</td><td></td></tr><tr><td>왜 그랬을까요?</td><td></td></tr><tr><td>거기서 배운 점은?</td><td></td></tr><tr><td>다음에는 어떻게 할까요?</td><td></td></tr></table>
+</div>
+
+<div class="page show" id="p-talent">
+  <div class="hero"><h1>🎤 장기자랑 기획 메모지</h1><div>12/23(수) 오후 강당 · 이 내용을 신청서에 옮겨 적어 주세요 · 담임선생님(지도교사) 제출 · 마감 11/27(금)</div></div>
+  <table class="memo">
+    <tr><td>팀 이름</td><td>(개인이면 이름) </td></tr>
+    <tr><td>종목</td><td>☐ 노래 &nbsp; ☐ 댄스 &nbsp; ☐ 악기·밴드 &nbsp; ☐ 연극·코미디 &nbsp; ☐ 마술·퍼포먼스 &nbsp; ☐ 기타</td></tr>
+    <tr><td>곡명·내용</td><td></td></tr>
+    <tr><td>대표 학생 / 담임(지도교사)</td><td>대표 학생(학번·이름): ______________ &nbsp; 담임(지도교사): ______________</td></tr>
+    <tr><td>공연 시간</td><td>____분 <span class="muted">(순서를 정할 때 쓰여요)</span></td></tr>
+  </table>
+  <h2>참가자 명단</h2>
+  <table class="memo ln"><tr><th style="width:12%">번호</th><th style="width:30%">학번</th><th>이름</th></tr>
+    <tr><td style="width:auto">1</td><td></td><td></td></tr><tr><td style="width:auto">2</td><td></td><td></td></tr><tr><td style="width:auto">3</td><td></td><td></td></tr><tr><td style="width:auto">4</td><td></td><td></td></tr><tr><td style="width:auto">5</td><td></td><td></td></tr><tr><td style="width:auto">6</td><td></td><td></td></tr></table>
+  <h2>필요한 것</h2>
+  <div class="chk"><div>☐ 무선 마이크(__개) &nbsp; ☐ 스탠드 마이크 &nbsp; ☐ 음원 연결(스마트폰·USB) &nbsp; ☐ 영상·화면 &nbsp; ☐ 악기·앰프 &nbsp; ☐ 기타: ______________</div></div>
+  <h2>연습 계획 · 의상 · 소품</h2>
+  <div class="lines" style="min-height:62px"></div>
+  <div class="box gold"><b>안전·품위 확인</b> (모두 체크해야 승인돼요)
+    <div class="chk">☐ 선정적·폭력적·혐오 표현이 없는 공연입니다<br>☐ 위험한 동작·소품(불·날카로운 물건·높은 곳 등)을 쓰지 않습니다<br>☐ 연습 장소와 시간을 스스로 확보했습니다</div></div>
+  <p class="muted">담임선생님(지도교사) 확인: ☐ 협의했습니다 &nbsp; 서명: ______________ &nbsp;&nbsp; ※ 공연 순서는 학생회·학생안전부가 정해 알려 드려요.</p>
+</div>
+
+<script>
+(function () {
+  var type = new URLSearchParams(location.search).get('type');
+  ['booth', 'exhibit', 'talent'].forEach(function (k) {
+    var cb = document.getElementById('c-' + k), pg = document.getElementById('p-' + k);
+    if (type && type !== 'all') cb.checked = (type === k);
+    function sync() { pg.classList.toggle('show', cb.checked); } cb.onchange = sync; sync();
+  });
+})();
+</script>
+</body>
+</html>
