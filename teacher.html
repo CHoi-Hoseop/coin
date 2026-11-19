@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문화제 선생님 안내문</title>
+<style>
+  :root { --ink: #1a1d2e; --mut: #555a75; --line: #cfd3ea; --pri: #4b3df2; --soft: #eef0ff; --gold: #fff6dc; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9ebf5; color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; font-size: 14px; line-height: 1.55; }
+  .bar { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .bar b { flex: 1 1 220px; } .bar button { border: 0; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 800; background: var(--pri); color: #fff; cursor: pointer; }
+  .page { width: 210mm; max-width: 100%; margin: 12px auto; background: #fff; padding: 12mm 15mm; box-shadow: 0 2px 14px rgba(20,20,60,.12); }
+  .hero { background: linear-gradient(135deg, #4b3df2, #7a3cff); color: #fff; border-radius: 14px; text-align: center; padding: 14px 10px; margin-bottom: 6px; }
+  .hero h1 { margin: 0; font-size: 26px; } .hero div { font-size: 12.5px; opacity: .92; margin-top: 3px; }
+  h2 { font-size: 15.5px; margin: 13px 0 5px; } h2::before { content: '▌'; color: var(--pri); margin-right: 5px; }
+  ul { margin: 3px 0; padding-left: 18px; } li { margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 4px 0 6px; } th, td { border: 1px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top; } th { background: var(--soft); font-size: 12.5px; } td:first-child { font-weight: 800; background: #f7f7fd; white-space: nowrap; }
+  .box { border: 1.5px solid var(--pri); background: var(--soft); border-radius: 10px; padding: 8px 12px; margin: 8px 0; } .box.gold { border-color: #f2a900; background: var(--gold); }
+  .muted { color: var(--mut); font-size: 12px; } .pb { break-before: page; }
+  .row { display: flex; gap: 14px; align-items: flex-start; } .row > div { flex: 1; }
+  #qr { width: 120px; height: 120px; flex: none; border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--mut); text-align: center; padding: 4px; }
+  .memo td { height: 30px; } .memo td:first-child { width: 28%; }
+  .chk { font-size: 13px; } .chk div { margin: 3px 0; }
+  @page { size: A4; margin: 9mm; }
+  @media print { body { background: #fff; font-size: 11.6px; line-height: 1.38; } table { font-size: 11.4px !important; } th, td { padding: 3px 6px !important; } .bar { display: none; } .page { box-shadow: none; margin: 0; width: auto; padding: 0; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .pb { break-before: page; } .hero h1 { font-size: 24px; } h2 { margin: 6px 0 3px; font-size: 14px; } .hero { padding: 9px 8px; margin-bottom: 2px; } .hero h1 { font-size: 21px; } .box { margin: 4px 0; padding: 6px 10px; } }
+</style>
+</head>
+<body>
+<div class="bar"><b>📄 문화제 선생님 안내문 <span class="muted">· 교과·동아리·담임선생님용 (1쪽)</span></b><button onclick="print()">🖨 인쇄 / PDF로 저장</button></div>
+
+<div class="page">
+  <div class="hero"><h1>🎪 2026 문화고 문화제 안내 (선생님용)</h1><div>학술제 + 축제 · 12/21(월) ~ 24(목) · 학생안전부</div></div>
+
+  <h2>문화제는 이렇게 진행해요</h2>
+  <table>
+    <tr><th style="width:26%">날짜</th><th>내용</th></tr>
+    <tr><td>12/21(월)~22(화)</td><td>🎓 학술제 — 작품 전시(로비·강당 앞 광장, A3 PDF를 인쇄해 이젤에 전시) + 강당(부례문홀) 발표<br><span class="muted">※ 12/21 3·5교시는 힐링 콘서트로 강당 사용 불가</span></td></tr>
+    <tr><td>12/23(수)</td><td>오전 🏫 학급 부스(각 교실) / 오후 🎤 강당 장기자랑(신청한 학생·팀)</td></tr>
+    <tr><td>12/24(목)</td><td>방학식 (1교시 정리)</td></tr>
+  </table>
+  <p style="margin:3px 0">학생들은 개인 QR 카드의 <b>'문화코인'</b>으로 발표를 듣고 작품에 좋아요를 누르며, 학급 부스와 장기자랑 후원에 참여합니다. 우수 작품·발표는 시상해요.</p>
+
+  <h2>선생님께 부탁드리는 것 &nbsp;<span class="muted">(마감: 11/27(금))</span></h2>
+  <table>
+    <tr><th style="width:26%">대상</th><th>부탁드리는 일</th></tr>
+    <tr><td>교과·동아리<br>선생님</td><td>1년 동안의 활동 결과물을 <b>전시</b>하거나 <b>발표</b>할 학생·팀을 추려 신청서로 알려 주세요. 한 작품·한 발표당 한 번씩 제출합니다.</td></tr>
+    <tr><td>담임선생님</td><td>① 학급에서 전시·발표(<b>실패 이야기</b> 포함)에 참여할 학생이 있으면 추천해 주세요.<br>② 11/20(금) 5교시 학급 안내(학생회 시간)에 부스 이야기를 시작해 주시고, <b>학급 부스</b> 신청(운영 여부·주제·프로그램·예산·위생·안전)을 학급 대표와 함께 제출해 주세요.<br>③ 12/23 오후 <b>장기자랑</b>에 나가고 싶은 학생(팀)이 있으면 협의해 주세요. 신청서에서 담임선생님(지도교사) 확인을 받아요.</td></tr>
+  </table>
+  <p class="muted" style="margin:2px 0">※ 모두 하지 않아도 됩니다. 교과·동아리별로 가능한 형태만 부탁드려요. 정확하지 않아도 대략이라도 꼭 11/27까지 넣어 주세요.</p>
+
+  <h2>신청 방법</h2>
+  <div class="box">
+    <div class="row">
+      <div class="chk">
+        <div><b>① 신청서 (QR 또는 링크)</b> — 전시 / 발표 / 실패 이야기 / 학급 부스 / 장기자랑 중 고르면 필요한 질문만 이어서 나와요.</div>
+        <div><b>② 전시 PDF</b> — A3 크기 PDF 1장을 [제출처·방법]으로 보내 주세요. (파일명 예: 소속_제목.pdf) &nbsp;※ 방향: [세로/가로] &nbsp;※ 컬러 인쇄는 학생안전부에서 합니다.</div>
+        <div><b>③ 수정</b> — 신청 후 내용을 고치려면 제출 화면의 <b>[응답 수정]</b>을 눌러 주세요. (새로 또 제출하지 마세요)</div>
+      </div>
+      <div id="qr">신청서 QR (선생님이 [수합안내] 시트의 학급 안내 링크로 열면 나와요)</div>
+    </div>
+  </div>
+
+  <h2>전시·발표 안내</h2>
+  <ul>
+    <li><b>전시</b>: 결과물을 A3 PDF로 만들어 제출 → 학생안전부가 컬러 인쇄해 이젤에 전시합니다. 학생이 직접 써 볼 수 있는 <b>프로그램(태블릿 체험)</b>이 있다면 신청서에서 <b>책상·전원(콘센트)</b> 필요 여부만 알려 주세요.</li>
+    <li><b>발표</b>: 신청서에 희망 시간대(12/21 6~7교시, 12/22 1~2·3~4·5~6교시)와 필요한 시간을 적어 주시면 시간표를 짜서 안내드립니다.</li>
+    <li><b>장기자랑</b>: 12/23 오후 강당 무대. 팀 이름·종목·공연 시간·필요한 장비를 적어 신청하면 학생회·학생안전부가 순서를 정해 안내해요. 안전·품위 확인과 담임(지도교사) 확인이 필요해요.</li>
+    <li><b>실패 이야기</b>(새로 생각 중): 실패한 도전과 거기서 배운 점을 학생이 직접 나누는 발표예요. 부담 없이 추천해 주세요.</li>
+    <li><b>이런 주제가 있어요(예시)</b>: 수면 시간과 성적 탐구 · 급식 잔반 줄이는 앱 · 동아리 로봇 대회 도전기 · 세 번 망한 앱 개발, 그래서 배운 것</li>
+  </ul>
+
+  <h2>이후 일정</h2>
+  <table>
+    <tr><td style="width:26%">11/20(금)</td><td>선생님 안내 / 5교시 학생회 시간에 학급 학생들에게 설명</td></tr>
+    <tr><td>11/27(금)</td><td>신청 마감 (전시·발표·학급 부스·장기자랑)</td></tr>
+    <tr><td>[확정 후 안내]</td><td>발표 시간표, 전시 구역, 부스 배정·예산, 장기자랑 순서 확정</td></tr>
+    <tr><td>12/18(금)</td><td>학급별 문화코인 카드·사용설명서 배부 + 시험 운영(기록은 이후 초기화)</td></tr>
+  </table>
+  <p class="muted" style="margin:6px 0 0">문의: 학생안전부 [이름] ([연락처]) &nbsp;&nbsp; ※ 전시·발표 운영은 미래인재부와 협의하며 진행합니다. 일정과 내용은 학교 사정에 따라 바뀔 수 있어요.</p>
+</div>
+
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), u = q.get('b');
+  if (!u) return;
+  var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  s.onload = function () { var d = document.getElementById('qr'); d.innerHTML = ''; d.style.border = '0'; try { new QRCode(d, { text: u, width: 120, height: 120, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} var c = document.createElement('div'); c.style.cssText = 'font-size:10px;color:#555a75;text-align:center'; c.textContent = '신청서'; d.parentNode.appendChild(c); };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>
