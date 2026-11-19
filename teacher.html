@@ -57,7 +57,7 @@
         <div><b>② 전시 PDF</b> — A3 크기 PDF 1장을 [제출처·방법]으로 보내 주세요. (파일명 예: 소속_제목.pdf) &nbsp;※ 방향: [세로/가로] &nbsp;※ 컬러 인쇄는 학생안전부에서 합니다.</div>
         <div><b>③ 수정</b> — 신청 후 내용을 고치려면 제출 화면의 <b>[응답 수정]</b>을 눌러 주세요. (새로 또 제출하지 마세요)</div>
       </div>
-      <div id="qr">신청서 QR (선생님이 [수합안내] 시트의 학급 안내 링크로 열면 나와요)</div>
+      <div id="qr">신청서 QR (메뉴 19번으로 신청서를 만들면 자동으로 나와요)</div>
     </div>
   </div>
 
@@ -81,12 +81,18 @@
 </div>
 
 <script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
 (function () {
-  var q = new URLSearchParams(location.search), u = q.get('b');
-  if (!u) return;
-  var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-  s.onload = function () { var d = document.getElementById('qr'); d.innerHTML = ''; d.style.border = '0'; try { new QRCode(d, { text: u, width: 120, height: 120, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} var c = document.createElement('div'); c.style.cssText = 'font-size:10px;color:#555a75;text-align:center'; c.textContent = '신청서'; d.parentNode.appendChild(c); };
-  document.head.appendChild(s);
+  function draw(u, label) {
+    if (!u) return;
+    var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    s.onload = function () { var d = document.getElementById('qr'); d.innerHTML = ''; d.style.border = '0'; try { new QRCode(d, { text: u, width: 120, height: 120, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} var c = document.createElement('div'); c.style.cssText = 'font-size:10px;color:#555a75;text-align:center'; c.textContent = label; d.parentNode.appendChild(c); };
+    document.head.appendChild(s);
+  }
+  var u = new URLSearchParams(location.search).get('b'), label = '신청서';
+  if (u) { draw(u, label); return; }
+  fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: 'collectInfo', args: [] }) })
+    .then(function (r) { return r.json(); }).then(function (j) { var x = (j && (j.u || (j.result && j.result.u))) || ''; if (x) draw(x, label); }).catch(function () {});
 })();
 </script>
 </body>
