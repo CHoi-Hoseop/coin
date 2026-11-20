@@ -65,7 +65,7 @@ function sec(title) { var s = el('div', 'sec'); s.appendChild(el('h2', '', title
 function kpi(items) { var k = el('div', 'kpi'); items.forEach(function (x) { var d = el('div'); d.appendChild(el('b', '', x[1])); d.appendChild(el('span', '', x[0])); k.appendChild(d); }); return k; }
 function draw() {
   var d = $('doc'), r = R; d.innerHTML = '';
-  var h = el('div', 'head'); h.appendChild(el('h1', '', '🪙 문화코인 운영 성과 보고')); h.appendChild(el('div', 'sub', (r.title || '문화제') + ' · 문화고등학교 학생안전부 · 작성 ' + new Date(r.gen).toLocaleString('ko-KR'))); d.appendChild(h);
+  var h = el('div', 'head'); h.appendChild(el('h1', '', '🪙 문화코인 운영 성과 보고')); h.appendChild(el('div', 'sub', (r.title || '문화 아고라') + ' · 문화고등학교 학생안전부 · 작성 ' + new Date(r.gen).toLocaleString('ko-KR'))); d.appendChild(h);
   var pr = r.students ? Math.round(r.participants / r.students * 100) : 0;
   d.appendChild(kpi([['참여 학생 / 전체', fmt(r.participants) + ' / ' + fmt(r.students) + '명 (' + pr + '%)'], ['총 거래 기록', fmt(r.txCount) + '건'], ['학생이 번 코인', fmt(r.earn) + 'C'], ['학생이 쓴 코인', fmt(r.spend) + 'C']]));
   var s1 = sec('1. 일자별 이용 현황 (거래 건수)'); s1.appendChild(bars(r.days, function (x) { return x.d; }, function (x) { return x.n; }, function (x) { return fmt(x.n) + '건'; })); d.appendChild(s1);
