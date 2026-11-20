@@ -50,7 +50,7 @@
     <li><b>발표</b>: 탐구·프로젝트 결과를 강당에서 발표</li>
     <li><b>실패 이야기</b>(새로 생각 중): 실패한 도전과 거기서 배운 점을 솔직하게 나누는 발표</li>
   </ul>
-  <p class="muted" style="margin:2px 0">전시·발표·실패 이야기·장기자랑은 <b>교과·동아리·담임선생님이 대신 신청</b>해 주세요. 하고 싶은 친구는 <b>기획 메모지</b>를 적어 선생님께 드려요. (마감 11/27 금)</p>
+  <p class="muted" style="margin:2px 0">전시·발표·실패 이야기는 <b>교과·동아리·담임선생님이 대신 신청</b>해 주세요. 하고 싶은 친구는 <b>기획 메모지</b>를 적어 선생님께 드려요. (마감 11/27 금)</p>
 
   <div class="box gold" style="margin-top:6px"><b>💡 이런 것들이 있어요 (예시)</b>
     <ul style="margin:3px 0">
@@ -62,9 +62,14 @@
 
   <h2>🎤 장기자랑 — 무대에 서고 싶은 사람?</h2>
   <ul>
-    <li>12/23(수) 오후 강당 무대에 서고 싶은 학생(팀)은 <b>장기자랑 기획 메모지</b>를 적어 <b>담임선생님께 드려요.</b> 선생님이 <b>선생님용 신청서</b>로 <b>11/27(금)까지</b> 신청해 주세요. (노래·댄스·밴드·연극·마술 등, 개인도 팀도 OK)</li>
-    <li>담임선생님(지도교사)과 먼저 이야기하고, 안전하고 모두가 즐거운 공연으로 준비해요. 순서는 학생회·학생안전부가 정해 알려 줘요.</li>
   </ul>
+  <div class="row">
+    <ul style="margin:0;padding-left:18px">
+      <li>12/23(수) 오후 강당 무대에 서고 싶은 학생(팀)은 <b>장기자랑 기획 메모지</b>를 적고, <b>대표 학생</b>이 담임선생님(지도교사)과 상의해 <b>장기자랑 신청서</b>(오른쪽 QR)를 <b>11/27(금)까지 팀당 1번</b> 내 주세요. (노래·댄스·밴드·연극·마술 등, 개인도 팀도 OK)</li>
+      <li>안전하고 모두가 즐거운 공연으로 준비해요. 순서는 학생회·학생안전부가 정해 알려 줘요.</li>
+    </ul>
+    <div class="qrs"><div class="qrbox" data-k="t"><div class="qrimg">QR (메뉴 19번 실행 후 자동 표시)</div><div class="qrcap">장기자랑 신청서</div><div class="qrurl"></div></div></div>
+  </div>
 
   <h2>🪙 문화코인 — 행사에서 쓰는 가상 화폐</h2>
   <ul>
@@ -118,20 +123,20 @@
 <script>
 var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
 (function () {
-  var q = new URLSearchParams(location.search), have = { u: q.get('u') || '', b: q.get('b') || '' };
+  var q = new URLSearchParams(location.search), have = { u: q.get('u') || '', b: q.get('b') || '', t: q.get('t') || '' };
   function draw(k, u) {
     var box = document.querySelector('.qrbox[data-k="' + k + '"]'); if (!box || !u) return;
     var d = box.querySelector('.qrimg'); d.innerHTML = ''; d.style.border = '0'; d.style.padding = '0';
     try { new QRCode(d, { text: u, width: 112, height: 112, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {}
     box.querySelector('.qrurl').textContent = u.replace(/^https?:\/\//, '');
   }
-  function all() { draw('u', have.u); draw('b', have.b); }
+  function all() { draw('u', have.u); draw('b', have.b); draw('t', have.t); }
   var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
   s.onload = function () {
     all();
-    if (have.u && have.b) return;
+    if (have.u && have.b && have.t) return;
     fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: 'collectInfo', args: [] }) })
-      .then(function (r) { return r.json(); }).then(function (j) { var x = (j && (j.result || j)) || {}; if (!have.u) have.u = x.u || ''; if (!have.b) have.b = x.b || ''; all(); }).catch(function () {});
+      .then(function (r) { return r.json(); }).then(function (j) { var x = (j && (j.result || j)) || {}; if (!have.u) have.u = x.u || ''; if (!have.b) have.b = x.b || ''; if (!have.t) have.t = x.t || ''; all(); }).catch(function () {});
   };
   document.head.appendChild(s);
 })();
