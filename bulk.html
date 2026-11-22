@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문화 아고라 일괄 신청 (선생님용)</title>
+<style>
+  :root { --ink: #1a1d2e; --mut: #555a75; --line: #cfd3ea; --pri: #4b3df2; --soft: #eef0ff; --bad: #c62828; --ok: #1b7f3b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9ebf5; color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; font-size: 14px; line-height: 1.5; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 14px; }
+  .hero { background: linear-gradient(135deg, #4b3df2, #7a3cff); color: #fff; border-radius: 14px; padding: 14px 16px; }
+  .hero h1 { margin: 0; font-size: 22px; } .hero div { font-size: 13px; opacity: .92; margin-top: 3px; }
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(20,20,60,.1); padding: 12px 14px; margin-top: 12px; }
+  label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  input, select, textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: inherit; background: #fff; }
+  textarea { resize: vertical; }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } @media (max-width: 600px) { .g2 { grid-template-columns: 1fr; } }
+  .item { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; margin-top: 10px; background: #fafbff; position: relative; }
+  .item .no { font-weight: 800; color: var(--pri); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .grid { display: grid; grid-template-columns: 130px 1fr 1fr 90px; gap: 8px; } @media (max-width: 700px) { .grid { grid-template-columns: 1fr 1fr; } .grid .w2 { grid-column: 1 / -1; } }
+  .grid .w2 { grid-column: span 2; } .grid .wall { grid-column: 1 / -1; }
+  .detail { margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } @media (max-width: 600px) { .detail { grid-template-columns: 1fr; } }
+  .chk label { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; margin-right: 12px; } .chk input { width: auto; }
+  button { border: 0; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 800; cursor: pointer; background: var(--pri); color: #fff; }
+  button.sub { background: #fff; color: var(--pri); border: 1.5px solid var(--pri); } button.del { background: #fff; color: var(--bad); border: 1px solid #e6b3b3; padding: 4px 9px; font-size: 12px; }
+  button:disabled { opacity: .5; cursor: default; }
+  .muted { color: var(--mut); font-size: 12.5px; } .err { color: var(--bad); white-space: pre-line; font-weight: 700; } .ok { color: var(--ok); font-weight: 800; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .hide { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero"><h1>📝 문화 아고라 일괄 신청 <span style="font-size:14px;font-weight:600">(선생님용)</span></h1>
+    <div>전시·발표·실패 이야기를 <b>여러 건 한 번에</b> 신청해요. 소속과 지도교사는 한 번만 적고, 건별로 한 줄(카드)씩 채워 주세요. 마감 12/4(금)</div></div>
+
+  <div class="card">
+    <div class="g2">
+      <div><label for="org">소속 (교과·동아리·학급)</label><input id="org" placeholder="예) 과학 교과 / 로봇 동아리"></div>
+      <div><label for="teacher">지도교사</label><input id="teacher" placeholder="이름"></div>
+    </div>
+    <p class="muted" style="margin:8px 0 0">※ 전시 PDF(A2)는 여기서 받지 않아요. 제출 기간·방법은 추후 안내드려요. ※ 학급 부스·장기자랑은 학생이 직접 신청해요(별도 신청서).</p>
+  </div>
+
+  <div class="card">
+    <b>엑셀·한글 표에서 한꺼번에 붙여넣기 (선택)</b>
+    <p class="muted" style="margin:2px 0 6px">열 순서: <b>구분(전시/발표/실패 이야기) · 제목 · 대표 학생(학번 이름) · 참여 학생 수 · 한 줄 소개</b> — 표에서 복사해 아래에 붙여넣고 [카드로 만들기]를 누르세요. 발표 시간대와 전시 방식은 카드에서 고르세요.</p>
+    <textarea id="paste" rows="3" placeholder="전시&#9;우리 동네 미세먼지 지도&#9;10305 홍길동&#9;3&#9;교내 미세먼지를 측정해 지도로 만들었어요"></textarea>
+    <div class="bar"><button class="sub" id="bPaste" type="button">카드로 만들기</button></div>
+  </div>
+
+  <div id="items"></div>
+
+  <div class="bar">
+    <button class="sub" id="add1" type="button">＋ 건 추가</button>
+    <button class="sub" id="add5" type="button">＋ 5건 추가</button>
+    <span class="muted" id="cnt"></span>
+  </div>
+
+  <div class="card">
+    <div class="bar" style="margin-top:0"><button id="send" type="button">제출하기</button><span id="msg"></span></div>
+    <p class="muted" style="margin:8px 0 0">제출하면 접수번호가 나와요. 고칠 점이 생기면 학생안전부에 알려 주세요(같은 제목을 다시 제출하면 중복으로 표시되니, 다시 내지 말고 연락 주세요).</p>
+  </div>
+</div>
+
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
+var SLOTS = ['12/21(월) 6~7교시', '12/22(화) 1~2교시', '12/22(화) 3~4교시', '12/22(화) 5~6교시'];
+var box = document.getElementById('items'), seq = 0;
+function h(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function count() { var n = box.querySelectorAll('.item').length; document.getElementById('cnt').textContent = '현재 ' + n + '건'; box.querySelectorAll('.item .no span').forEach(function (e, i) { e.textContent = (i + 1) + '번째 건'; }); }
+function addItem(v) {
+  v = v || {}; var id = ++seq, d = document.createElement('div'); d.className = 'item';
+  d.innerHTML =
+    '<div class="no"><span></span><button type="button" class="del">이 건 지우기</button></div>' +
+    '<div class="grid">' +
+      '<div><label>구분</label><select class="kind"><option value="">선택</option><option>전시</option><option>발표</option><option>실패 이야기</option></select></div>' +
+      '<div class="w2"><label>제목 (가제도 OK)</label><input class="title" placeholder="예) 급식 잔반을 줄이는 앱"></div>' +
+      '<div><label>참여 학생 수</label><input class="n" inputmode="numeric" placeholder="3"></div>' +
+      '<div class="w2"><label>대표 학생(학번·이름)</label><input class="rep" placeholder="10305 홍길동"></div>' +
+      '<div class="wall"><label>한 줄 소개</label><input class="intro" placeholder="어떤 작품·발표인지 한두 문장"></div>' +
+    '</div>' +
+    '<div class="detail ex hide"><div><label>전시 방식</label><select class="exp"><option value="0">A2 포스터(PDF)만</option><option value="1">A2 포스터 + 태블릿 체험(학생이 직접 사용)</option></select></div>' +
+      '<div class="chk pw hide"><label>태블릿 체험에 필요한 것</label><label><input type="checkbox" class="desk"> 책상</label><label><input type="checkbox" class="power"> 전원(콘센트)</label></div></div>' +
+    '<div class="detail ta hide"><div><label>희망 날짜·시간대</label><select class="when"><option value="">선택</option>' + SLOTS.map(function (s) { return '<option>' + s + '</option>'; }).join('') + '</select></div>' +
+      '<div><label>필요한 시간(분)</label><input class="mins" inputmode="numeric" placeholder="예) 20"></div></div>';
+  box.appendChild(d);
+  var kind = d.querySelector('.kind');
+  function mode() { var k = kind.value; d.querySelector('.ex').classList.toggle('hide', k !== '전시'); d.querySelector('.ta').classList.toggle('hide', !(k === '발표' || k === '실패 이야기')); d.querySelector('.pw').classList.toggle('hide', !(k === '전시' && d.querySelector('.exp').value === '1')); }
+  kind.onchange = mode; d.querySelector('.exp').onchange = mode;
+  d.querySelector('.del').onclick = function () { box.removeChild(d); count(); };
+  if (v.kind) kind.value = v.kind; if (v.title) d.querySelector('.title').value = v.title; if (v.rep) d.querySelector('.rep').value = v.rep; if (v.n) d.querySelector('.n').value = v.n; if (v.intro) d.querySelector('.intro').value = v.intro;
+  mode(); count(); return d;
+}
+function read() {
+  return Array.prototype.map.call(box.querySelectorAll('.item'), function (d) {
+    var q = function (c) { return d.querySelector(c); };
+    return { kind: q('.kind').value, title: q('.title').value, n: q('.n').value, rep: q('.rep').value, intro: q('.intro').value, exp: q('.exp').value, desk: q('.desk').checked, power: q('.power').checked, when: q('.when').value, mins: q('.mins').value };
+  });
+}
+function save() { try { localStorage.setItem('bulkDraft', JSON.stringify({ org: org.value, teacher: teacher.value, rows: read() })); } catch (e) {} }
+document.getElementById('add1').onclick = function () { addItem(); };
+document.getElementById('add5').onclick = function () { for (var i = 0; i < 5; i++) addItem(); };
+document.getElementById('bPaste').onclick = function () {
+  var t = document.getElementById('paste').value.split(/\r?\n/), made = 0;
+  t.forEach(function (ln) {
+    if (!ln.trim()) return; var c = ln.split('\t'); if (c.length < 2) c = ln.split(/\s*[|;]\s*/);
+    var k = (c[0] || '').trim(); k = /실패/.test(k) ? '실패 이야기' : (/발표/.test(k) ? '발표' : (/전시/.test(k) ? '전시' : ''));
+    addItem({ kind: k, title: (c[1] || '').trim(), rep: (c[2] || '').trim(), n: (c[3] || '').trim(), intro: (c[4] || '').trim() }); made++;
+  });
+  document.getElementById('paste').value = ''; document.getElementById('msg').innerHTML = made ? '<span class="ok">' + made + '건을 카드로 만들었어요. 발표 시간대·전시 방식을 골라 주세요.</span>' : '';
+};
+var sending = false;
+document.getElementById('send').onclick = function () {
+  if (sending) return; var msg = document.getElementById('msg'), rows = read().filter(function (r) { return r.title || r.rep || r.intro || r.kind; });
+  if (!org.value.trim() || !teacher.value.trim()) { msg.innerHTML = '<span class="err">소속과 지도교사를 입력해 주세요.</span>'; return; }
+  if (!rows.length) { msg.innerHTML = '<span class="err">신청할 건을 한 개 이상 채워 주세요.</span>'; return; }
+  var bad = []; rows.forEach(function (r, i) { if (!r.kind) bad.push((r.title || (i + 1) + '번째') + ': 구분'); else if (!r.title.trim()) bad.push((i + 1) + '번째 건: 제목'); else if (r.kind !== '전시' && (!r.when || !(parseInt(r.mins, 10) > 0))) bad.push('「' + r.title + '」: 시간대·시간'); });
+  if (bad.length) { msg.innerHTML = '<span class="err">아래 항목을 채워 주세요 → ' + h(bad.join(', ')) + '</span>'; return; }
+  if (!confirm(rows.length + '건을 제출할까요? 제출 후에는 이 화면에서 고칠 수 없어요.')) return;
+  sending = true; this.disabled = true; msg.textContent = '제출 중…'; save();
+  fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: 'bulkSubmit', args: [{ org: org.value, teacher: teacher.value, rows: rows }] }) })
+    .then(function (r) { return r.json(); }).then(function (j) {
+      var x = (j && (j.result || j)) || {}; sending = false; document.getElementById('send').disabled = false;
+      if (x.ok) { msg.innerHTML = '<span class="ok">✅ ' + h(x.msg) + ' 접수번호: ' + h((x.ids || []).join(', ')) + '</span>'; try { localStorage.removeItem('bulkDraft'); } catch (e) {} box.innerHTML = ''; count(); }
+      else msg.innerHTML = '<span class="err">' + h(x.msg || '접수하지 못했어요. 잠시 후 다시 눌러 주세요.') + '</span>';
+    }).catch(function () { sending = false; document.getElementById('send').disabled = false; msg.innerHTML = '<span class="err">연결에 실패했어요. 인터넷을 확인하고 다시 눌러 주세요. (같은 내용을 두 번 제출하지 않았는지 학생안전부에 확인해 주세요)</span>'; });
+};
+var org = document.getElementById('org'), teacher = document.getElementById('teacher');
+try { var dr = JSON.parse(localStorage.getItem('bulkDraft') || 'null'); if (dr) { org.value = dr.org || ''; teacher.value = dr.teacher || ''; (dr.rows || []).forEach(function (r) { addItem(r); }); } } catch (e) {}
+if (!box.children.length) addItem();
+document.addEventListener('input', save); document.addEventListener('change', save);
+</script>
+</body>
+</html>
