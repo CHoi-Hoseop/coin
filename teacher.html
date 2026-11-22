@@ -47,7 +47,7 @@
   <table>
     <tr><th style="width:26%">대상</th><th>부탁드리는 일</th></tr>
     <tr><td>교과·동아리<br>선생님</td><td>1년 동안의 활동 결과물을 <b>전시</b>하거나 <b>발표</b>할 학생·팀을 추려 신청서로 알려 주세요. 한 작품·한 발표당 한 번씩 제출합니다.</td></tr>
-    <tr><td>담임선생님</td><td>① 학급에서 전시·발표(<b>실패 이야기</b> 포함)에 참여할 학생이 있으면 추천해 주세요.<br>② 11/23(월) 학급 부스 안내 <b>학급 부스 신청서</b>(운영 여부·주제·프로그램·예산·위생·안전)는 <b>학급 대표 학생이 직접 제출</b>하니, 담임선생님은 내용을 함께 <b>확인·상담</b>만 해 주세요. (신청서에 확인 체크 칸이 있어요)<br>③ 12/23 오후 <b>장기자랑</b>에 나가고 싶은 학생(팀)이 있으면 협의해 주세요. 신청서는 <b>대표 학생이 직접 제출</b>하고, 담임선생님(지도교사)은 확인·상담만 해 주세요.</td></tr>
+    <tr><td>담임선생님</td><td>① 학급에서 전시·발표(<b>실패 이야기</b> 포함)에 참여할 학생이 있으면 추천해 주세요.<br>② 학급 안내 시간에 부스 이야기를 시작합니다. <b>학급 부스 신청서</b>(운영 여부·주제·프로그램·예산·위생·안전)는 <b>학급 대표 학생이 직접 제출</b>하니, 담임선생님은 내용을 함께 <b>확인·상담</b>만 해 주세요. (신청서에 확인 체크 칸이 있어요)<br>③ 12/23 오후 <b>장기자랑</b>에 나가고 싶은 학생(팀)이 있으면 협의해 주세요. 신청서는 <b>대표 학생이 직접 제출</b>하고, 담임선생님(지도교사)은 확인·상담만 해 주세요.</td></tr>
   </table>
   <p class="muted" style="margin:2px 0">※ 모두 하지 않아도 됩니다. 교과·동아리별로 가능한 형태만 부탁드려요. 정확하지 않아도 대략이라도 꼭 12/4(금)까지 넣어 주세요.</p>
 
@@ -55,7 +55,7 @@
   <div class="box">
     <div class="row">
       <div class="chk">
-        <div><b>① 선생님용 신청서</b> — 전시 / 발표 / 실패 이야기 중 고르면 필요한 질문만 이어서 나와요. 건마다 1회, <b>12/4(금)까지</b>. <b>여러 건이면 <u>일괄 신청</u></b>: <span id="bulkurl" style="font-weight:700"></span></div>
+        <div><b>① 선생님용 신청서</b> — 전시 / 발표 / 실패 이야기. <b>한 건이든 여러 건이든 한 페이지</b>에서 카드를 추가해 한 번에 제출해요. 엑셀·한글 표 붙여넣기도 돼요. <b>12/4(금)까지</b>.</div>
         <div><b>② 학급 부스 신청서</b> — <b>학급 대표 학생</b>이 담임선생님과 상의해 학급당 1회, <b>11/27(금)까지</b>. 선생님은 확인·상담만 해 주세요.</div>
         <div><b>③ 장기자랑 신청서</b> — <b>대표 학생</b>이 지도교사와 상의해 팀당 1회, <b>12/4(금)까지</b>.</div>
         <div><b>④ 기획 메모지</b> — 학생들이 적는 종이 양식(부스·전시·발표·장기자랑)이에요. 이 QR로 열어 <b>인쇄해 학생들에게 나눠 주세요.</b></div>
@@ -76,7 +76,7 @@
 
   <h2>이후 일정</h2>
   <table>
-    <tr><td style="width:26%">11/23(월)</td><td>선생님 안내 / 학급 학생들에게 설명</td></tr>
+    <tr><td style="width:26%">학급 안내 시간</td><td>선생님 안내 후, 담임선생님이 학급 학생들에게 설명 (일정은 학급별로)</td></tr>
     <tr><td>11/27(금)</td><td>학급 부스 신청 마감</td></tr>
     <tr><td>12/4(금)</td><td>신청 마감 (전시·발표·실패 이야기·장기자랑)</td></tr>
     <tr><td>[확정 후 안내]</td><td>발표 시간표, 전시 구역, 부스 배정·예산, 장기자랑 순서 확정</td></tr>
@@ -89,8 +89,7 @@
 var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
 (function () {
   function sib(f) { try { if (/^https?:|^file:/.test(location.href)) return new URL(f, location.href).href; } catch (e) {} return ''; }
-  try { var bu = sib('bulk.html'); document.getElementById('bulkurl').textContent = bu ? bu.replace(/^https?:\/\//, '') : '(GitHub에 올린 주소 + bulk.html)'; } catch (e) {}
-  var q = new URLSearchParams(location.search), have = { u: q.get('u') || '', b: q.get('b') || '', t: q.get('t') || '', m: q.get('m') || sib('memo.html') };
+  var q = new URLSearchParams(location.search), have = { u: q.get('u') || sib('bulk.html'), b: q.get('b') || '', t: q.get('t') || '', m: q.get('m') || sib('memo.html') };
   function draw(k, u) {
     var box = document.querySelector('.qrbox[data-k="' + k + '"]'); if (!box || !u) return;
     var d = box.querySelector('.qrimg'); d.innerHTML = ''; d.style.border = '0'; d.style.padding = '0';
