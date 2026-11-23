@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문화 아고라 장기자랑 신청서</title>
+<style>
+  :root { --ink: #1a1d2e; --mut: #555a75; --line: #cfd3ea; --pri: #4b3df2; --soft: #eef0ff; --bad: #c62828; --ok: #1b7f3b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9ebf5; color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; font-size: 14px; line-height: 1.5; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 14px; }
+  .hero { background: linear-gradient(135deg, #4b3df2, #7a3cff); color: #fff; border-radius: 14px; padding: 14px 16px; }
+  .hero h1 { margin: 0; font-size: 22px; } .hero div { font-size: 13px; opacity: .92; margin-top: 3px; }
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(20,20,60,.1); padding: 12px 14px; margin-top: 12px; }
+  label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  input, select, textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: inherit; background: #fff; }
+  textarea { resize: vertical; }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } @media (max-width: 600px) { .g2 { grid-template-columns: 1fr; } }
+  .item { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; margin-top: 10px; background: #fafbff; position: relative; }
+  .item .no { font-weight: 800; color: var(--pri); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .grid { display: grid; grid-template-columns: 130px 1fr 1fr 90px; gap: 8px; } @media (max-width: 700px) { .grid { grid-template-columns: 1fr 1fr; } .grid .w2 { grid-column: 1 / -1; } }
+  .grid .w2 { grid-column: span 2; } .grid .wall { grid-column: 1 / -1; }
+  .detail { margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } @media (max-width: 600px) { .detail { grid-template-columns: 1fr; } }
+  .chk label { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; margin-right: 12px; } .chk input { width: auto; }
+  button { border: 0; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 800; cursor: pointer; background: var(--pri); color: #fff; }
+  button.sub { background: #fff; color: var(--pri); border: 1.5px solid var(--pri); } button.del { background: #fff; color: var(--bad); border: 1px solid #e6b3b3; padding: 4px 9px; font-size: 12px; }
+  button:disabled { opacity: .5; cursor: default; }
+  .muted { color: var(--mut); font-size: 12.5px; } .err { color: var(--bad); white-space: pre-line; font-weight: 700; } .ok { color: var(--ok); font-weight: 800; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .hide { display: none; }
+  .req::after { content: " *"; color: var(--bad); } .row2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; } .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; } @media (max-width: 600px) { .row2, .row3 { grid-template-columns: 1fr; } }
+  .opt label { display: flex; align-items: flex-start; gap: 6px; font-weight: 500; margin: 3px 0; } .opt input { width: auto; margin-top: 4px; } .sec { font-weight: 800; color: var(--pri); margin-bottom: 6px; }
+  .hpot { position: absolute; left: -9999px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero"><h1>🎤 장기자랑 신청서 <span style="font-size:14px;font-weight:600">(12/23 오후 강당)</span></h1>
+    <div><b>대표 학생</b>이 담임선생님(지도교사)과 상의해 <b>팀당 1번</b> 내 주세요. 마감 <b>12/4(금)</b>. 공연 순서는 학생회·학생안전부가 정해 알려 드려요.</div></div>
+  <input id="hp" class="hpot" tabindex="-1" autocomplete="off">
+  <div class="card"><div class="sec">1. 팀과 공연</div>
+    <div class="row2">
+      <div><label class="req" for="team">팀 이름 (개인이면 이름)</label><input id="team" data-f="team"></div>
+      <div><label class="req" for="type">종목</label><select id="type" data-f="type"><option value="">선택</option><option>노래</option><option>댄스</option><option>악기·밴드</option><option>연극·코미디</option><option>마술·퍼포먼스</option><option>기타</option></select></div>
+    </div>
+    <div style="margin-top:10px"><label class="req" for="what">곡명·내용 (한 줄 소개)</label><input id="what" data-f="what" placeholder='예) 곡 제목 / "1학년 3반 춤으로 보는 한 해" / 정통 마술 쇼'></div>
+    <div class="row3" style="margin-top:10px">
+      <div><label class="req" for="n">참가 인원</label><input id="n" data-f="n" inputmode="numeric" placeholder="숫자만 (예: 5)"></div>
+      <div><label class="req" for="mins">공연 시간(분)</label><input id="mins" data-f="mins" inputmode="numeric" placeholder="숫자만 (예: 4)"></div>
+      <div><label class="req" for="rep">대표 학생(학번·이름)</label><input id="rep" data-f="rep" placeholder="10305 홍길동"></div>
+    </div>
+    <div style="margin-top:10px"><label for="list">참가 학생 명단</label><textarea id="list" data-f="list" rows="3" placeholder="10305 홍길동&#10;10412 김철수"></textarea></div>
+    <div style="margin-top:10px"><label for="gear">필요한 장비·음향</label><textarea id="gear" data-f="gear" rows="2" placeholder="예: 무선 마이크 2개, 음원(스마트폰 연결), 스탠드 마이크, 노트북 영상"></textarea></div>
+  </div>
+  <div class="card"><div class="sec">2. 안전·품위 확인 <span class="muted" style="font-weight:500">(모두 체크해야 승인돼요)</span></div>
+    <div class="opt" id="safe"></div>
+  </div>
+  <div class="card"><div class="sec">3. 담임선생님(지도교사)</div>
+    <div class="row2"><div><label class="req" for="teacher">담임선생님(또는 지도교사) 이름</label><input id="teacher" data-f="teacher"></div></div>
+    <div class="opt" style="margin-top:10px"><label><input type="checkbox" id="ok" data-f="ok"> <b>담임선생님(지도교사)과 협의했습니다</b></label></div>
+    <div class="bar"><button id="send" type="button">제출하기</button><span id="msg"></span></div>
+  </div>
+</div>
+
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
+function $(i) { return document.getElementById(i); }
+function h(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function checked(sel) { return Array.prototype.map.call(document.querySelectorAll(sel + ':checked'), function (e) { return e.value; }); }
+var KEY = 'talentDraft', busy = false;
+function draftSave() { try { var o = {}; document.querySelectorAll('[data-f]').forEach(function (e) { o[e.dataset.f] = (e.type === 'checkbox' || e.type === 'radio') ? e.checked : e.value; }); localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+function draftLoad() { try { var o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (!o) return; document.querySelectorAll('[data-f]').forEach(function (e) { if (o[e.dataset.f] == null) return; if (e.type === 'checkbox' || e.type === 'radio') e.checked = !!o[e.dataset.f]; else e.value = o[e.dataset.f]; }); } catch (e) {} }
+function post(fn, payload, btn, done) {
+  if (busy) return; if ($('hp').value) return; var msg = $('msg'); busy = true; btn.disabled = true; msg.textContent = '제출 중…';
+  fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: [payload] }) })
+    .then(function (r) { return r.json(); }).then(function (j) {
+      var x = (j && (j.result || j)) || {}; busy = false; btn.disabled = false;
+      if (x.ok) { msg.innerHTML = '<span class="ok">✅ ' + h(x.msg) + ' (접수번호 ' + h(x.id) + ')<br>내용을 고치려면 같은 방식으로 다시 제출하면 이전 신청이 새 내용으로 대체돼요.</span>'; done && done(); }
+      else msg.innerHTML = '<span class="err">' + h(x.msg || '접수하지 못했어요. 잠시 후 다시 눌러 주세요.') + '</span>';
+    }).catch(function () { busy = false; btn.disabled = false; msg.innerHTML = '<span class="err">연결에 실패했어요. 인터넷을 확인하고 다시 눌러 주세요.</span>'; });
+}
+document.addEventListener('input', draftSave); document.addEventListener('change', draftSave);
+
+var SAFE = ["선정적·폭력적·혐오 표현이 없는 공연입니다", "위험한 동작·소품(불·날카로운 물건·높은 곳 등)을 쓰지 않습니다", "연습 장소와 시간을 스스로 확보했습니다"];
+$('safe').innerHTML = SAFE.map(function (n, i) { return '<label><input type="checkbox" class="safec" data-f="safe' + i + '" value="' + h(n) + '"> ' + h(n) + '</label>'; }).join('');
+draftLoad();
+$('send').onclick = function () {
+  var p = { team: $('team').value, type: $('type').value, what: $('what').value, n: $('n').value, mins: $('mins').value, rep: $('rep').value, list: $('list').value, gear: $('gear').value, safe: checked('.safec'), teacher: $('teacher').value, ok: $('ok').checked };
+  if (!confirm('「' + p.team + '」 신청을 제출할까요?')) return;
+  post('talentSubmit', p, this, function () { try { localStorage.removeItem(KEY); } catch (e) {} });
+};
+</script>
+</body>
+</html>

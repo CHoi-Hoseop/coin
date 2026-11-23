@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문화 아고라 학급 부스 신청서</title>
+<style>
+  :root { --ink: #1a1d2e; --mut: #555a75; --line: #cfd3ea; --pri: #4b3df2; --soft: #eef0ff; --bad: #c62828; --ok: #1b7f3b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9ebf5; color: var(--ink); font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif; font-size: 14px; line-height: 1.5; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 14px; }
+  .hero { background: linear-gradient(135deg, #4b3df2, #7a3cff); color: #fff; border-radius: 14px; padding: 14px 16px; }
+  .hero h1 { margin: 0; font-size: 22px; } .hero div { font-size: 13px; opacity: .92; margin-top: 3px; }
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(20,20,60,.1); padding: 12px 14px; margin-top: 12px; }
+  label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  input, select, textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: inherit; background: #fff; }
+  textarea { resize: vertical; }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } @media (max-width: 600px) { .g2 { grid-template-columns: 1fr; } }
+  .item { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; margin-top: 10px; background: #fafbff; position: relative; }
+  .item .no { font-weight: 800; color: var(--pri); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .grid { display: grid; grid-template-columns: 130px 1fr 1fr 90px; gap: 8px; } @media (max-width: 700px) { .grid { grid-template-columns: 1fr 1fr; } .grid .w2 { grid-column: 1 / -1; } }
+  .grid .w2 { grid-column: span 2; } .grid .wall { grid-column: 1 / -1; }
+  .detail { margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } @media (max-width: 600px) { .detail { grid-template-columns: 1fr; } }
+  .chk label { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; margin-right: 12px; } .chk input { width: auto; }
+  button { border: 0; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 800; cursor: pointer; background: var(--pri); color: #fff; }
+  button.sub { background: #fff; color: var(--pri); border: 1.5px solid var(--pri); } button.del { background: #fff; color: var(--bad); border: 1px solid #e6b3b3; padding: 4px 9px; font-size: 12px; }
+  button:disabled { opacity: .5; cursor: default; }
+  .muted { color: var(--mut); font-size: 12.5px; } .err { color: var(--bad); white-space: pre-line; font-weight: 700; } .ok { color: var(--ok); font-weight: 800; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .hide { display: none; }
+  .req::after { content: " *"; color: var(--bad); } .row2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; } .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; } @media (max-width: 600px) { .row2, .row3 { grid-template-columns: 1fr; } }
+  .opt label { display: flex; align-items: flex-start; gap: 6px; font-weight: 500; margin: 3px 0; } .opt input { width: auto; margin-top: 4px; } .sec { font-weight: 800; color: var(--pri); margin-bottom: 6px; }
+  .hpot { position: absolute; left: -9999px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero"><h1>🏫 학급 부스 신청서 <span style="font-size:14px;font-weight:600">(12/23 오전)</span></h1>
+    <div><b>학급 대표 학생</b>이 담임선생님과 상의해 <b>학급당 1번</b> 내 주세요. 마감 <b>11/27(금)</b>. 부스를 운영하지 않는 반도 [운영 여부]만 선택해 내 주세요. 최종 부스·예산은 학생회 회의와 학교 협의로 정해져요.</div></div>
+  <input id="hp" class="hpot" tabindex="-1" autocomplete="off">
+  <div class="card"><div class="sec">1. 우리 반</div>
+    <div class="row3">
+      <div><label class="req" for="g">학년</label><select id="g" data-f="g"><option value="">선택</option><option>1</option><option>2</option><option>3</option></select></div>
+      <div><label class="req" for="c">반</label><select id="c" data-f="c"><option value="">선택</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></div>
+      <div><label class="req" for="teacher">담임선생님 이름</label><input id="teacher" data-f="teacher"></div>
+    </div>
+    <div style="margin-top:10px"><label class="req" for="rep">대표 학생(학번·이름)</label><input id="rep" data-f="rep" placeholder="예: 10305 홍길동"></div>
+    <div class="opt" style="margin-top:10px"><label class="req">부스 운영 여부</label>
+      <label><input type="radio" name="run" value="run" data-f="run_a"> 운영하겠습니다</label>
+      <label><input type="radio" name="run" value="no" data-f="run_b"> 운영하지 않겠습니다 <span class="muted">(아래는 비워 두고, 맨 아래 담임 확인만 체크해 제출)</span></label></div>
+  </div>
+  <div id="runBox">
+  <div class="card"><div class="sec">2. 부스 소개</div>
+    <div class="row2">
+      <div><label class="req" for="name">부스 이름</label><input id="name" data-f="name" placeholder="예: 떡볶이집, 방탈출 3-5"></div>
+      <div><label class="req" for="type">부스 종류</label><select id="type" data-f="type"><option value="">선택</option><option>먹거리</option><option>게임·체험</option><option>전시·공연</option><option>물품 판매</option><option>기타</option></select></div>
+    </div>
+    <div style="margin-top:10px"><label for="intro">부스 소개 (무엇을 하는 곳인지 한두 문장)</label><textarea id="intro" data-f="intro" rows="2"></textarea></div>
+  </div>
+  <div class="card"><div class="sec">3. 프로그램과 코인 가격</div>
+    <label class="req" for="prog">한 줄에 하나씩: 이름 / 코인</label>
+    <textarea id="prog" data-f="prog" rows="4" placeholder="떡볶이 / 300&#10;어묵 / 200"></textarea>
+    <div class="muted" id="progChk" style="margin-top:3px"></div>
+    <div style="margin-top:10px"><label for="turn">1회 이용 시간(분)과 동시에 이용할 수 있는 인원</label><input id="turn" data-f="turn" placeholder="예: 1회 5분 / 동시 4명"></div>
+  </div>
+  <div class="card"><div class="sec">4. 예산과 필요한 것</div>
+    <div class="row2"><div><label class="req" for="budget">필요 예산 총액(원)</label><input id="budget" data-f="budget" inputmode="numeric" placeholder="숫자만 (예: 50000, 없으면 0)"></div></div>
+    <div style="margin-top:10px"><label for="items">예산 내역 (한 줄에 하나씩: 품목 / 수량 / 금액)</label><textarea id="items" data-f="items" rows="3" placeholder="떡 / 2 / 20000&#10;종이컵 / 1 / 5000"></textarea></div>
+    <div class="opt" style="margin-top:10px"><label>필요한 물품·시설</label><div id="need"></div></div>
+  </div>
+  <div class="card" id="foodBox"><div class="sec">5. 먹거리 부스만</div>
+    <label for="food">판매 품목과 조리 방법</label><textarea id="food" data-f="food" rows="2"></textarea>
+    <div class="opt" style="margin-top:8px"><label class="req">위생·안전 확인 (모두 체크해야 승인돼요)</label><div id="hyg"></div></div>
+  </div>
+  <div class="card"><div class="sec">6. 안전과 역할</div>
+    <label for="risk">안전 위험 요소(불·칼·물·전기·무거운 물건 등)와 대책</label><textarea id="risk" data-f="risk" rows="2"></textarea>
+    <div style="margin-top:10px"><label for="role">학급 역할 분담 (누가 무엇을 맡는지)</label><textarea id="role" data-f="role" rows="2"></textarea></div>
+  </div>
+  </div>
+  <div class="card">
+    <div class="opt"><label><input type="checkbox" id="ok" data-f="ok"> <b>담임선생님과 협의했습니다</b></label></div>
+    <div class="bar"><button id="send" type="button">제출하기</button><span id="msg"></span></div>
+  </div>
+</div>
+
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
+function $(i) { return document.getElementById(i); }
+function h(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function checked(sel) { return Array.prototype.map.call(document.querySelectorAll(sel + ':checked'), function (e) { return e.value; }); }
+var KEY = 'boothDraft', busy = false;
+function draftSave() { try { var o = {}; document.querySelectorAll('[data-f]').forEach(function (e) { o[e.dataset.f] = (e.type === 'checkbox' || e.type === 'radio') ? e.checked : e.value; }); localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+function draftLoad() { try { var o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (!o) return; document.querySelectorAll('[data-f]').forEach(function (e) { if (o[e.dataset.f] == null) return; if (e.type === 'checkbox' || e.type === 'radio') e.checked = !!o[e.dataset.f]; else e.value = o[e.dataset.f]; }); } catch (e) {} }
+function post(fn, payload, btn, done) {
+  if (busy) return; if ($('hp').value) return; var msg = $('msg'); busy = true; btn.disabled = true; msg.textContent = '제출 중…';
+  fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: [payload] }) })
+    .then(function (r) { return r.json(); }).then(function (j) {
+      var x = (j && (j.result || j)) || {}; busy = false; btn.disabled = false;
+      if (x.ok) { msg.innerHTML = '<span class="ok">✅ ' + h(x.msg) + ' (접수번호 ' + h(x.id) + ')<br>내용을 고치려면 같은 방식으로 다시 제출하면 이전 신청이 새 내용으로 대체돼요.</span>'; done && done(); }
+      else msg.innerHTML = '<span class="err">' + h(x.msg || '접수하지 못했어요. 잠시 후 다시 눌러 주세요.') + '</span>';
+    }).catch(function () { busy = false; btn.disabled = false; msg.innerHTML = '<span class="err">연결에 실패했어요. 인터넷을 확인하고 다시 눌러 주세요.</span>'; });
+}
+document.addEventListener('input', draftSave); document.addEventListener('change', draftSave);
+
+var NEEDS = ['책상', '의자', '전기(멀티탭)', '물(수도 사용)', '가열 기구(불·전열기)', '빔프로젝터·스피커', '교실 밖 공간', '기타(역할분담 칸에 적어 주세요)'];
+var HYG = ["손 씻기·위생장갑·앞치마 착용", "일회용 용기·수저 사용", "조리·판매 장소 청결 유지", "알레르기 유발 재료 표시", "불·전열기구는 담임선생님 감독 아래 사용"];
+$('need').innerHTML = NEEDS.map(function (n, i) { return '<label><input type="checkbox" class="needc" data-f="need' + i + '" value="' + h(n) + '"> ' + h(n) + '</label>'; }).join('');
+$('hyg').innerHTML = HYG.map(function (n, i) { return '<label><input type="checkbox" class="hygc" data-f="hyg' + i + '" value="' + h(n) + '"> ' + h(n) + '</label>'; }).join('');
+function mode() { var r = document.querySelector('input[name=run]:checked'); var run = r && r.value === 'run'; $('runBox').style.display = run ? '' : 'none'; $('foodBox').style.display = (run && $('type').value === '먹거리') ? '' : 'none'; }
+var PDEF = '학생이 코인으로 이용할 프로그램이에요. 코인 가격은 학생 전체 코인 규모에 맞춰 학생안전부가 조정할 수 있어요.';
+function progCheck() { var ok = 0, bad = 0; $('prog').value.split(/\r?\n/).forEach(function (l) { l = l.trim(); if (!l) return; if (/^(.*?)\s*[\/,:：]\s*[0-9][0-9,]*\s*(?:C|c|코인)?\s*$/.test(l)) ok++; else bad++; }); $('progChk').innerHTML = (ok || bad) ? (bad ? '<span class="err">' + bad + '줄을 읽지 못했어요. "이름 / 코인" 형식으로 적어 주세요.</span>' : '<span class="ok">프로그램 ' + ok + '개를 읽었어요.</span>') : PDEF; }
+document.querySelectorAll('input[name=run]').forEach(function (e) { e.addEventListener('change', mode); });
+$('type').addEventListener('change', mode); $('prog').addEventListener('input', progCheck);
+draftLoad(); mode(); progCheck();
+$('send').onclick = function () {
+  var r = document.querySelector('input[name=run]:checked');
+  var p = { g: $('g').value, c: $('c').value, teacher: $('teacher').value, rep: $('rep').value, run: r ? r.value : '', ok: $('ok').checked, name: $('name').value, type: $('type').value, intro: $('intro').value, prog: $('prog').value, turn: $('turn').value, budget: $('budget').value, items: $('items').value, need: checked('.needc'), food: $('food').value, hyg: checked('.hygc'), risk: $('risk').value, role: $('role').value };
+  if (!confirm(p.g + '학년 ' + p.c + '반 신청을 제출할까요?')) return;
+  post('boothSubmit', p, this, function () { try { localStorage.removeItem(KEY); } catch (e) {} });
+};
+</script>
+</body>
+</html>
