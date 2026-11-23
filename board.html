@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>슈퍼챗 전광판</title>
+<title>SHOW ME THE MUNHWA</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root { --gold: #ffd54a; --hot: #ff2d6f; --bg: #07060d; --vio: #6a1bff; }
@@ -179,7 +179,7 @@
 </head>
 <body data-mode="stage">
 <div id="login">
-  <div style="font-size:34px;font-weight:900;color:var(--gold)">🎤 슈퍼챗 전광판</div>
+  <div style="font-size:34px;font-weight:900;color:var(--gold)">🎤 SHOW ME THE MUNHWA</div>
   <div style="color:#b9aedb">운영 PIN을 입력하세요</div>
   <input id="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')start()">
   <button onclick="start()">시작</button>
@@ -202,8 +202,8 @@
 </div>
 
 <div id="qrMini"><div class="qb" id="qrMiniBox"></div><div class="qt">📱 폰으로 후원하기<small>QR을 찍고 내 학생 카드 등록</small></div></div>
-<div id="qrBig" onclick="hideQr()"><div class="t1">📱 슈퍼챗 후원 참여</div><div class="qb" id="qrBigBox"></div><div class="t2" id="qrTeam"></div><div class="t3">휴대폰 카메라로 QR을 찍고 → 내 학생 QR 카드를 등록하면 바로 후원할 수 있어요</div></div>
-<div id="cd"><div id="cdLabel">슈퍼챗 마감까지</div><div id="cdNum">10</div><div id="cdSub"></div></div>
+<div id="qrBig" onclick="hideQr()"><div class="t1">📱 후원 참여</div><div class="qb" id="qrBigBox"></div><div class="t2" id="qrTeam"></div><div class="t3">휴대폰 카메라로 QR을 찍고 → 내 학생 QR 카드를 등록하면 바로 후원할 수 있어요</div></div>
+<div id="cd"><div id="cdLabel">후원 마감까지</div><div id="cdNum">10</div><div id="cdSub"></div></div>
 <div id="win"><div id="wSmall"></div><div id="wCrown">👑</div><div id="wMain"></div><div id="wTotal"></div><div id="wRest"></div></div>
 <div id="hint"></div>
 <div id="flash"></div>
@@ -221,7 +221,7 @@
     <div class="r"><button id="mStage" onclick="setMode('stage')">🎤 팀 집중</button><button id="mAll" onclick="setMode('all')">📊 전체 순위</button></div>
     <div class="r"><button onclick="stepTeam(-1)">◀</button><select id="teamSel" onchange="pickTeam(this.value)"></select><button onclick="stepTeam(1)">▶</button></div>
     <div class="r"><select id="cdSec" style="flex:0 0 auto"><option>5</option><option selected>10</option><option>15</option><option>20</option></select><span style="color:#cfc6ee">초</span><button class="go" onclick="startCountdown()">⏱ 마감 카운트다운</button></div>
-    <div class="r"><label><input type="checkbox" id="autoClose" checked> 0초가 되면 슈퍼챗 자동 마감</label></div>
+    <div class="r"><label><input type="checkbox" id="autoClose" checked> 0초가 되면 후원 자동 마감</label></div>
     <div class="r"><button onclick="toTally()">🏁 결과 집계</button><button onclick="toWinner()">🏆 우승 공개</button><button onclick="reopen()">🔓 후원 열기</button><button onclick="closeSuper()">🔒 후원 닫기</button></div>
     <div class="r"><button class="go" onclick="startPodium()">🥇 순위 시상 · 단상 (P)</button><button class="go" onclick="startSpecial()">🎖 특별상 (B)</button></div>
     <div class="r"><button onclick="snap('manual',true)">📸 지금 캡처</button><button id="btnShot" onclick="toggleShot()">📸 자동 캡처 켜짐</button></div>
@@ -237,7 +237,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiR
 var POLL_MS = 2500;
 var VIEW = /[?&]view=work/.test(location.search) ? 'work' : 'super';   // board.html?view=work → 작품 응원 순위
 var FN = VIEW === 'work' ? 'workBoard' : 'board';
-var TIERS = VIEW === 'work' ? [100, 200, 300, 500] : [100, 300, 500, 1000];   // 팝업 4단계 기준 금액 (슈퍼챗은 설정 시트 '슈퍼챗연출기준'에서 받아옴)
+var TIERS = VIEW === 'work' ? [100, 200, 300, 500] : [100, 300, 500, 1000];   // 팝업 4단계 기준 금액 (후원은 설정 시트 '후원연출기준'에서 받아옴)
 
 var pin = '', data = null, mode = (VIEW === 'work' ? 'all' : 'stage'), stageNo = null;
 var seen = {}, firstLoad = true, queue = [], showing = false, sound = true, actx = null, rows = {}, shown = {};
@@ -280,7 +280,7 @@ function teamOf(no) { for (var i = 0; i < data.teams.length; i++) if (data.teams
 
 function apply(r) {
   data = r;
-  $('title').innerText = r.title || '슈퍼챗';
+  $('title').innerText = r.title || 'SHOW ME THE MUNHWA';
   if (r.tiers && r.tiers.length === 4) TIERS = r.tiers;
   if (VIEW !== 'work') { var op = $('openPill'); op.className = r.superOpen ? 'on' : 'off'; op.innerText = r.superOpen ? '● 후원 열림' : '후원 닫힘'; }
   fillTeamSel();
@@ -496,7 +496,7 @@ function startCountdown() {
   if (VIEW === 'work' || !data) return;
   hideQr(); clearTimers(); mode = 'count'; finale = 1; document.body.dataset.mode = 'count'; queue = []; showing = false; $('pop').innerHTML = '';
   var sec = parseInt($('cdSec').value, 10) || 10, cd = $('cd'), num = $('cdNum');
-  $('cdLabel').innerText = '슈퍼챗 마감까지'; $('cdSub').innerText = '마지막 후원 기회!'; num.className = ''; cd.classList.add('on');
+  $('cdLabel').innerText = '후원 마감까지'; $('cdSub').innerText = '마지막 후원 기회!'; num.className = ''; cd.classList.add('on');
   (function step(n) {
     if (n <= 0) return closeNow();
     num.className = ''; void num.offsetWidth; num.innerText = n; num.className = 'tick';
@@ -506,9 +506,9 @@ function startCountdown() {
   })(sec);
 }
 function closeNow() {
-  var num = $('cdNum'); num.className = 'end'; num.innerText = '마감!!'; $('cdLabel').innerText = ''; $('cdSub').innerText = '슈퍼챗이 종료되었습니다';
+  var num = $('cdNum'); num.className = 'end'; num.innerText = '마감!!'; $('cdLabel').innerText = ''; $('cdSub').innerText = '후원이 종료되었습니다';
   flash(); shake(); gong(); fxBurst('confetti', 90, innerWidth / 2, innerHeight * 0.45, 1.2);
-  if ($('autoClose').checked) api('superToggle', [pin, false]).then(function (r) { if (r && r.ok) toast('슈퍼챗을 마감했습니다'); }).catch(function () { toast('⚠ 자동 마감 실패 — 설정 시트에서 슈퍼챗을 닫아 주세요'); });
+  if ($('autoClose').checked) api('superToggle', [pin, false]).then(function (r) { if (r && r.ok) toast('후원을 마감했습니다'); }).catch(function () { toast('⚠ 자동 마감 실패 — 설정 시트에서 후원을 닫아 주세요'); });
   later(function () { $('cdSub').innerText = '최종 집계 중...'; }, 1800);
   later(function () { poll().then(function () { later(toTally, 400); }); }, 3200);
 }
@@ -542,7 +542,7 @@ function toWinner() {
   var l = teamsByTotal(), top = l.length ? l[0].total : 0, win = l.filter(function (t) { return t.total === top; });
   var w = $('win'), main = $('wMain'), crown = $('wCrown'), tot = $('wTotal'), rest = $('wRest');
   w.classList.add('on'); main.style.fontSize = ''; crown.className = ''; tot.innerHTML = ''; rest.innerText = ''; main.className = 'q'; main.innerText = '?';
-  $('wSmall').innerText = top > 0 ? '오늘의 우승팀은…' : '슈퍼챗 결과';
+  $('wSmall').innerText = top > 0 ? '오늘의 우승팀은…' : '후원 결과';
   drumroll(3.4);
   later(function () {
     if (top <= 0) { main.className = ''; main.innerText = '후원이 없었습니다'; return; }
