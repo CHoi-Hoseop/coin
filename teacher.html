@@ -89,7 +89,7 @@
 var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
 (function () {
   function sib(f) { try { if (/^https?:|^file:/.test(location.href)) return new URL(f, location.href).href; } catch (e) {} return ''; }
-  var q = new URLSearchParams(location.search), have = { u: q.get('u') || sib('bulk.html'), b: q.get('b') || '', t: q.get('t') || '', m: q.get('m') || sib('memo.html') };
+  var q = new URLSearchParams(location.search), have = { u: q.get('u') || sib('bulk.html'), b: q.get('b') || sib('booth.html'), t: q.get('t') || sib('talent.html'), m: q.get('m') || sib('memo.html') };
   function draw(k, u) {
     var box = document.querySelector('.qrbox[data-k="' + k + '"]'); if (!box || !u) return;
     var d = box.querySelector('.qrimg'); d.innerHTML = ''; d.style.border = '0'; d.style.padding = '0';
@@ -100,9 +100,6 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiR
   var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
   s.onload = function () {
     all();
-    if (have.u && have.b && have.t) return;
-    fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: 'collectInfo', args: [] }) })
-      .then(function (r) { return r.json(); }).then(function (j) { var x = (j && (j.result || j)) || {}; if (!have.u) have.u = x.u || ''; if (!have.b) have.b = x.b || ''; if (!have.t) have.t = x.t || ''; all(); }).catch(function () {});
   };
   document.head.appendChild(s);
 })();
