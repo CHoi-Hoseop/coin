@@ -25,11 +25,11 @@
   .memo td { height: 30px; } .memo td:first-child { width: 28%; }
   .chk { font-size: 13px; } .chk div { margin: 3px 0; }
   @page { size: A4; margin: 9mm; }
-  @media print { body { background: #fff; font-size: 11.6px; line-height: 1.36; } table { font-size: 12px !important; } th, td { padding: 3px 7px !important; } .bar { display: none; } .page { box-shadow: none; margin: 0; width: auto; padding: 0; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .pb { break-before: page; } .hero h1 { font-size: 24px; } h2 { margin: 7px 0 3px; } .hero { padding: 10px 8px; } .box { margin: 5px 0; } }
+  @media print { .qrurl { font-size: 8.5px; } body { background: #fff; font-size: 11.4px; line-height: 1.34; } table { font-size: 12px !important; } th, td { padding: 3px 7px !important; } .bar { display: none; } .page { box-shadow: none; margin: 0; width: auto; padding: 0; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .pb { break-before: page; } .hero h1 { font-size: 24px; } h2 { margin: 7px 0 3px; } .hero { padding: 10px 8px; } .box { margin: 5px 0; } }
 </style>
 </head>
 <body>
-<div class="bar"><b>📄 문화 아고라 학급 안내 자료 <span class="muted">· 11/23(월) 학급 안내용 (1쪽)</span></b><button onclick="print()">🖨 인쇄 / PDF로 저장</button></div>
+<div class="bar"><b>📄 문화 아고라 학급 안내 자료 <span class="muted">· 학급 안내용 (1쪽)</span></b><button onclick="print()">🖨 인쇄 / PDF로 저장</button></div>
 
 <div class="page">
   <div class="hero"><h1>🎪 문화고 문화 아고라 안내</h1><div>학술제 + 축제 · 12월 21일(월) ~ 24일(목) · 학생안전부 / 학생회</div></div>
@@ -102,7 +102,8 @@
 <script>
 var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiRgTCuyfuoRXJegWzeFzf-a8GzWyjX2aoPSG1CaYIvxV/exec';
 (function () {
-  var q = new URLSearchParams(location.search), have = { u: q.get('u') || '', b: q.get('b') || '', t: q.get('t') || '' };
+  function sib(f) { try { if (/^https?:|^file:/.test(location.href)) return new URL(f, location.href).href; } catch (e) {} return ''; }
+  var q = new URLSearchParams(location.search), have = { u: q.get('u') || '', b: q.get('b') || sib('booth.html'), t: q.get('t') || sib('talent.html') };
   function draw(k, u) {
     var box = document.querySelector('.qrbox[data-k="' + k + '"]'); if (!box || !u) return;
     var d = box.querySelector('.qrimg'); d.innerHTML = ''; d.style.border = '0'; d.style.padding = '0';
@@ -113,9 +114,6 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbxBcTW2Pmh0zMAMqXArfnAmiR
   var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
   s.onload = function () {
     all();
-    if (have.u && have.b && have.t) return;
-    fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: 'collectInfo', args: [] }) })
-      .then(function (r) { return r.json(); }).then(function (j) { var x = (j && (j.result || j)) || {}; if (!have.u) have.u = x.u || ''; if (!have.b) have.b = x.b || ''; if (!have.t) have.t = x.t || ''; all(); }).catch(function () {});
   };
   document.head.appendChild(s);
 })();
