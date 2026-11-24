@@ -175,7 +175,7 @@ html, body { overscroll-behavior: none; -webkit-touch-callout: none; }
   <div class="title">이 태블릿의 역할을 선택하세요</div>
   <div class="grid2">
     <button class="mode m-work" id="mWork" onclick="pickMode('work')"><span class="ic">🖼️</span><span class="tx"><b>학술제 작품 좋아요</b><small>좋아요를 누르면 코인을 받아요</small></span><em class="tag" hidden></em></button>
-    <button class="mode m-hall" id="mHall" onclick="pickMode('hall')"><span class="ic">🎓</span><span class="tx"><b>발표장 입·퇴장</b><small>QR 한 번으로 입장 · 외출 · 퇴장</small></span><em class="tag" hidden></em></button>
+    <button class="mode m-hall" id="mHall" onclick="pickMode('hall')"><span class="ic">🎓</span><span class="tx"><b>발표장 입·퇴장</b><small>QR 한 번으로 입장 · 퇴장 · 팀 좋아요</small></span><em class="tag" hidden></em></button>
     <button class="mode m-booth" id="mBooth" onclick="pickMode('booth')"><span class="ic">🎪</span><span class="tx"><b>학급 부스</b><small>프로그램을 고르고 결제</small></span><em class="tag" hidden></em></button>
     <button class="mode m-market" id="mMarket" onclick="pickMode('market')"><span class="ic">🛍️</span><span class="tx"><b>코인 마켓</b><small>판매 금액을 입력하고 결제</small></span><em class="tag" hidden></em></button>
     <button class="mode m-super" id="mSuper" onclick="pickMode('super')"><span class="ic">💜</span><span class="tx"><b>슈퍼챗</b><small>장기자랑 팀 후원</small></span><em class="tag" hidden></em></button>
@@ -365,11 +365,36 @@ function startRun() {
   if (mode === 'market') setTimeout(function () { if (!target.amount && $('keypad').hidden) openAmountKeypad('market'); }, 350);
 }
 
+var teamTimer = null;
+function setTeamSel(id) {
+  clearTimeout(teamTimer); target.team = id || '';
+  if (id) teamTimer = setTimeout(function () { setTeamSel(''); }, 60000);   // 선택만 해 두고 잊어버려도 1분 뒤 풀려요
+  renderCfg();
+}
+function submitTeamLike(id) {
+  var tm = target.team; setTeamSel('');
+  waitPop(id);
+  google.script.run
+    .withSuccessHandler(function (r) { feedback(r.level === 'ok'); showResult(r, id, 'work'); })
+    .withFailureHandler(function () { feedback(false); popup({ lv: 'err', ic: '📡', title: '통신 오류', note: '팀을 다시 고르고 한 번 더 찍어 주세요' }); })
+    .processScan({ pin: pin, mode: 'plike', studentId: id, target: { session: target.session, team: tm }, device: 'hall:tlike', qid: newQid(), ts: Date.now() });
+}
 function renderCfg() {
   var cfg = $('cfg'), box = $('cfgBtns'); box.innerHTML = '';
   if (mode === 'balance') cfg.innerText = '내 QR을 보여주세요 → 내 코인이 나와요 (조회만 돼요)';
   else if (mode === 'work') cfg.innerText = target.zone ? '학생 QR 스캔 → 작품 선택 → 좋아요 ♥' : '학생 QR 스캔 → 작품 번호 입력 → 좋아요 ♥';
-  else if (mode === 'hall') cfg.innerText = '학생 QR만 찍으면 입장 · 외출 · 퇴장이 자동으로 처리돼요';
+  else if (mode === 'hall') {
+    var tl = (boot.timed && boot.pteams) || [], tsel = null;
+    box.style.maxHeight = tl.length ? '36vh' : ''; box.style.overflowY = tl.length ? 'auto' : '';
+    tl.forEach(function (t) { if (t.id === target.team) tsel = t; });
+    cfg.innerText = !boot.timed ? '학생 QR만 찍으면 입장 · 외출 · 퇴장이 자동으로 처리돼요'
+      : tsel ? '♥ [' + tsel.title + '] 좋아요 — 다음 한 명의 QR이 이 팀 좋아요로 처리되고, 한 번 찍으면 선택이 풀려요'
+      : '학생 QR만 찍으면 입장 ↔ 퇴장(시간만큼 코인) · 팀을 먼저 누르면 그 팀 좋아요 ♥';
+    tl.forEach(function (t) {
+      var c = addChip(box, (t.ord ? t.ord + '. ' : '') + t.title, t.org + (t.slot && t.slot !== '(미배정)' ? ' · ' + t.slot : ''), function () { setTeamSel(target.team === t.id ? '' : t.id); });
+      if (target.team === t.id) c.classList.add('sel');
+    });
+  }
   else if (mode === 'booth') {
     cfg.innerText = '프로그램을 고른 뒤 학생 QR을 스캔하세요';
     boot.booths.filter(function (b) { return b.booth === target.booth; }).forEach(function (b) {
@@ -647,10 +672,10 @@ function showResult(r, id, m) {
   if (r.level === 'ok') {
     if (r.clock === 'in') { o.lv = 'info'; o.ic = '⏱'; o.title = '근로 시작'; o.note = (L[1] || '').replace(/ · .*/, '') + '\n끝나면 다시 한 번 찍어 주세요'; o.ms = 2400; }
     else if (r.clock === 'out') { o.ic = '💼'; o.title = '근로 완료 ' + r.mins + '분'; o.amt = d; o.bal = r.balance; o.note = ctxLabel(); o.ms = 3000; }
-    else if (r.hall === 'in') { o.lv = 'info'; o.ic = '🚪'; o.title = '입장 완료'; o.ms = 1500; }
+    else if (r.hall === 'in') { o.lv = 'info'; o.ic = '🚪'; o.title = '입장 완료'; o.note = r.note || ''; o.ms = r.note ? 2200 : 1500; }
     else if (r.hall === 'back') { o.lv = 'info'; o.ic = '🔁'; o.title = '다시 입장했어요'; o.note = ((L[0] || '').match(/\(([^)]*)\)/) || [])[1] || ''; o.ms = 1800; }
     else if (r.hall === 'pause') { o.lv = 'info'; o.ic = '🚻'; o.title = '잠시 외출'; o.note = r.limit + '분 안에 돌아와\n다시 한 번 찍어 주세요'; o.ms = 3000; }
-    else if (r.hall === 'out') { o.ic = '🎉'; o.title = '발표 참여 완료'; o.amt = d; o.bal = r.balance; o.note = '끝까지 들어줘서 고마워요'; o.ms = 6500; if (r.likeOffer) o.likeOffer = { code: r.likeOffer, id: id }; }
+    else if (r.hall === 'out') { o.ic = '🎉'; o.title = '발표 참여 완료'; o.amt = d; o.bal = r.balance; o.note = r.mins ? r.mins + '분 참여' + (r.capped ? '\n오늘 한도에 도달했어요' : '') : '끝까지 들어줘서 고마워요'; o.ms = r.mins ? 3500 : 6500; if (r.likeOffer) o.likeOffer = { code: r.likeOffer, id: id }; }
     else if (r.like === 'ok' || r.like === 'limit') { o.lv = 'like'; o.ic = '💖'; o.title = '좋아요 완료'; o.amt = d; o.bal = r.balance; o.note = r.like === 'limit' ? '오늘 받을 수 있는 코인을\n모두 받았어요' : (L[1] || ''); }
     else if (d !== null && d < 0) { o.ic = '💳'; o.title = '결제 완료'; o.amt = d; o.bal = r.balance; o.note = ctxLabel(); }
     else if (d !== null && d > 0) { o.ic = m === 'wage' ? '💼' : '💰'; o.title = m === 'wage' ? '근로 장학금' : '코인 지급'; o.amt = d; o.bal = r.balance; o.note = ctxLabel(); }
@@ -675,6 +700,7 @@ function hallLike() {
 
 /* ---------- 제출 ---------- */
 function submit(id) {
+  if (mode === 'hall' && target.team) { submitTeamLike(id); return; }
   if (mode === 'hall' || (mode === 'wage' && target.task === CLOCK_NAME)) { submitPipe(id); return; }   // 발표장·시간제 근로는 오프라인 임시저장 가능
   busy = true; hideUndo(); waitPop(id);
   var my = ++seq, done = false, label = devLabel(), m = mode;
