@@ -368,7 +368,7 @@ function startRun() {
 var teamTimer = null;
 function setTeamSel(id) {
   clearTimeout(teamTimer); target.team = id || '';
-  if (id) teamTimer = setTimeout(function () { setTeamSel(''); }, 60000);   // 선택만 해 두고 잊어버려도 1분 뒤 풀려요
+  if (id) teamTimer = setTimeout(function () { setTeamSel(''); }, 10000);   // 선택만 해 두고 잊어도 10초 뒤에 풀려요
   renderCfg();
 }
 function submitTeamLike(id) {
@@ -388,7 +388,7 @@ function renderCfg() {
     box.style.maxHeight = tl.length ? '36vh' : ''; box.style.overflowY = tl.length ? 'auto' : '';
     tl.forEach(function (t) { if (t.id === target.team) tsel = t; });
     cfg.innerText = !boot.timed ? '학생 QR만 찍으면 입장 · 외출 · 퇴장이 자동으로 처리돼요'
-      : tsel ? '♥ [' + tsel.title + '] 좋아요 — 다음 한 명의 QR이 이 팀 좋아요로 처리되고, 한 번 찍으면 선택이 풀려요'
+      : tsel ? '♥ [' + tsel.title + '] 좋아요 — 다음 한 명의 QR이 이 팀 좋아요로 처리되고, 한 번 찍거나 10초가 지나면 선택이 풀려요'
       : '학생 QR만 찍으면 입장 ↔ 퇴장(시간만큼 코인) · 팀을 먼저 누르면 그 팀 좋아요 ♥';
     tl.forEach(function (t) {
       var c = addChip(box, (t.ord ? t.ord + '. ' : '') + t.title, t.org + (t.slot && t.slot !== '(미배정)' ? ' · ' + t.slot : ''), function () { setTeamSel(target.team === t.id ? '' : t.id); });
