@@ -672,6 +672,7 @@ function showResult(r, id, m) {
   if (r.level === 'ok') {
     if (r.clock === 'in') { o.lv = 'info'; o.ic = '⏱'; o.title = '근로 시작'; o.note = (L[1] || '').replace(/ · .*/, '') + '\n끝나면 다시 한 번 찍어 주세요'; o.ms = 2400; }
     else if (r.clock === 'out') { o.ic = '💼'; o.title = '근로 완료 ' + r.mins + '분'; o.amt = d; o.bal = r.balance; o.note = ctxLabel(); o.ms = 3000; }
+    else if (r.hall === 'in' && r.bonus) { o.ic = '🎤'; o.title = '입장 완료 · 발표자 보너스'; o.amt = r.bonus; o.bal = r.balance; o.note = r.note || ''; o.ms = 4000; }
     else if (r.hall === 'in') { o.lv = 'info'; o.ic = '🚪'; o.title = '입장 완료'; o.note = r.note || ''; o.ms = r.note ? 2200 : 1500; }
     else if (r.hall === 'back') { o.lv = 'info'; o.ic = '🔁'; o.title = '다시 입장했어요'; o.note = ((L[0] || '').match(/\(([^)]*)\)/) || [])[1] || ''; o.ms = 1800; }
     else if (r.hall === 'pause') { o.lv = 'info'; o.ic = '🚻'; o.title = '잠시 외출'; o.note = r.limit + '분 안에 돌아와\n다시 한 번 찍어 주세요'; o.ms = 3000; }
