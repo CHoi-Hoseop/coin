@@ -218,6 +218,7 @@ html, body { overscroll-behavior: none; -webkit-touch-callout: none; }
       <button onclick="kp('4')">4</button><button onclick="kp('5')">5</button><button onclick="kp('6')">6</button>
       <button onclick="kp('7')">7</button><button onclick="kp('8')">8</button><button onclick="kp('9')">9</button>
       <button onclick="kp('C')">지움</button><button onclick="kp('0')">0</button><button onclick="kp('B')">←</button>
+      <button id="kpSign" onclick="kp('S')" style="grid-column:1/-1" hidden>＋ / － 바꾸기 (－ = 학생에게 지급)</button>
     </div>
     <div class="row2">
       <button id="kpCancel" onclick="kpCancel()">취소</button>
@@ -398,7 +399,12 @@ function renderCfg() {
   else if (mode === 'booth') {
     cfg.innerText = '프로그램을 고른 뒤 학생 QR을 스캔하세요';
     boot.booths.filter(function (b) { return b.booth === target.booth; }).forEach(function (b) {
-      var c = addChip(box, b.program, fmt(b.price) + 'C', function () { target.program = b.program; renderCfg(); });
+      if (b.program === '직접입력') {
+        var da = target.program === b.program && target.amount;
+        var cd = addChip(box, da ? (da > 0 ? '+' : '') + fmt(da) + 'C' : '✏️ 직접 입력', da ? '눌러서 금액 변경' : '금액을 입력해 결제(+)/지급(−)', function () { target.program = b.program; openAmountKeypad('booth'); });
+        if (target.program === b.program) cd.classList.add('sel'); return;
+      }
+      var c = addChip(box, b.program, fmt(b.price) + 'C', function () { target.program = b.program; target.amount = 0; renderCfg(); });
       if (target.program === b.program) c.classList.add('sel');
     });
   } else if (mode === 'market') {
@@ -500,6 +506,7 @@ function onScan(text) {
   if (mode === 'balance') { showBal(text); return; }
   if (mode === 'work') { pendingId = text; busy = true; openKeypad(); return; }
   if (mode === 'market' && !target.amount) { pendingId = text; busy = true; openAmountKeypad('market', true); return; }
+  if (mode === 'booth' && target.program === '직접입력' && !target.amount) { pendingId = text; busy = true; openAmountKeypad('booth', true); return; }
   submit(text);
 }
 
@@ -732,7 +739,7 @@ function submitPipe(id) {
 }
 function payload() {
   if (mode === 'work') return { no: kpNo, zone: target.zone || '' };
-  if (mode === 'booth') return { booth: target.booth, program: target.program };
+  if (mode === 'booth') return { booth: target.booth, program: target.program, amount: target.program === '직접입력' ? target.amount : 0 };
   if (mode === 'super') return { team: target.team, amount: target.amount };
   if (mode === 'market') return { amount: target.amount };
   if (mode === 'wage') return { task: target.task };
@@ -742,6 +749,7 @@ function onResult(r, id, m) {
   feedback(r.level === 'ok');
   showResult(r, id, m);
   if (r.level === 'ok' && m === 'market') { lastAmt = target.amount || lastAmt; target.amount = 0; renderCfg(); }
+  if (m === 'booth' && target.program === '직접입력') { target.amount = 0; renderCfg(); }
   if (r.level === 'ok' && r.undo && r.txId) { undoTx = r.txId; $('btnUndo').hidden = false; clearTimeout(undoTimer); undoTimer = setTimeout(hideUndo, 20000); }
   setTimeout(function () { busy = false; lastText = ''; }, 600);
 }
@@ -759,7 +767,8 @@ function undo() {
 function openAmountKeypad(kind, keepPending) {
   kpMode = 'amount'; kpKind = kind || 'super'; kpNo = ''; if (!keepPending) pendingId = '';
   $('wgrid').hidden = true; $('keys').hidden = false; $('kpDisp').hidden = false;
-  $('kpTitle').innerText = kpKind === 'market' ? '판매 금액을 입력하세요' : '후원 금액을 입력하세요';
+  $('kpTitle').innerText = kpKind === 'market' ? '판매 금액을 입력하세요' : kpKind === 'booth' ? '금액 입력 (+ 결제 / − 지급)' : '후원 금액을 입력하세요';
+  $('kpSign').hidden = kpKind !== 'booth';
   $('kpSub').innerText = pendingId && nameOf(pendingId) ? nameOf(pendingId) + '님' : '';
   $('kpOk').innerText = pendingId ? (kpKind === 'market' ? '결제하기' : '확인') : '금액 정하기';
   $('kpOk').style.background = 'linear-gradient(135deg,#6366f1,#7c3aed)';
@@ -767,7 +776,7 @@ function openAmountKeypad(kind, keepPending) {
   clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
 }
 function openKeypad() {
-  kpMode = ''; kpKind = ''; $('kpOk').innerText = '좋아요 ♥'; $('kpOk').style.background = '';
+  kpMode = ''; kpKind = ''; $('kpSign').hidden = true; $('kpOk').innerText = '좋아요 ♥'; $('kpOk').style.background = '';
   kpNo = '';
   var zmode = !!target.zone;
   $('wgrid').hidden = !zmode; $('keys').hidden = zmode; $('kpDisp').hidden = zmode;
@@ -792,17 +801,19 @@ function buildGrid() {
   });
 }
 function kp(k) {
-  if (k === 'C') kpNo = ''; else if (k === 'B') kpNo = kpNo.slice(0, -1); else if (kpNo.length < 6) kpNo += k;
+  if (k === 'C') kpNo = ''; else if (k === 'B') kpNo = kpNo.slice(0, -1);
+  else if (k === 'S') kpNo = kpNo.charAt(0) === '-' ? kpNo.slice(1) : '-' + kpNo;
+  else if (kpNo.replace('-', '').length < 6) kpNo += k;
   renderKp(); clearTimeout(kpTimer); kpTimer = setTimeout(kpCancel, 30000);
 }
-function amtLimits() { return kpKind === 'market' ? { mn: 1, mx: boot.marketMax || 0 } : { mn: boot.superMin || 1, mx: boot.superMax || 0 }; }
+function amtLimits() { return kpKind === 'booth' ? { mn: 0, mx: boot.boothDirectMax || 0, booth: true } : kpKind === 'market' ? { mn: 1, mx: boot.marketMax || 0 } : { mn: boot.superMin || 1, mx: boot.superMax || 0 }; }
 function renderKp() {
   var info = $('kpInfo'), ok = $('kpOk');
   if (kpMode === 'amount') {
     var a = parseInt(kpNo, 10) || 0, lm = amtLimits();
-    $('kpDisp').innerText = kpNo ? fmt(a) + 'C' : '＿＿';
-    var bad = !a ? '' : (a < lm.mn ? '최소 ' + fmt(lm.mn) + 'C' : (lm.mx && a > lm.mx ? '1회 최대 ' + fmt(lm.mx) + 'C' : ''));
-    info.innerHTML = bad ? '❌ ' + bad : (a ? (kpKind === 'market' ? '이 금액을 결제합니다' : '이 금액으로 후원합니다') : ''); info.style.color = bad ? '#dc2626' : '#12a363';
+    $('kpDisp').innerText = kpNo ? (a ? (a > 0 && lm.booth ? '+' : '') + fmt(a) + 'C' : kpNo) : '＿＿';
+    var bad = lm.booth ? (!a ? '' : (lm.mx && Math.abs(a) > lm.mx ? '1회 최대 ±' + fmt(lm.mx) + 'C' : '')) : !a ? '' : (a < lm.mn ? '최소 ' + fmt(lm.mn) + 'C' : (lm.mx && a > lm.mx ? '1회 최대 ' + fmt(lm.mx) + 'C' : ''));
+    info.innerHTML = bad ? '❌ ' + bad : (a ? (lm.booth ? (a > 0 ? '학생에게서 ' + fmt(a) + 'C를 받습니다' : '학생에게 ' + fmt(-a) + 'C를 지급합니다') : kpKind === 'market' ? '이 금액을 결제합니다' : '이 금액으로 후원합니다') : ''); info.style.color = bad ? '#dc2626' : '#12a363';
     ok.disabled = !a || !!bad; return;
   }
   $('kpDisp').innerText = kpNo ? kpNo + '번' : '＿＿';
@@ -813,16 +824,16 @@ function renderKp() {
 }
 function kpCancel() {
   clearTimeout(kpTimer); $('keypad').hidden = true; pendingId = ''; busy = false; lastText = '';
-  kpMode = ''; kpKind = ''; $('kpOk').innerText = '좋아요 ♥'; $('kpOk').style.background = '';
+  kpMode = ''; kpKind = ''; $('kpSign').hidden = true; $('kpOk').innerText = '좋아요 ♥'; $('kpOk').style.background = '';
   setResult('', '취소되었습니다. 학생 QR을 다시 보여주세요.');
 }
 function kpSend() {
   if (kpMode === 'amount') {
     var a = parseInt(kpNo, 10) || 0, lm = amtLimits();
-    if (!a || a < lm.mn || (lm.mx && a > lm.mx)) return;
+    if (!a || (lm.booth ? (lm.mx && Math.abs(a) > lm.mx) : (a < lm.mn || (lm.mx && a > lm.mx)))) return;
     clearTimeout(kpTimer); $('keypad').hidden = true; target.amount = a; var kind = kpKind; kpMode = ''; kpKind = ''; $('kpOk').innerText = '좋아요 ♥'; $('kpOk').style.background = '';
     renderCfg();
-    if (kind === 'market' && pendingId) { var id = pendingId; pendingId = ''; busy = false; submit(id); }
+    if ((kind === 'market' || kind === 'booth') && pendingId) { var id = pendingId; pendingId = ''; busy = false; submit(id); }
     return;
   }
   if (!kpNo || !boot.works[String(parseInt(kpNo, 10))]) return;
