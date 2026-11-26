@@ -83,7 +83,7 @@ function addItem(v) {
     '</div>' +
     '<div class="detail ex hide"><div><label>전시 방식</label><select class="exp"><option value="0">A2 포스터(PDF)만</option><option value="1">A2 포스터 + 태블릿 체험(학생이 직접 사용)</option></select></div>' +
       '<div class="chk pw hide"><label>태블릿 체험에 필요한 것</label><label><input type="checkbox" class="desk"> 책상</label><label><input type="checkbox" class="power"> 전원(콘센트)</label></div></div>' +
-    '<div class="detail ta hide"><div><label>희망 날짜·시간대</label><select class="when"><option value="">선택</option>' + SLOTS.map(function (s) { return '<option>' + s + '</option>'; }).join('') + '</select></div>' +
+    '<div class="detail ta hide">' +
       '<div><label>필요한 시간(분)</label><input class="mins" inputmode="numeric" placeholder="예) 20"></div></div>';
   box.appendChild(d);
   var kind = d.querySelector('.kind');
@@ -96,7 +96,7 @@ function addItem(v) {
 function read() {
   return Array.prototype.map.call(box.querySelectorAll('.item'), function (d) {
     var q = function (c) { return d.querySelector(c); };
-    return { kind: q('.kind').value, title: q('.title').value, n: q('.n').value, rep: q('.rep').value, intro: q('.intro').value, exp: q('.exp').value, desk: q('.desk').checked, power: q('.power').checked, when: q('.when').value, mins: q('.mins').value };
+    return { kind: q('.kind').value, title: q('.title').value, n: q('.n').value, rep: q('.rep').value, intro: q('.intro').value, exp: q('.exp').value, desk: q('.desk').checked, power: q('.power').checked, when: '', mins: q('.mins').value };
   });
 }
 function save() { try { localStorage.setItem('bulkDraft', JSON.stringify({ org: org.value, teacher: teacher.value, rows: read() })); } catch (e) {} }
@@ -109,14 +109,14 @@ document.getElementById('bPaste').onclick = function () {
     var k = (c[0] || '').trim(); k = /실패/.test(k) ? '실패 이야기' : (/발표/.test(k) ? '발표' : (/전시/.test(k) ? '전시' : ''));
     addItem({ kind: k, title: (c[1] || '').trim(), rep: (c[2] || '').trim(), n: (c[3] || '').trim(), intro: (c[4] || '').trim() }); made++;
   });
-  document.getElementById('paste').value = ''; document.getElementById('msg').innerHTML = made ? '<span class="ok">' + made + '건을 카드로 만들었어요. 발표 시간대·전시 방식을 골라 주세요.</span>' : '';
+  document.getElementById('paste').value = ''; document.getElementById('msg').innerHTML = made ? '<span class="ok">' + made + '건을 카드로 만들었어요. 발표 시간·전시 방식을 골라 주세요.</span>' : '';
 };
 var sending = false;
 document.getElementById('send').onclick = function () {
   if (sending) return; var msg = document.getElementById('msg'), rows = read().filter(function (r) { return r.title || r.rep || r.intro || r.kind; });
   if (!org.value.trim() || !teacher.value.trim()) { msg.innerHTML = '<span class="err">소속과 지도교사를 입력해 주세요.</span>'; return; }
   if (!rows.length) { msg.innerHTML = '<span class="err">신청할 건을 한 개 이상 채워 주세요.</span>'; return; }
-  var bad = []; rows.forEach(function (r, i) { if (!r.kind) bad.push((r.title || (i + 1) + '번째') + ': 구분'); else if (!r.title.trim()) bad.push((i + 1) + '번째 건: 제목'); else if (r.kind !== '전시' && (!r.when || !(parseInt(r.mins, 10) > 0))) bad.push('「' + r.title + '」: 시간대·시간'); });
+  var bad = []; rows.forEach(function (r, i) { if (!r.kind) bad.push((r.title || (i + 1) + '번째') + ': 구분'); else if (!r.title.trim()) bad.push((i + 1) + '번째 건: 제목'); else if (r.kind !== '전시' && !(parseInt(r.mins, 10) > 0)) bad.push('「' + r.title + '」: 필요한 시간'); });
   if (bad.length) { msg.innerHTML = '<span class="err">아래 항목을 채워 주세요 → ' + h(bad.join(', ')) + '</span>'; return; }
   if (!confirm(rows.length + '건을 제출할까요? 제출 후에는 이 화면에서 고칠 수 없어요.')) return;
   sending = true; this.disabled = true; msg.textContent = '제출 중…'; save();
